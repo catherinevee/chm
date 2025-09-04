@@ -6,10 +6,10 @@ This guide explains how to set up the badges in the README to show "passing" sta
 
 To make the badges work properly, you need to set up the following secrets in your GitHub repository:
 
-### 1. Snyk Security Scan
-- Go to [Snyk.io](https://snyk.io) and create an account
-- Get your API token from the account settings
-- Add it as a repository secret named `SNYK_TOKEN`
+### 1. Trivy Security Scan
+- Trivy is integrated directly into the GitHub Actions workflow
+- No additional setup required - it runs automatically
+- Results are uploaded to GitHub Security tab
 
 ### 2. FOSSA License Compliance
 - Go to [FOSSA.com](https://fossa.com) and create an account
@@ -17,7 +17,7 @@ To make the badges work properly, you need to set up the following secrets in yo
 - Get your API key from the project settings
 - Add it as a repository secret named `FOSSA_API_KEY`
 
-### 3. Codecov (Optional)
+### 3. Codecov Code Coverage (Optional)
 - Go to [Codecov.io](https://codecov.io) and create an account
 - Connect your GitHub repository
 - Get your upload token
@@ -36,10 +36,10 @@ To make the badges work properly, you need to set up the following secrets in yo
 Once you've set up the secrets and pushed the code:
 
 - **Build Status**: Will show "passing" when the CI/CD workflow runs successfully
-- **Security Scan**: Will show "passing" when Snyk scan completes without high-severity issues
+- **Security Scan**: Shows "Trivy Scan" (static badge linking to workflow)
 - **FOSSA Status**: Will show "passing" when license compliance check passes
 - **License**: Always shows "MIT" (static badge)
-- **Enterprise Ready**: Always shows "Production Ready" (static badge)
+- **Code Quality**: Shows "Black + Flake8 + MyPy" (static badge)
 
 ## Testing the Badges
 
@@ -60,7 +60,7 @@ If badges don't show "passing":
 ## Current Badge URLs
 
 - Build Status: `https://github.com/cathe/chm2/actions/workflows/ci-cd.yml/badge.svg`
-- Security Scan: `https://snyk.io/test/github/cathe/chm2/badge.svg`
+- Security Scan: `https://img.shields.io/badge/Security-Trivy%20Scan-blue.svg`
 - FOSSA Status: `https://app.fossa.com/api/projects/git%2Bgithub.com%2Fcathe%2Fchm2.svg?type=shield`
 - License: `https://img.shields.io/badge/License-MIT-yellow.svg`
-- Enterprise Ready: `https://img.shields.io/badge/Enterprise-Production%20Ready%20%2B%20SLA%20%2B%20Compliance%20%2B%20Support-purple.svg`
+- Code Quality: `https://img.shields.io/badge/Quality-Black%20%2B%20Flake8%20%2B%20MyPy-blue.svg`

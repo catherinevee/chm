@@ -2,10 +2,10 @@
 
 <!-- BADGES_START -->
 [![Build Status](https://github.com/cathe/chm2/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/cathe/chm2/actions/workflows/ci-cd.yml)
-[![Security Scan](https://snyk.io/test/github/cathe/chm2/badge.svg)](https://snyk.io/test/github/cathe/chm2)
+[![Security Scan](https://img.shields.io/badge/Security-Trivy%20Scan-blue.svg)](https://github.com/cathe/chm2/actions/workflows/ci-cd.yml)
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fcathe%2Fchm2.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fcathe%2Fchm2)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Enterprise Ready](https://img.shields.io/badge/Enterprise-Production%20Ready%20%2B%20SLA%20%2B%20Compliance%20%2B%20Support-purple.svg)](#enterprise-features)
+[![Code Quality](https://img.shields.io/badge/Quality-Black%20%2B%20Flake8%20%2B%20MyPy-blue.svg)](#code-quality)
 <!-- BADGES_END -->
 
 ## Overview
