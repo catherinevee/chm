@@ -1,61 +1,10 @@
 # Catalyst Health Monitor (CHM) - Enterprise Network Monitoring Platform
 
 <!-- BADGES_START -->
-[![Build Status](https://github.com/username/chm/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/username/chm/actions/workflows/ci-cd.yml)
-[![Code Coverage](https://codecov.io/gh/username/chm/branch/main/graph/badge.svg)](https://codecov.io/gh/username/chm)
-[![Code Quality](https://api.codacy.com/project/badge/Grade/your-project-id)](https://app.codacy.com/gh/username/chm)
-[![Security Scan](https://snyk.io/test/github/username/chm/badge.svg)](https://snyk.io/test/github/username/chm)
+[![Build Status](https://github.com/cathe/chm2/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/cathe/chm2/actions/workflows/ci-cd.yml)
+[![Security Scan](https://snyk.io/test/github/cathe/chm2/badge.svg)](https://snyk.io/test/github/cathe/chm2)
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fcathe%2Fchm2.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fcathe%2Fchm2)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-
-### Technology Stack
-[![Python](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
-[![Node.js](https://img.shields.io/badge/node-18+-green.svg)](https://nodejs.org/)
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-13+-blue.svg)](https://www.postgresql.org/)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-green.svg)](https://fastapi.tiangolo.com/)
-[![React](https://img.shields.io/badge/React-18+-blue.svg)](https://reactjs.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-4.9+-blue.svg)](https://www.typescriptlang.org/)
-
-### Features
-[![SNMP Support](https://img.shields.io/badge/SNMP-v1%2Cv2c%2Cv3-orange.svg)](#snmp-support)
-[![SSH Support](https://img.shields.io/badge/SSH-Key%20%26%20Password-green.svg)](#ssh-support)
-[![REST API](https://img.shields.io/badge/REST-API%20Support-blue.svg)](#rest-api-support)
-[![WebSocket](https://img.shields.io/badge/WebSocket-Real--time-orange.svg)](#websocket-support)
-[![JWT Auth](https://img.shields.io/badge/JWT-Authentication-red.svg)](#jwt-authentication)
-[![RBAC](https://img.shields.io/badge/RBAC-Role%20Based%20Access%20Control-purple.svg)](#rbac-support)
-[![MFA](https://img.shields.io/badge/MFA-Multi--Factor%20Auth-green.svg)](#mfa-support)
-[![Encryption](https://img.shields.io/badge/Encryption-AES--256%20%2B%20RSA-blue.svg)](#encryption-support)
-
-### Capabilities
-[![SLA Monitoring](https://img.shields.io/badge/SLA-Monitoring%20%26%20Reporting-green.svg)](#sla-monitoring)
-[![Topology](https://img.shields.io/badge/Topology-Network%20Mapping-blue.svg)](#topology-mapping)
-[![Discovery](https://img.shields.io/badge/Discovery-Auto%20Network%20Scan-green.svg)](#network-discovery)
-[![Metrics](https://img.shields.io/badge/Metrics-Real--time%20Collection-orange.svg)](#metrics-collection)
-[![Alerts](https://img.shields.io/badge/Alerts-Intelligent%20Correlation-red.svg)](#alert-system)
-[![Performance](https://img.shields.io/badge/Performance-Benchmarks%20%26%20Monitoring-blue.svg)](#performance-monitoring)
-[![Scalability](https://img.shields.io/badge/Scalability-10K%2B%20Devices%20%2B%20Horizontal-green.svg)](#scalability)
-
-### Performance
-[![Uptime](https://img.shields.io/badge/Uptime-99.9%25%20SLA-green.svg)](#uptime-sla)
-[![Response Time](https://img.shields.io/badge/Response%20Time-%3C100ms%20API%20%2B%20%3C1s%20UI-blue.svg)](#performance-metrics)
-[![Vendor Support](https://img.shields.io/badge/Vendors-Cisco%2C%20Juniper%2C%20Arista%2C%20HP%2C%20Brocade-orange.svg)](#vendor-support)
-[![Protocols](https://img.shields.io/badge/Protocols-SNMP%2C%20SSH%2C%20REST%2C%20ICMP-blue.svg)](#protocol-support)
-
-### Deployment
-[![Docker](https://img.shields.io/badge/Docker-Ready-blue.svg)](https://hub.docker.com/r/username/chm)
-[![Kubernetes](https://img.shields.io/badge/Kubernetes-Ready-blue.svg)](https://kubernetes.io/)
-[![Self-Monitoring](https://img.shields.io/badge/Self--Monitoring-Prometheus%20%2B%20Grafana-orange.svg)](#self-monitoring)
-
-### Quality & Testing
-[![Testing](https://img.shields.io/badge/Testing-Unit%20%2B%20Integration%20%2B%20E2E%20%2B%20Performance-blue.svg)](#testing)
-[![Coverage](https://img.shields.io/badge/Coverage-Backend%2090%25%2B%20%2B%20Frontend%2085%25%2B-green.svg)](#test-coverage)
-[![Code Quality](https://img.shields.io/badge/Quality-Black%20%2B%20Flake8%20%2B%20MyPy%20%2B%20ESLint-blue.svg)](#code-quality)
-[![Security](https://img.shields.io/badge/Security-Bandit%20%2B%20Safety%20%2B%20Snyk%20%2B%20Trivy-green.svg)](#security-scanning)
-[![Documentation](https://img.shields.io/badge/Docs-API%20%2B%20User%20Guide%20%2B%20Deployment%20%2B%20Contributing-blue.svg)](#documentation)
-
-### Community & Support
-[![Contributing](https://img.shields.io/badge/Contributing-Welcome%20%2B%20Guidelines%20%2B%20Code%20of%20Conduct-green.svg)](#contributing)
-[![Community](https://img.shields.io/badge/Community-GitHub%20Issues%20%2B%20Discussions%20%2B%20Discord-orange.svg)](#community)
-[![Roadmap](https://img.shields.io/badge/Roadmap-V2.1%20Q1%202024%20%2B%20V2.2%20Q2%202024-blue.svg)](#roadmap)
 [![Enterprise Ready](https://img.shields.io/badge/Enterprise-Production%20Ready%20%2B%20SLA%20%2B%20Compliance%20%2B%20Support-purple.svg)](#enterprise-features)
 <!-- BADGES_END -->
 
