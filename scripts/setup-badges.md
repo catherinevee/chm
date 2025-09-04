@@ -61,6 +61,6 @@ If badges don't show "passing":
 
 - Build Status: `https://github.com/cathe/chm2/actions/workflows/ci-cd.yml/badge.svg`
 - Security Scan: `https://img.shields.io/badge/Security-Trivy%20Scan-blue.svg`
-- FOSSA Status: `https://app.fossa.com/api/projects/git%2Bgithub.com%2Fcathe%2Fchm.svg?type=shield`
+- FOSSA Status: `https://app.fossa.com/api/projects/git%2Bgithub.com%2Fcatherinevee%2Fdriftmgr/refs/branch/main/10e21006f021fbd2bdfeb27e1bc06e5c25b68495.svg?type=shield`
 - License: `https://img.shields.io/badge/License-MIT-yellow.svg`
 - Code Quality: `https://img.shields.io/badge/Quality-Black%20%2B%20Flake8%20%2B%20MyPy-blue.svg`

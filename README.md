@@ -3,7 +3,7 @@
 <!-- BADGES_START -->
 [![Build Status](https://github.com/cathe/chm2/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/cathe/chm2/actions/workflows/ci-cd.yml)
 [![Security Scan](https://img.shields.io/badge/Security-Trivy%20Scan-blue.svg)](https://github.com/cathe/chm2/actions/workflows/ci-cd.yml)
-[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fcathe%2Fchm.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fcathe%2Fchm)
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fcatherinevee%2Fdriftmgr/refs/branch/main/10e21006f021fbd2bdfeb27e1bc06e5c25b68495.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fcatherinevee%2Fdriftmgr/refs/branch/main/10e21006f021fbd2bdfeb27e1bc06e5c25b68495)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Code Quality](https://img.shields.io/badge/Quality-Black%20%2B%20Flake8%20%2B%20MyPy-blue.svg)](#code-quality)
 <!-- BADGES_END -->
