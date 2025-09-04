@@ -1,0 +1,225 @@
+Core Network Monitoring Infrastructure
+"Generate deployment readiness questions for an enterprise network monitoring system that collects real-time metrics from thousands of network devices across multiple vendors"
+
+How will we handle 10,000+ concurrent SNMP polling sessions?
+What's our strategy for managing different vendor MIB variations?
+How do we ensure polling doesn't impact network device performance?
+What's our approach to handling devices behind NAT/firewalls?
+
+"What should I validate about our multi-protocol support (SNMP v1/v2c/v3, SSH, REST APIs, ICMP) before production deployment?"
+
+Can we handle protocol fallback when primary methods fail?
+How do we manage SSH connection pools at scale?
+What's our rate limiting strategy for vendor REST APIs?
+How do we handle SNMP v3 authentication and encryption overhead?
+
+Network Discovery & Topology Mapping
+"Create validation questions for automatic network discovery that maps complex enterprise topologies"
+
+How do we prevent discovery storms in large networks?
+What's our approach to discovering devices in segmented networks?
+How do we handle topology changes during discovery?
+Can we accurately map redundant paths and link aggregation?
+What's the impact of discovery on production network traffic?
+
+"What should I verify about topology visualization for networks with 5,000+ devices?"
+
+Browser performance with large network diagrams?
+Dynamic rendering optimization for complex topologies?
+Zoom/pan performance with thousands of nodes?
+Export capabilities for large topology maps?
+
+Performance & Scalability
+"Generate performance validation questions for a system polling metrics from diverse network equipment every 30-60 seconds"
+
+Database write performance for millions of metrics per minute?
+Time-series data retention and aggregation strategies?
+Query performance for historical data spanning years?
+Concurrent user load for dashboard rendering?
+
+"What load testing scenarios should validate our SLA monitoring across thousands of network devices?"
+
+Simultaneous SLA calculations for multiple service levels
+Performance impact of complex SLA formulas
+Historical SLA report generation under load
+Real-time SLA breach detection latency
+
+Multi-Vendor Device Support
+"Create deployment questions for supporting Cisco, Juniper, Arista, HP, and other vendor equipment"
+
+How do we handle vendor-specific SNMP OID differences?
+What's our strategy for new firmware versions changing MIBs?
+How do we manage vendor API authentication variations?
+Can we support custom/proprietary vendor extensions?
+What's our approach to end-of-life equipment monitoring?
+
+Data Collection & Storage
+"What should I validate about our metrics collection pipeline handling CPU, memory, interface utilization, temperature, and power data?"
+
+Data ingestion rate capabilities (metrics per second)?
+Handling missing data points and collection failures?
+Metric normalization across different vendor formats?
+Storage optimization for high-cardinality metrics?
+Data compression and retention policies?
+
+Alerting Engine
+"Generate validation questions for our threshold-based alerting system with severity levels"
+
+Alert storm prevention mechanisms?
+Dynamic threshold adjustment capabilities?
+Alert correlation to reduce noise?
+Escalation path testing?
+Alert fatigue management strategies?
+
+"What should I verify about real-time notification delivery?"
+
+Notification delivery guarantees (at-least-once, exactly-once)?
+Multi-channel delivery (email, SMS, Slack, PagerDuty)?
+Notification rate limiting per user/team?
+Failed notification retry logic?
+Time-zone aware notification scheduling?
+
+Security & Compliance
+"Create security validation questions for a system with access to critical network infrastructure"
+
+How do we secure stored device credentials?
+What's our approach to credential rotation?
+How do we prevent SNMP community string exposure?
+Can we detect and prevent unauthorized device access?
+What's our strategy for securing SSH keys?
+
+"What should I validate about our JWT authentication with RBAC and MFA?"
+
+Token refresh strategy under high load?
+Session management across multiple browser tabs?
+MFA bypass detection and alerting?
+Role permission caching and invalidation?
+API key management for automation?
+
+High Availability & Disaster Recovery
+"Generate questions about failover capabilities for continuous network monitoring"
+
+Active-active vs active-passive deployment validation?
+Poller failover without missing metrics?
+Database replication lag impact on monitoring?
+Geographic distribution of monitoring nodes?
+Maintenance mode without alerting disruption?
+
+WebSocket Real-time Updates
+"What should I verify about WebSocket support for live dashboard updates?"
+
+Concurrent WebSocket connection limits?
+Connection recovery after network interruptions?
+Message delivery guarantees?
+Load balancing WebSocket connections?
+Fallback to polling when WebSockets unavailable?
+
+Enterprise Integration
+"Create deployment questions for integration with existing enterprise systems"
+
+LDAP/Active Directory synchronization?
+ITSM tool integration (ServiceNow, Jira)?
+SIEM integration for security events?
+CMDB synchronization?
+Northbound API rate limiting?
+
+Compliance & Auditing
+"What should I validate about comprehensive audit logging for compliance?"
+
+Audit log tamper protection?
+Log retention meeting regulatory requirements?
+User action tracking granularity?
+Configuration change tracking?
+Compliance report generation performance?
+
+Containerization & Orchestration
+"Generate validation questions for Docker/Kubernetes deployment"
+
+Container resource limits for poller pods?
+Persistent volume strategy for metrics data?
+Service mesh configuration for inter-service communication?
+Horizontal pod autoscaling triggers?
+Config map and secret management?
+
+Network-Specific Scenarios
+"What should I verify about monitoring critical network paths?"
+
+Path redundancy detection?
+Asymmetric routing handling?
+MTU mismatch detection?
+Latency baseline establishment?
+Jitter and packet loss thresholds?
+
+"Create questions for bulk device import/export operations"
+
+Validation of device reachability before import?
+Duplicate device detection?
+Batch size optimization?
+Import failure rollback capabilities?
+Export format compatibility?
+
+Performance Baselines
+"What validation ensures accurate capacity planning and trend analysis?"
+
+Baseline calculation algorithms?
+Seasonal adjustment capabilities?
+Anomaly detection accuracy?
+Predictive analytics model validation?
+Capacity forecast accuracy metrics?
+
+FastAPI Specific Validations
+"Generate deployment questions specific to FastAPI backend"
+
+Async operation handling under load?
+Connection pool exhaustion prevention?
+Request timeout configurations?
+Memory usage with long-running operations?
+Background task queue management?
+
+React Frontend Performance
+"What should I validate about the React TypeScript frontend with Material-UI?"
+
+Bundle size optimization?
+Code splitting effectiveness?
+Virtual scrolling for large device lists?
+Dashboard widget lazy loading?
+State management scalability?
+
+PostgreSQL Optimization
+"Create database-specific validation questions"
+
+Partition strategy for time-series data?
+Index optimization for common queries?
+Vacuum and analyze scheduling?
+Connection pooling configuration?
+Read replica lag monitoring?
+
+Operational Readiness
+"What questions ensure Network Engineers can effectively use CHM as their 'single pane of glass'?"
+
+Dashboard load time for complex views?
+Search and filter performance?
+Drill-down navigation responsiveness?
+Multi-tab workflow support?
+Keyboard shortcut availability?
+
+Migration Considerations
+"Generate questions for migrating from existing network monitoring tools"
+
+Historical data migration capabilities?
+Alert rule conversion?
+Dashboard recreation tools?
+Parallel running strategies?
+Rollback procedures if issues arise?
+
+When using these prompts, emphasize:
+
+Scale requirements (number of devices, metrics per second)
+Network criticality (downtime impact)
+Vendor diversity in the environment
+Compliance requirements for network monitoring
+24/7 operational needs
+Integration complexity with existing tools
+Performance SLAs for monitoring itself
+
+These questions ensure CHM can reliably serve as the trusted "single pane of glass" for enterprise network infrastructure monitoring.

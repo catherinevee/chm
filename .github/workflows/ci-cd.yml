@@ -1,0 +1,373 @@
+name: CHM CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  schedule:
+    - cron: '0 2 * * *'  # Daily at 2 AM UTC
+
+env:
+  PYTHON_VERSION: '3.9'
+  NODE_VERSION: '18'
+  POSTGRES_VERSION: '13'
+  REDIS_VERSION: '6'
+
+jobs:
+  # Backend Testing & Quality
+  backend-test:
+    name: Backend Tests & Quality
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:${{ env.POSTGRES_VERSION }}
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: chm_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+      redis:
+        image: redis:${{ env.REDIS_VERSION }}
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python ${{ env.PYTHON_VERSION }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    - name: Cache Python dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+
+    - name: Install Python dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install -r requirements-dev.txt
+
+    - name: Run linting and formatting checks
+      run: |
+        echo "Running Black formatting check..."
+        black --check --diff backend/
+        echo "Running flake8 linting..."
+        flake8 backend/ --max-line-length=88 --extend-ignore=E203,W503
+        echo "Running isort import sorting check..."
+        isort --check-only --diff backend/
+        echo "Running mypy type checking..."
+        mypy backend/ --ignore-missing-imports
+
+    - name: Run security scanning
+      run: |
+        echo "Running Bandit security scan..."
+        bandit -r backend/ -f json -o bandit-report.json || true
+        echo "Running Safety dependency check..."
+        safety check --json --output safety-report.json || true
+
+    - name: Run tests with coverage
+      env:
+        DATABASE_URL: postgresql://postgres:postgres@localhost:5432/chm_test
+        REDIS_URL: redis://localhost:6379/0
+        JWT_SECRET_KEY: test-secret-key-for-ci
+        ENCRYPTION_KEY: test-encryption-key-for-ci
+      run: |
+        pytest backend/tests/ --cov=backend --cov-report=xml --cov-report=html --cov-report=term-missing --cov-fail-under=90
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./backend/coverage.xml
+        flags: backend
+        name: backend-coverage
+        fail_ci_if_error: false
+
+    - name: Upload coverage reports
+      uses: actions/upload-artifact@v3
+      with:
+        name: coverage-reports
+        path: |
+          backend/coverage.xml
+          backend/htmlcov/
+          bandit-report.json
+          safety-report.json
+
+  # Frontend Testing & Quality
+  frontend-test:
+    name: Frontend Tests & Quality
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Node.js ${{ env.NODE_VERSION }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: |
+        cd frontend
+        npm ci
+
+    - name: Run linting and formatting checks
+      run: |
+        cd frontend
+        echo "Running ESLint..."
+        npm run lint
+        echo "Running Prettier check..."
+        npm run format:check
+        echo "Running TypeScript type checking..."
+        npm run type-check
+
+    - name: Run tests with coverage
+      run: |
+        cd frontend
+        npm run test:coverage
+
+    - name: Upload frontend coverage
+      uses: actions/upload-artifact@v3
+      with:
+        name: frontend-coverage
+        path: frontend/coverage/
+
+  # Docker Build & Security
+  docker-build:
+    name: Docker Build & Security
+    runs-on: ubuntu-latest
+    needs: [backend-test, frontend-test]
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+
+    - name: Build backend image
+      run: |
+        docker build -t chm-backend:latest ./backend
+        docker build -t chm-backend:test ./backend --target test
+
+    - name: Build frontend image
+      run: |
+        docker build -t chm-frontend:latest ./frontend
+
+    - name: Run Trivy vulnerability scanner
+      uses: aquasecurity/trivy-action@master
+      with:
+        image-ref: 'chm-backend:latest'
+        format: 'sarif'
+        output: 'trivy-results.sarif'
+
+    - name: Upload Trivy scan results
+      uses: actions/upload-artifact@v3
+      with:
+        name: trivy-results
+        path: trivy-results.sarif
+
+  # Security & Compliance
+  security-scan:
+    name: Security & Compliance
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Run Snyk security scan
+      uses: snyk/actions/node@master
+      env:
+        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      with:
+        args: --severity-threshold=high
+
+    - name: Run Snyk Python security scan
+      uses: snyk/actions/python@master
+      env:
+        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      with:
+        args: --severity-threshold=high
+
+    - name: Run license compliance check
+      run: |
+        pip install pip-licenses
+        pip-licenses --format=json --output-file=license-report.json
+        echo "License compliance check completed"
+
+    - name: Upload security reports
+      uses: actions/upload-artifact@v3
+      with:
+        name: security-reports
+        path: |
+          license-report.json
+          snyk-report.json
+
+  # Performance Testing
+  performance-test:
+    name: Performance Testing
+    runs-on: ubuntu-latest
+    needs: [backend-test, frontend-test]
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python ${{ env.PYTHON_VERSION }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    - name: Install dependencies
+      run: |
+        pip install -r requirements.txt
+        pip install -r requirements-dev.txt
+
+    - name: Run performance benchmarks
+      run: |
+        cd backend
+        python -m pytest tests/performance/ --benchmark-only --benchmark-sort=mean
+
+    - name: Run frontend performance tests
+      run: |
+        cd frontend
+        npm run build
+        npm run lighthouse:ci
+
+    - name: Upload performance reports
+      uses: actions/upload-artifact@v3
+      with:
+        name: performance-reports
+        path: |
+          backend/.pytest_cache/
+          frontend/lighthouse-results/
+
+  # Documentation Quality
+  docs-check:
+    name: Documentation Quality
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python ${{ env.PYTHON_VERSION }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    - name: Install documentation tools
+      run: |
+        pip install sphinx sphinx-rtd-theme
+        pip install pydocstyle
+
+    - name: Check API documentation coverage
+      run: |
+        cd backend
+        python scripts/check_api_docs.py
+
+    - name: Check code documentation
+      run: |
+        cd backend
+        pydocstyle --count --select=D100,D101,D102,D103,D104,D105,D106,D107
+
+    - name: Build documentation
+      run: |
+        cd docs
+        make html
+
+    - name: Upload documentation
+      uses: actions/upload-artifact@v3
+      with:
+        name: documentation
+        path: docs/_build/html/
+
+  # Quality Score Calculation
+  quality-score:
+    name: Quality Score Calculation
+    runs-on: ubuntu-latest
+    needs: [backend-test, frontend-test, security-scan, performance-test, docs-check]
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Download all artifacts
+      uses: actions/download-artifact@v3
+      with:
+        path: artifacts/
+
+    - name: Calculate quality score
+      run: |
+        python scripts/calculate_quality_score.py
+
+    - name: Upload quality report
+      uses: actions/upload-artifact@v3
+      with:
+        name: quality-report
+        path: quality-report.json
+
+  # Deployment (Staging)
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: [quality-score]
+    if: github.ref == 'refs/heads/develop'
+    environment: staging
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Deploy to staging
+      run: |
+        echo "Deploying to staging environment..."
+        # Add your staging deployment logic here
+
+  # Release (Production)
+  release:
+    name: Release to Production
+    runs-on: ubuntu-latest
+    needs: [quality-score]
+    if: github.ref == 'refs/heads/main'
+    environment: production
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: Release ${{ github.ref }}
+        draft: false
+        prerelease: false
+
+    - name: Deploy to production
+      run: |
+        echo "Deploying to production environment..."
+        # Add your production deployment logic here
