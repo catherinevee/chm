@@ -14,6 +14,7 @@
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-green.svg)](https://fastapi.tiangolo.com/)
 [![React](https://img.shields.io/badge/React-18+-blue.svg)](https://reactjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-4.9+-blue.svg)](https://www.typescriptlang.org/)
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fcatherinevee%2Fchm.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fcatherinevee%2Fchm?ref=badge_shield)
 
 ### Features
 [![SNMP Support](https://img.shields.io/badge/SNMP-v1%2Cv2c%2Cv3-orange.svg)](#snmp-support)
@@ -689,6 +690,9 @@ We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) f
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fcatherinevee%2Fchm.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fcatherinevee%2Fchm?ref=badge_large)
 
 ## Support
 
