@@ -16,17 +16,17 @@ from typing import List, Dict, Any
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..models.security import (
+from models.security import (
     SecurityRole, SecurityPermission, RolePermission, UserRole,
     SecurityPolicy, SecurityAuditLog, SecurityIncident, VulnerabilityAssessment,
     Vulnerability, ComplianceFramework, ComplianceRequirement,
     SecurityLevel, ThreatLevel, IncidentStatus, VulnerabilitySeverity, ComplianceStatus
 )
-from ..models.user import User, UserRole as UserRoleEnum, UserStatus
-from ..models.result_objects import AccessResult, CollectionResult, OperationStatus
-from ..services.access_control import AccessControlService, AccessRequest, PermissionCheck
-from ..services.audit_logging import AuditLoggingService, AuditEvent, AuditQuery, AuditStats
-from ..services.threat_detection import ThreatDetectionService, ThreatIndicator, IncidentContext, DetectionRule
+from models.user import User, UserRole as UserRoleEnum, UserStatus
+from models.result_objects import AccessResult, CollectionResult, OperationStatus
+from services.access_control import AccessControlService, AccessRequest, PermissionCheck
+from services.audit_logging import AuditLoggingService, AuditEvent, AuditQuery, AuditStats
+from services.threat_detection import ThreatDetectionService, ThreatIndicator, IncidentContext, DetectionRule
 
 
 class TestSecurityModels:

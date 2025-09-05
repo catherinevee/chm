@@ -17,9 +17,9 @@ from sqlalchemy import select, and_, or_, func, text, desc, asc
 from sqlalchemy.orm import selectinload
 from sqlalchemy.sql import Select
 
-from ..models import Metric, Device, CollectionMethod, MetricQuality, MetricType, MetricCategory
-from ..models.result_objects import CollectionResult, OperationStatus
-from ..core.database import Base
+from models import Metric, Device, CollectionMethod, MetricQuality, MetricType, MetricCategory
+from models.result_objects import CollectionResult, OperationStatus
+from core.database import Base
 
 logger = logging.getLogger(__name__)
 

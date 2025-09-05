@@ -25,8 +25,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_, or_, func, desc, asc, text
 from sqlalchemy.orm import selectinload
 
-from ..models.security import SecurityPolicy, SecurityAuditLog, SecurityIncident
-from ..models.result_objects import CollectionResult, OperationStatus
+from models.security import SecurityPolicy, SecurityAuditLog, SecurityIncident
+from models.result_objects import CollectionResult, OperationStatus
 
 logger = logging.getLogger(__name__)
 

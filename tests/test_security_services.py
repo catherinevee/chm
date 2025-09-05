@@ -16,19 +16,19 @@ from typing import List, Dict, Any
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..models.security import SecurityAuditLog, SecurityIncident, ThreatLevel, IncidentStatus
-from ..models.result_objects import CollectionResult, OperationStatus
-from ..services.advanced_threat_detection import (
+from models.security import SecurityAuditLog, SecurityIncident, ThreatLevel, IncidentStatus
+from models.result_objects import CollectionResult, OperationStatus
+from services.advanced_threat_detection import (
     AdvancedThreatDetectionService, ThreatIndicator, BehavioralProfile, ThreatDetection,
     ThreatType, DetectionMethod, ConfidenceLevel
 )
-from ..services.vulnerability_management import (
+from services.vulnerability_management import (
     VulnerabilityManagementService, ScanTarget, VulnerabilityScan, VulnerabilityRisk
 )
-from ..services.incident_response import (
+from services.incident_response import (
     IncidentResponseService, IncidentResponsePlan, ResponseAction, ForensicEvidence
 )
-from ..services.security_orchestration import (
+from services.security_orchestration import (
     SecurityOrchestrationService, SecurityPlaybook, WorkflowExecution, AutomationAction
 )
 
@@ -69,7 +69,7 @@ class TestAdvancedThreatDetectionService:
     @pytest.mark.asyncio
     async def test_hunt_threats(self, threat_detection_service):
         """Test threat hunting"""
-        from ..services.advanced_threat_detection import ThreatHuntingQuery
+        from services.advanced_threat_detection import ThreatHuntingQuery
         
         hunting_query = ThreatHuntingQuery(
             query_id="THQ-TEST-001",

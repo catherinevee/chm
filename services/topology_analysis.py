@@ -17,13 +17,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_, or_, func
 from sqlalchemy.orm import joinedload
 
-from ..models.network_topology import (
+from models.network_topology import (
     NetworkTopology, NetworkInterface, NetworkPath, DeviceRelationship,
     TopologyType, InterfaceType, InterfaceStatus, PathStatus
 )
-from ..models.device import Device, DeviceStatus
-from ..models.metric import Metric, MetricType, MetricCategory
-from ..models.result_objects import OperationStatus
+from models.device import Device, DeviceStatus
+from models.metric import Metric, MetricType, MetricCategory
+from models.result_objects import OperationStatus
 
 logger = logging.getLogger(__name__)
 

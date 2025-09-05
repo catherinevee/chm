@@ -16,19 +16,19 @@ from typing import List, Dict, Any
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..models.security import (
+from models.security import (
     ComplianceFramework, ComplianceRequirement, SecurityPolicy, SecurityAuditLog,
     ComplianceStatus, SecurityLevel
 )
-from ..models.result_objects import CollectionResult, OperationStatus
-from ..services.compliance_monitoring import (
+from models.result_objects import CollectionResult, OperationStatus
+from services.compliance_monitoring import (
     ComplianceMonitoringService, ComplianceCheck, ComplianceViolation, ComplianceReport
 )
-from ..services.policy_engine import (
+from services.policy_engine import (
     PolicyEngine, PolicyRule, PolicyEvaluationContext, PolicyEvaluationResult,
     PolicyOperator, PolicyAction, PolicySeverity
 )
-from ..services.compliance_reporting import (
+from services.compliance_reporting import (
     ComplianceReportingService, ReportTemplate, ReportSchedule, ComplianceReport as ReportingComplianceReport
 )
 

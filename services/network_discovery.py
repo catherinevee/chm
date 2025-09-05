@@ -22,15 +22,15 @@ import asyncssh
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_, or_
 
-from ..models.network_topology import (
+from models.network_topology import (
     NetworkTopology, NetworkInterface, NetworkPath, DeviceRelationship,
     TopologyType, InterfaceType, InterfaceStatus, PathStatus
 )
-from ..models.device import Device, DeviceStatus, DeviceProtocol
-from ..models.device_credentials import DeviceCredential, CredentialType
-from ..services.credential_manager import CredentialManager
-from ..services.device_operations import DeviceOperationsService
-from ..models.result_objects import DiscoveryResult, OperationStatus
+from models.device import Device, DeviceStatus, DeviceProtocol
+from models.device_credentials import DeviceCredential, CredentialType
+from services.credential_manager import CredentialManager
+from services.device_operations import DeviceOperationsService
+from models.result_objects import DiscoveryResult, OperationStatus
 
 logger = logging.getLogger(__name__)
 

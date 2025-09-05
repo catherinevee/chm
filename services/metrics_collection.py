@@ -18,8 +18,8 @@ import asyncssh
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_
 
-from ..models import Device, DeviceCredentials, Metric, CollectionMethod, MetricQuality
-from ..models.result_objects import MetricsCollectionResult, OperationStatus
+from models import Device, DeviceCredentials, Metric, CollectionMethod, MetricQuality
+from models.result_objects import MetricsCollectionResult, OperationStatus
 from .device_operations import DeviceOperationsService
 from .credential_manager import CredentialManager
 

@@ -17,12 +17,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_, func, text
 from sqlalchemy.orm import selectinload
 
-from ..models import AlertRule, Alert, Metric, Device, User
-from ..models.alert_rule import RuleStatus, RuleType, ConditionOperator
-from ..models.alert import AlertSeverity, AlertCategory, AlertSource
-from ..models.result_objects import OperationStatus
-from ..services.notification_service import NotificationService
-from ..core.database import Base
+from models import AlertRule, Alert, Metric, Device, User
+from models.alert_rule import RuleStatus, RuleType, ConditionOperator
+from models.alert import AlertSeverity, AlertCategory, AlertSource
+from models.result_objects import OperationStatus
+from services.notification_service import NotificationService
+from core.database import Base
 
 logger = logging.getLogger(__name__)
 

@@ -14,9 +14,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_, func, text
 from sqlalchemy.orm import selectinload
 
-from ..models import Metric, Device
-from ..models.result_objects import StorageResult, OperationStatus
-from ..core.database import Base
+from models import Metric, Device
+from models.result_objects import StorageResult, OperationStatus
+from core.database import Base
 
 logger = logging.getLogger(__name__)
 

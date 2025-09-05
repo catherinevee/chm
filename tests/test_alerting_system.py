@@ -8,13 +8,13 @@ from datetime import datetime, timedelta
 from unittest.mock import AsyncMock, MagicMock, patch
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..models.alert import Alert, AlertSeverity, AlertStatus, AlertCategory, AlertSource
-from ..models.notification import Notification, NotificationChannel, NotificationStatus, NotificationPriority, NotificationType
-from ..models.alert_rule import AlertRule, RuleStatus, RuleType, ConditionOperator, ActionType
-from ..models.device import Device, DeviceStatus
-from ..models.metric import Metric, MetricType, MetricCategory
-from ..services.notification_service import NotificationService, NotificationConfig
-from ..services.alert_rules_engine import AlertRulesEngine, RuleExecutionConfig
+from models.alert import Alert, AlertSeverity, AlertStatus, AlertCategory, AlertSource
+from models.notification import Notification, NotificationChannel, NotificationStatus, NotificationPriority, NotificationType
+from models.alert_rule import AlertRule, RuleStatus, RuleType, ConditionOperator, ActionType
+from models.device import Device, DeviceStatus
+from models.metric import Metric, MetricType, MetricCategory
+from services.notification_service import NotificationService, NotificationConfig
+from services.alert_rules_engine import AlertRulesEngine, RuleExecutionConfig
 
 @pytest.fixture
 def sample_device():

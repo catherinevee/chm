@@ -8,9 +8,9 @@ from datetime import datetime, timedelta
 from unittest.mock import AsyncMock, patch
 import jwt
 
-from ..services.auth_service import auth_service, AuthService
-from ..models.user import User, UserRole, UserStatus
-from ..core.database import get_db
+from services.auth_service import auth_service, AuthService
+from models.user import User, UserRole, UserStatus
+from core.database import get_db
 
 class TestAuthService:
     """Test authentication service functionality"""
@@ -199,7 +199,7 @@ class TestAuthService:
     async def test_authenticate_user_inactive(self, test_session):
         """Test authentication with inactive user"""
         # Create inactive user
-        from ..models.user import User, UserRole, UserStatus
+        from models.user import User, UserRole, UserStatus
         inactive_user = User(
             username="inactive",
             email="inactive@example.com",
@@ -223,7 +223,7 @@ class TestAuthService:
     async def test_authenticate_user_locked(self, test_session):
         """Test authentication with locked user"""
         # Create user with failed login attempts
-        from ..models.user import User, UserRole, UserStatus
+        from models.user import User, UserRole, UserStatus
         locked_user = User(
             username="locked",
             email="locked@example.com",

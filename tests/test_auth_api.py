@@ -8,9 +8,9 @@ from fastapi.testclient import TestClient
 from sqlalchemy.ext.asyncio import AsyncSession
 from unittest.mock import patch, AsyncMock
 
-from ..api.v1.auth import router
-from ..models.user import User, UserRole, UserStatus
-from ..services.auth_service import auth_service
+from api.v1.auth import router
+from models.user import User, UserRole, UserStatus
+from services.auth_service import auth_service
 
 class TestAuthAPI:
     """Test authentication API endpoints"""
@@ -476,7 +476,7 @@ class TestAuthAPISecurity:
         
         # Verify token contents
         import jwt
-        from ..core.config import get_settings
+        from core.config import get_settings
         
         settings = get_settings()
         
