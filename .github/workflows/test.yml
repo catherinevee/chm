@@ -64,7 +64,7 @@ jobs:
         pytest tests/unit/ -v --cov=. --cov-report=xml --cov-report=html --cov-report=term-missing --cov-fail-under=85
 
     - name: Upload unit test coverage
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: unit-test-coverage
         path: |
@@ -134,7 +134,7 @@ jobs:
         pytest tests/integration/ -v --cov=. --cov-report=xml --cov-report=html --cov-report=term-missing --cov-fail-under=80
 
     - name: Upload integration test coverage
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: integration-test-coverage
         path: |
@@ -204,7 +204,7 @@ jobs:
         pytest tests/api/ -v --cov=. --cov-report=xml --cov-report=html --cov-report=term-missing --cov-fail-under=90
 
     - name: Upload API test coverage
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: api-test-coverage
         path: |
@@ -238,7 +238,7 @@ jobs:
         npm run test:coverage
 
     - name: Upload frontend test coverage
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: frontend-test-coverage
         path: frontend/coverage/
@@ -309,7 +309,7 @@ jobs:
         locust -f tests/performance/locustfile.py --headless -u 100 -r 10 -t 60s --html=load-test-report.html || true
 
     - name: Upload performance reports
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: performance-reports
         path: |
@@ -362,7 +362,7 @@ jobs:
         semgrep --config=auto . || true
 
     - name: Upload security reports
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: security-reports
         path: |
@@ -382,7 +382,7 @@ jobs:
       uses: actions/checkout@v4
 
     - name: Download all coverage artifacts
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         path: coverage-artifacts/
 
@@ -448,7 +448,7 @@ jobs:
         "
 
     - name: Upload aggregated coverage report
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: aggregated-coverage-report
         path: aggregated-coverage-report.json
@@ -465,7 +465,7 @@ jobs:
       uses: actions/checkout@v4
 
     - name: Download aggregated coverage report
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: aggregated-coverage-report
         path: ./
@@ -527,7 +527,7 @@ jobs:
         "
 
     - name: Upload test summary
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: test-summary
         path: test-summary.json
