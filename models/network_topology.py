@@ -13,7 +13,7 @@ from sqlalchemy.dialects.postgresql import UUID, INET, ARRAY as PG_ARRAY
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.ext.declarative import declarative_base
 
-from .base import Base
+from core.database import Base
 
 
 class TopologyType(str, enum.Enum):
@@ -90,7 +90,7 @@ class NetworkTopology(Base):
     discovery_status = Column(String(50), default="pending", nullable=False)
     
     # Relationships
-    devices = relationship("Device", back_populates="topologies")
+    # devices = relationship("Device", back_populates="topologies")  # Many-to-many, needs secondary table
     interfaces = relationship("NetworkInterface", back_populates="topology")
     paths = relationship("NetworkPath", back_populates="topology")
     
@@ -148,7 +148,7 @@ class NetworkInterface(Base):
     last_polled = Column(DateTime, nullable=True)
     
     # Relationships
-    device = relationship("Device", back_populates="interfaces")
+    device = relationship("Device", foreign_keys=[device_id], back_populates="interfaces")
     topology = relationship("NetworkTopology", back_populates="interfaces")
     neighbor_device = relationship("Device", foreign_keys=[neighbor_device_id])
     

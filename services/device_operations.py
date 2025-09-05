@@ -28,13 +28,13 @@ except ImportError:
     SSH_AVAILABLE = False
     logging.warning("AsyncSSH not available - SSH functionality disabled")
 
-from ..core.database import get_db
-from ..models.device import Device, DeviceStatus, DeviceProtocol
-from ..models.device_credentials import DeviceCredentials, CredentialType
-from ..models.result_objects import (
+from core.database import get_db
+from models.device import Device, DeviceStatus, DeviceProtocol
+from models.device_credentials import DeviceCredentials, CredentialType
+from models.result_objects import (
     DeviceStatusResult, OperationStatus, DeviceStatus as DeviceStatusEnum
 )
-from ..services.credential_manager import credential_manager
+from services.credential_manager import credential_manager
 
 logger = logging.getLogger(__name__)
 

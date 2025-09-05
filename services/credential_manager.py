@@ -16,8 +16,8 @@ from cryptography.hazmat.backends import default_backend
 import secrets
 from datetime import datetime
 
-from ..core.config import get_settings
-from ..models.device_credentials import DeviceCredentials, CredentialType
+from core.config import get_settings
+from models.device_credentials import DeviceCredentials, CredentialType
 
 logger = logging.getLogger(__name__)
 settings = get_settings()

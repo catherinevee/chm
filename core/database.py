@@ -45,7 +45,7 @@ class Base(DeclarativeBase):
 metadata = MetaData()
 
 # Import all models to register them with metadata
-from ..models import User, Device, Metric, Alert, DiscoveryJob, Notification
+from models import User, Device, Metric, Alert, DiscoveryJob, Notification
 
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
     """Dependency to get database session"""

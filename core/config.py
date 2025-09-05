@@ -5,7 +5,8 @@ Environment-based configuration management
 
 import os
 from typing import List, Optional
-from pydantic import BaseSettings, validator
+from pydantic_settings import BaseSettings
+from pydantic import field_validator
 
 class Settings(BaseSettings):
     """Application settings"""
@@ -59,13 +60,15 @@ class Settings(BaseSettings):
     ssh_timeout: int = 30
     http_timeout: int = 30
     
-    @validator("allowed_hosts", pre=True)
+    @field_validator("allowed_hosts", mode="before")
+    @classmethod
     def parse_allowed_hosts(cls, v):
         if isinstance(v, str):
             return [host.strip() for host in v.split(",")]
         return v
     
-    @validator("trusted_hosts", pre=True)
+    @field_validator("trusted_hosts", mode="before")
+    @classmethod
     def parse_trusted_hosts(cls, v):
         if isinstance(v, str):
             return [host.strip() for host in v.split(",")]
@@ -75,6 +78,7 @@ class Settings(BaseSettings):
         env_file = ".env"
         env_file_encoding = "utf-8"
         case_sensitive = False
+        extra = "allow"
 
 # Global settings instance
 _settings: Optional[Settings] = None

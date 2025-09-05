@@ -11,7 +11,7 @@ import uuid
 from datetime import datetime, timedelta
 from typing import Optional, List
 
-from ..core.database import Base
+from core.database import Base
 import enum
 
 class UserRole(str, enum.Enum):
@@ -78,9 +78,10 @@ class User(Base):
     deleted_by = Column(Integer, nullable=True)
     
     # Relationships
-    devices = relationship("Device", back_populates="owner")
-    alerts = relationship("Alert", back_populates="assigned_user")
-    notifications = relationship("Notification", back_populates="user")
+    devices = relationship("Device", foreign_keys="Device.created_by", back_populates="owner")
+    alerts = relationship("Alert", foreign_keys="Alert.assigned_to", back_populates="assigned_user")
+    notifications = relationship("Notification", foreign_keys="Notification.user_id", back_populates="user")
+    security_roles = relationship("SecurityRole", secondary="user_roles", foreign_keys="[UserRole.user_id, UserRole.role_id]", back_populates="users")
     
     def __repr__(self):
         return f"<User(id={self.id}, username='{self.username}', role='{self.role}')>"

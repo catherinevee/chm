@@ -1,17 +1,87 @@
-# Catalyst Health Monitor (CHM) - Enterprise Network Monitoring Platform
+# Catalyst Health Monitor (CHM)
 
-<!-- BADGES_START -->
-[![Build Status](https://github.com/cathe/chm2/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/cathe/chm2/actions/workflows/ci-cd.yml)
-[![Security Scan](https://img.shields.io/badge/Security-Trivy%20Scan-blue.svg)](https://github.com/cathe/chm2/actions/workflows/ci-cd.yml)
-[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fcatherinevee%2Fdriftmgr/refs/branch/main/10e21006f021fbd2bdfeb27e1bc06e5c25b68495.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fcatherinevee%2Fdriftmgr/refs/branch/main/10e21006f021fbd2bdfeb27e1bc06e5c25b68495)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Code Quality](https://img.shields.io/badge/Quality-Black%20%2B%20Flake8%20%2B%20MyPy-blue.svg)](#code-quality)
-<!-- BADGES_END -->
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fcatherinevee%2Fchm.svg?type=shield&issueType=security)](https://app.fossa.com/projects/git%2Bgithub.com%2Fcatherinevee%2Fchm?ref=badge_shield&issueType=security)
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fcatherinevee%2Fchm.svg?type=shield&issueType=license)](https://app.fossa.com/projects/git%2Bgithub.com%2Fcatherinevee%2Fchm?ref=badge_shield&issueType=license)
+[![Trivy Security Scan](https://img.shields.io/badge/Trivy-Security%20Scan-blue.svg)](https://github.com/aquasecurity/trivy)
+[![Code Quality](https://img.shields.io/badge/Code%20Style-Black-000000.svg)](https://github.com/psf/black)
+[![Docker](https://img.shields.io/badge/Docker-Ready-blue.svg)](https://hub.docker.com/r/catherinevee/chm)
+[![Python](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-green.svg)](https://fastapi.tiangolo.com/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-13+-blue.svg)](https://www.postgresql.org/)
 
-## Overview
-A comprehensive, production-ready network monitoring and management system built with modern technologies. Features real-time device monitoring, intelligent alerting, network topology visualization, and enterprise-grade security with JWT authentication and role-based access control.
+## What is CHM?
 
-## Key Features
+CHM (Catalyst Health Monitor) is an enterprise-grade network monitoring platform that provides real-time visibility into your network infrastructure. It automatically discovers devices, monitors performance metrics, and alerts you to issues before they impact your business.
+
+**Key Benefits:**
+- **Auto-Discovery**: Automatically find and catalog network devices
+- **Real-Time Monitoring**: Live performance metrics and health status  
+- **Smart Alerting**: Intelligent alerts with escalation and correlation
+- **Enterprise Security**: JWT authentication, RBAC, and encrypted credential storage
+
+## Quick Start
+
+### Prerequisites
+- Python 3.9 or higher
+- PostgreSQL 13+
+- Node.js 16+ (for frontend)
+- Redis (optional, for caching)
+
+### Option 1: Docker (Recommended)
+```bash
+git clone https://github.com/catherinevee/chm.git
+cd chm
+docker-compose up -d
+# Access: http://localhost:3000
+```
+
+### Option 2: Manual Installation
+1. **Clone the repository**
+```bash
+git clone https://github.com/catherinevee/chm.git
+cd chm
+```
+
+2. **Set up Python environment**
+```bash
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+pip install -r requirements.txt
+```
+
+3. **Configure environment**
+```bash
+cp .env.example .env
+# Edit .env with your configuration
+```
+
+4. **Set up the database**
+```bash
+# Create PostgreSQL database
+createdb chm_db
+
+# Run migrations
+alembic upgrade head
+```
+
+5. **Start the backend**
+```bash
+uvicorn backend.api.main:app --reload --host 0.0.0.0 --port 8000
+```
+
+6. **Set up the frontend** (in a new terminal)
+```bash
+cd frontend
+npm install
+npm start
+```
+
+### Verify Installation
+- Backend: http://localhost:8000/health
+- Frontend: http://localhost:3000
+- API Docs: http://localhost:8000/docs
+
+## Core Features
 
 ### Enterprise Security
 - **JWT Authentication** with access/refresh tokens
@@ -69,256 +139,37 @@ A comprehensive, production-ready network monitoring and management system built
 - **Monitoring**: Prometheus metrics endpoint
 - **Logging**: Structured logging with JSON
 
-## Data Flow Architecture
+## Installation & Configuration
 
-### System Overview
-CHM implements a comprehensive data flow architecture that transforms raw network device data into actionable insights through multiple processing layers.
+### Essential Environment Variables
+```env
+# Application
+APP_NAME=Catalyst Health Monitor
+ENVIRONMENT=production
+DEBUG=False
 
-```
-┌─────────────────────────────────────────────────────────────────────────────────┐
-│                              CHM Data Flow Architecture                        │
-└─────────────────────────────────────────────────────────────────────────────────┘
+# Database
+DATABASE_URL=postgresql+asyncpg://user:password@localhost:5432/chm_db
 
-┌─────────────┐    ┌─────────────┐    ┌─────────────┐    ┌─────────────┐
-│   Network   │    │   Data     │    │  Business  │    │   User      │
-│   Devices   │───▶│ Collection │───▶│   Logic    │───▶│  Interface  │
-│             │    │   Layer    │    │   Layer    │    │             │
-└─────────────┘    └─────────────┘    └─────────────┘    └─────────────┘
-       │                   │                   │                   │
-       ▼                   ▼                   ▼                   ▼
-┌─────────────┐    ┌─────────────┐    ┌─────────────┐    ┌─────────────┐
-│ SNMP/SSH/  │    │ Async      │    │ Alert      │    │ Real-time   │
-│ REST APIs  │    │ Polling    │    │ Engine     │    │ Dashboard   │
-└─────────────┘    └─────────────┘    └─────────────┘    └─────────────┘
-```
+# Security (MUST CHANGE IN PRODUCTION)
+JWT_SECRET_KEY=your-secret-key-here-minimum-32-characters
+ENCRYPTION_KEY=your-encryption-key-here
 
-### 1. Data Ingestion Flow
+# SNMP Defaults
+SNMP_DEFAULT_COMMUNITY=public
+SNMP_DEFAULT_VERSION=2c
 
-#### Network Device Polling
-```
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   Device       │    │   Connection    │    │   Protocol      │
-│   Inventory    │───▶│     Pool        │───▶│   Handlers      │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-         │                       │                       │
-         ▼                       ▼                       ▼
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   Background    │    │   SNMP/SSH/     │    │   Data          │
-│   Task         │    │   REST          │    │   Normalization │
-│   Scheduler    │    │   Collectors    │    │   & Validation  │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-         │                       │                       │
-         ▼                       ▼                       ▼
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   Circuit      │    │   Fallback      │    │   Metrics       │
-│   Breaker      │    │   Mechanisms    │    │   Storage       │
-│   Protection   │    │   (Caching)     │    │   (PostgreSQL)  │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
+# Redis (optional)
+REDIS_URL=redis://localhost:6379/0
+
+# Email Notifications (optional)
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USERNAME=notifications@example.com
+SMTP_PASSWORD=your-app-password
 ```
 
-#### Discovery & Topology Mapping
-```
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   Network       │    │   Discovery     │    │   Topology      │
-│   Scanning      │───▶│   Engine        │───▶│   Builder       │
-│   (Nmap/SNMP)   │    │   (Multi-       │    │   (Graph       │
-│                 │    │   Protocol)     │    │   Generation)   │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-         │                       │                       │
-         ▼                       ▼                       ▼
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   Device       │    │   Relationship  │    │   Real-time     │
-│   Identification│    │   Mapping       │    │   Updates       │
-│   & Categorization│  │   (CDP/LLDP)   │    │   (WebSocket)   │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-```
-
-### 2. Data Processing Pipeline
-
-#### Metrics Processing Flow
-```
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   Raw Device   │    │   Data          │    │   Processed     │
-│   Metrics      │───▶│   Normalization │───▶│   Metrics       │
-│   (SNMP/SSH)   │    │   & Validation  │    │   (Structured)  │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-         │                       │                       │
-         ▼                       ▼                       ▼
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   Threshold    │    │   Alert         │    │   Historical    │
-│   Evaluation   │    │   Generation    │    │   Data Storage  │
-│   (Rules)      │    │   (Correlation) │    │   (Time-series) │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-```
-
-#### Alert Processing Flow
-```
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   Threshold    │    │   Alert         │    │   Notification  │
-│   Violations   │───▶│   Correlation   │───▶│   Engine        │
-│   (Metrics)    │    │   Engine        │    │   (Multi-       │
-│                 │    │   (Rules)       │    │   Channel)      │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-         │                       │                       │
-         ▼                       ▼                       ▼
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   Alert        │    │   Escalation    │    │   User          │
-│   Suppression  │    │   Management    │    │   Interface     │
-│   (Storm       │    │   (Workflows)   │    │   (Dashboard)   │
-│    Prevention) │    │                 │    │                 │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-```
-
-### 3. Data Storage & Retrieval
-
-#### Storage Architecture
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                              Data Storage Layer                             │
-├─────────────────────────────────────────────────────────────────────────────┤
-│                                                                             │
-│  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐            │
-│  │   Device       │  │   Performance   │  │   Alert         │            │
-│  │   Inventory    │  │   Metrics       │  │   History       │            │
-│  │   (PostgreSQL) │  │   (Time-series) │  │   (PostgreSQL)  │            │
-│  └─────────────────┘  └─────────────────┘  └─────────────────┘            │
-│           │                     │                     │                    │
-│           ▼                     ▼                     ▼                    │
-│  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐            │
-│  │   Topology     │  │   SLA           │  │   Audit         │            │
-│  │   Data         │  │   Metrics       │  │   Logs          │            │
-│  │   (Graph DB)   │  │   (PostgreSQL)  │  │   (PostgreSQL)  │            │
-│  └─────────────────┘  └─────────────────┘  └─────────────────┘            │
-│                                                                             │
-│  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐            │
-│  │   Cache        │  │   Session       │  │   Temporary     │            │
-│  │   Layer        │  │   Storage       │  │   Data          │            │
-│  │   (Redis)      │  │   (JWT)         │  │   (Memory)      │            │
-│  └─────────────────┘  └─────────────────┘  └─────────────────┘            │
-└─────────────────────────────────────────────────────────────────────────────┘
-```
-
-### 4. Real-Time Data Flow
-
-#### WebSocket Communication Flow
-```
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   Device       │    │   WebSocket     │    ┌   Frontend      │
-│   State        │───▶│   Manager       │───▶│   Components    │
-│   Changes      │    │   (Broadcast)   │    │   (React)       │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-         │                       │                       │
-         ▼                       ▼                       ▼
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   Alert        │    │   Real-time     │    │   Dashboard     │
-│   Generation   │    │   Updates       │    │   Updates       │
-│   (Thresholds) │    │   (Push)        │    │   (Live)        │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-```
-
-#### SLA Monitoring Flow
-```
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   Performance  │    │   SLA           │    ┌   Compliance    │
-│   Metrics      │───▶│   Evaluator     │───▶│   Engine        │
-│   (Real-time)  │    │   (Thresholds)  │    │   (Reporting)   │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-         │                       │                       │
-         ▼                       ▼                       ▼
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   Baseline     │    │   Violation     │    │   Alert         │
-│   Calculation  │    │   Detection     │    │   Generation    │
-│   (Historical) │    │   (Rules)       │    │   (Notifications)│
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-```
-
-### 5. Data Transformation & Analytics
-
-#### Metrics Aggregation Flow
-```
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   Raw Metrics  │    │   Aggregation   │    │   Analytics     │
-│   (Device      │───▶│   Engine        │───▶│   Engine        │
-│    Level)      │    │   (Time-based)  │    │   (Trends)      │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-         │                       │                       │
-         ▼                       ▼                       ▼
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   Data         │    │   Statistical   │    │   Business      │
-│   Validation   │    │   Processing    │    │   Intelligence  │
-│   (Quality)    │    │   (Functions)   │    │   (Insights)    │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-```
-
-#### Asset Health Assessment Flow
-```
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   Monitoring   │    │   Health        │    │   Maintenance   │
-│   Data         │───▶│   Scoring       │───▶│   Recommendations│
-│   (Multi-source)│   │   Engine        │    │   (AI/ML)       │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-         │                       │                       │
-         ▼                       ▼                       ▼
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   Performance  │    │   Trend         │    │   Cost          │
-│   Analysis     │    │   Analysis      │    │   Optimization  │
-│   (Metrics)    │    │   (Historical)  │    │   (ROI)         │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-```
-
-### 6. Data Security & Compliance Flow
-
-#### Security Data Flow
-```
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   User         │    │   Authentication│    │   Authorization │
-│   Credentials  │───▶│   Service       │───▶│   Engine        │
-│   (Login)      │    │   (JWT)         │    │   (RBAC)        │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-         │                       │                       │
-         ▼                       ▼                       ▼
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   Credential   │    │   Session       │    │   Audit         │
-│   Encryption   │    │   Management    │    │   Logging       │
-│   (AES-256)    │    │   (Tokens)      │    │   (Compliance)  │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-```
-
-### 7. Data Flow Performance Characteristics
-
-#### Throughput & Latency
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                              Performance Metrics                            │
-├─────────────────────────────────────────────────────────────────────────────┤
-│                                                                             │
-│  Data Ingestion:    10,000+ devices × 30-60s intervals                     │
-│  Metrics Processing: 1M+ metrics/minute with <100ms latency                │
-│  Alert Generation:   <5s from threshold violation to notification          │
-│  Dashboard Updates:  Real-time with <1s refresh intervals                  │
-│  Data Retention:    1 year hot data, 7 years cold data                     │
-│  Scalability:       Horizontal scaling with load balancing                 │
-│                                                                             │
-└─────────────────────────────────────────────────────────────────────────────┘
-```
-
-### 8. Data Flow Monitoring & Observability
-
-#### System Health Monitoring
-```
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   Application  │    │   Infrastructure│    │   Business      │
-│   Metrics      │───▶│   Monitoring    │───▶│   Metrics       │
-│   (FastAPI)    │    │   (Prometheus)  │    │   (KPI)         │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-         │                       │                       │
-         ▼                       ▼                       ▼
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   Log          │    │   Tracing       │    │   Alerting      │
-│   Aggregation  │    │   (Distributed) │    │   (SLA)         │
-│   (Structured) │    │                 │    │                 │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-```
+See `.env.example` for complete configuration options.
 
 ## API Documentation
 
@@ -381,60 +232,124 @@ GET    /api/v1/discovery/{id}/results    # Get results
 - **ReDoc**: http://localhost:8000/api/redoc
 - **OpenAPI Schema**: http://localhost:8000/api/openapi.json
 
-## Quick Start
+## Advanced Configuration
 
-### Prerequisites
-- Python 3.9 or higher
-- PostgreSQL 13+
-- Node.js 16+ (for frontend)
-- Redis (optional, for caching)
+### Database Schema
 
-### Installation
+#### Core Tables
+- **users** - User accounts with encrypted passwords
+- **roles** - RBAC roles
+- **permissions** - Granular permissions
+- **user_sessions** - JWT session management
+- **audit_logs** - Compliance audit trail
 
-1. **Clone the repository**
+#### Monitoring Tables
+- **devices** - Device inventory with encrypted credentials
+- **device_metrics** - Time-series performance data
+- **alerts** - Alert management
+- **network_interfaces** - Interface details
+
+#### Discovery & Topology
+- **discovery_jobs** - Network discovery tasks
+- **topology_nodes** - Network nodes
+- **topology_edges** - Network connections
+
+### Security Features
+
+#### Authentication & Authorization
+- JWT tokens with refresh mechanism
+- Role-based access control (RBAC)
+- Multi-factor authentication (MFA)
+- Password policies and complexity requirements
+- Account lockout after failed attempts
+- Session management and token invalidation
+
+#### Data Protection
+- AES-256 encryption for credentials
+- Encrypted storage for SNMP communities
+- SSH key encryption
+- API key management
+- SQL injection prevention
+- XSS protection
+- CORS configuration
+
+#### Network Security
+- Rate limiting per endpoint
+- IP-based access control
+- Audit logging for compliance
+- Secure WebSocket connections
+- HTTPS enforcement in production
+
+### Monitoring Capabilities
+
+#### Device Metrics
+- **Performance**: CPU, memory, disk usage
+- **Network**: Interface statistics, bandwidth, errors
+- **Availability**: Uptime, response time
+- **Environmental**: Temperature, power, fans
+
+#### Supported Protocols
+- **SNMP**: v1, v2c, v3 with encryption
+- **SSH**: Key-based and password auth
+- **REST APIs**: HTTP/HTTPS endpoints
+- **ICMP**: Ping monitoring
+
+#### Vendor Support
+- **Cisco**: Catalyst, Nexus, ISR, ASR
+- **Juniper**: EX, MX, SRX series
+- **Arista**: 7000 series
+- **HP/Aruba**: ProCurve, Aruba
+- **Others**: Brocade, Extreme, Dell
+
+## Basic Usage
+
+### First Steps
+1. **Access the application** at http://localhost:3000
+2. **Create an admin account** through the registration page
+3. **Add your first device** using the device management interface
+4. **Configure monitoring** by setting up SNMP credentials
+
+### Adding Devices
+- Use the device discovery feature to automatically find network devices
+- Manually add devices with IP addresses and credentials
+- Configure monitoring intervals and alert thresholds
+
+### Viewing Metrics
+- Access real-time performance metrics in the dashboard
+- View historical data and trends
+- Export reports for analysis
+
+### Setting Up Alerts
+- Configure alert rules based on performance thresholds
+- Set up notification channels (email, webhook, etc.)
+- Manage alert escalation policies
+
+## Testing
+
+### Running Tests
 ```bash
-git clone https://github.com/yourusername/chm.git
-cd chm
+# Unit tests
+pytest tests/unit/
+
+# Integration tests
+pytest tests/integration/
+
+# Coverage report
+pytest --cov=backend --cov-report=html
+
+# Linting
+flake8 backend/
+black backend/ --check
+mypy backend/
 ```
 
-2. **Set up Python environment**
-```bash
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-pip install -r requirements.txt
-```
-
-3. **Configure environment**
-```bash
-cp .env.example .env
-# Edit .env with your configuration
-```
-
-4. **Set up the database**
-```bash
-# Create PostgreSQL database
-createdb chm_db
-
-# Run migrations
-alembic upgrade head
-```
-
-5. **Start the backend**
-```bash
-uvicorn backend.api.main:app --reload --host 0.0.0.0 --port 8000
-```
-
-6. **Set up the frontend** (in a new terminal)
-```bash
-cd frontend
-npm install
-npm start
-```
-
-7. **Access the application**
-- Frontend: http://localhost:3000
-- API: http://localhost:8000
-- API Docs: http://localhost:8000/api/docs
+### Test Coverage Areas
+- API endpoints
+- Authentication flows
+- Database operations
+- SNMP operations
+- WebSocket connections
+- Service layer logic
 
 ## Docker Deployment
 
@@ -488,99 +403,6 @@ SMTP_PASSWORD=your-app-password
 
 See `.env.example` for complete configuration options.
 
-## Database Schema
-
-### Core Tables
-- **users** - User accounts with encrypted passwords
-- **roles** - RBAC roles
-- **permissions** - Granular permissions
-- **user_sessions** - JWT session management
-- **audit_logs** - Compliance audit trail
-
-### Monitoring Tables
-- **devices** - Device inventory with encrypted credentials
-- **device_metrics** - Time-series performance data
-- **alerts** - Alert management
-- **network_interfaces** - Interface details
-
-### Discovery & Topology
-- **discovery_jobs** - Network discovery tasks
-- **topology_nodes** - Network nodes
-- **topology_edges** - Network connections
-
-## Security Features
-
-### Authentication & Authorization
-- JWT tokens with refresh mechanism
-- Role-based access control (RBAC)
-- Multi-factor authentication (MFA)
-- Password policies and complexity requirements
-- Account lockout after failed attempts
-- Session management and token invalidation
-
-### Data Protection
-- AES-256 encryption for credentials
-- Encrypted storage for SNMP communities
-- SSH key encryption
-- API key management
-- SQL injection prevention
-- XSS protection
-- CORS configuration
-
-### Network Security
-- Rate limiting per endpoint
-- IP-based access control
-- Audit logging for compliance
-- Secure WebSocket connections
-- HTTPS enforcement in production
-
-## Monitoring Capabilities
-
-### Device Metrics
-- **Performance**: CPU, memory, disk usage
-- **Network**: Interface statistics, bandwidth, errors
-- **Availability**: Uptime, response time
-- **Environmental**: Temperature, power, fans
-
-### Supported Protocols
-- **SNMP**: v1, v2c, v3 with encryption
-- **SSH**: Key-based and password auth
-- **REST APIs**: HTTP/HTTPS endpoints
-- **ICMP**: Ping monitoring
-
-### Vendor Support
-- **Cisco**: Catalyst, Nexus, ISR, ASR
-- **Juniper**: EX, MX, SRX series
-- **Arista**: 7000 series
-- **HP/Aruba**: ProCurve, Aruba
-- **Others**: Brocade, Extreme, Dell
-
-## Testing
-
-### Running Tests
-```bash
-# Unit tests
-pytest tests/unit/
-
-# Integration tests
-pytest tests/integration/
-
-# Coverage report
-pytest --cov=backend --cov-report=html
-
-# Linting
-flake8 backend/
-black backend/ --check
-mypy backend/
-```
-
-### Test Coverage Areas
-- API endpoints
-- Authentication flows
-- Database operations
-- SNMP operations
-- WebSocket connections
-- Service layer logic
 
 ## Performance
 
@@ -648,8 +470,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [Troubleshooting](docs/troubleshooting.md)
 
 ### Community
-- [GitHub Issues](https://github.com/yourusername/chm/issues)
-- [Discussions](https://github.com/yourusername/chm/discussions)
+- [GitHub Issues](https://github.com/catherinevee/chm/issues)
+- [Discussions](https://github.com/catherinevee/chm/discussions)
 - [Discord Server](https://discord.gg/chm)
 
 ### Commercial Support
@@ -657,7 +479,7 @@ For enterprise support, please contact: enterprise@chm-monitor.com
 
 ## Team
 
-- **Lead Developer**: [Your Name]
+- **Lead Developer**: Catherine Vee
 - **Contributors**: See [CONTRIBUTORS.md](CONTRIBUTORS.md)
 
 ## 🙏 Acknowledgments

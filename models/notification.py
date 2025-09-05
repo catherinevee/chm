@@ -12,7 +12,7 @@ from datetime import datetime, timedelta
 from typing import Optional, Dict, Any, List
 import enum
 
-from ..core.database import Base
+from core.database import Base
 
 class NotificationChannel(str, enum.Enum):
     """Notification delivery channels"""
@@ -31,6 +31,7 @@ class NotificationStatus(str, enum.Enum):
     """Notification status enumeration"""
     PENDING = "pending"          # Notification is queued for delivery
     SENDING = "sending"          # Notification is being sent
+    SENT = "sent"                # Notification was sent but not yet delivered
     DELIVERED = "delivered"      # Notification was successfully delivered
     FAILED = "failed"            # Notification delivery failed
     RETRYING = "retrying"        # Notification is being retried
@@ -86,6 +87,7 @@ class Notification(Base):
     
     # User associations
     user_id = Column(Integer, ForeignKey("users.id"), nullable=True, index=True)  # Target user
+    user = relationship("User", foreign_keys=[user_id], back_populates="notifications")
     created_by = Column(Integer, ForeignKey("users.id"), nullable=True)  # User who created notification
     
     # Delivery configuration
@@ -114,7 +116,7 @@ class Notification(Base):
     # Metadata and context
     context = Column(JSON, nullable=True)  # Additional context data
     tags = Column(ARRAY(String), nullable=True, index=True)
-    metadata = Column(JSON, nullable=True)  # Channel-specific metadata
+    notification_metadata = Column(JSON, nullable=True)  # Channel-specific metadata
     
     # Audit fields
     created_at = Column(DateTime, default=func.now(), nullable=False)
@@ -326,7 +328,7 @@ class Notification(Base):
             "external_id": self.external_id,
             "context": self.context,
             "tags": self.tags,
-            "metadata": self.metadata,
+            "metadata": self.notification_metadata,
             "age_seconds": self.age_seconds,
             "age_minutes": self.age_minutes,
             "age_hours": self.age_hours,

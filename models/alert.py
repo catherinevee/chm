@@ -12,7 +12,7 @@ from datetime import datetime, timedelta
 from typing import Optional, Dict, Any, List
 import enum
 
-from ..core.database import Base
+from core.database import Base
 
 class AlertSeverity(str, enum.Enum):
     """Alert severity levels"""
@@ -76,16 +76,22 @@ class Alert(Base):
     metric_id = Column(Integer, ForeignKey("metrics.id"), nullable=True, index=True)
     metric = relationship("Metric", back_populates="alerts")
     
+    # Notifications relationship
+    notifications = relationship("Notification", back_populates="alert")
+    
     # Alert correlation and grouping
     correlation_id = Column(String(100), nullable=True, index=True)
     parent_alert_id = Column(Integer, ForeignKey("alerts.id"), nullable=True)
-    child_alerts = relationship("Alert", backref=relationship("parent_alert", remote_side=[id]))
+    child_alerts = relationship("Alert", backref="parent_alert", remote_side=[id])
     
     # Escalation and assignment
     escalation_level = Column(Integer, default=0, nullable=False)
     assigned_to = Column(Integer, ForeignKey("users.id"), nullable=True)
     assigned_by = Column(Integer, ForeignKey("users.id"), nullable=True)
     escalation_policy_id = Column(String(100), nullable=True)
+    
+    # User assignment
+    assigned_user = relationship("User", foreign_keys=[assigned_to], back_populates="alerts")
     
     # Timing and lifecycle
     first_occurrence = Column(DateTime, nullable=False, index=True)

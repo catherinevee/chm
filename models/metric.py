@@ -3,7 +3,7 @@ CHM Metric Model
 Time-series performance metrics storage model
 """
 
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, Float, JSON, Text, Enum, Index, BigInteger
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, Float, JSON, Text, Enum, Index, BigInteger, ForeignKey
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import UUID, ARRAY
@@ -12,7 +12,7 @@ from datetime import datetime
 from typing import Optional, Dict, Any, List
 import enum
 
-from ..core.database import Base
+from core.database import Base
 
 class MetricType(str, enum.Enum):
     """Metric type enumeration"""
@@ -67,8 +67,11 @@ class Metric(Base):
     category = Column(Enum(MetricCategory), nullable=False, default=MetricCategory.SYSTEM)
     
     # Device relationship
-    device_id = Column(Integer, nullable=False, index=True)
+    device_id = Column(Integer, ForeignKey("devices.id"), nullable=False, index=True)
     device = relationship("Device", back_populates="metrics")
+    
+    # Alert relationship
+    alerts = relationship("Alert", back_populates="metric")
     
     # Metric value and metadata
     value = Column(Float, nullable=False)
@@ -108,7 +111,7 @@ class Metric(Base):
     
     # Raw data and metadata
     raw_value = Column(Text, nullable=True)  # Original value before conversion
-    metadata = Column(JSON, nullable=True)  # Additional collection metadata
+    metric_metadata = Column(JSON, nullable=True)  # Additional collection metadata
     tags = Column(ARRAY(String), nullable=True, index=True)  # Searchable tags
     
     # Audit fields
@@ -266,7 +269,7 @@ class Metric(Base):
             "processed_at": self.processed_at.isoformat() if self.processed_at else None,
             "expires_at": self.expires_at.isoformat() if self.expires_at else None,
             "raw_value": self.raw_value,
-            "metadata": self.metadata,
+            "metadata": self.metric_metadata,
             "tags": self.tags,
             "created_at": self.created_at.isoformat(),
             "age_seconds": self.age_seconds,

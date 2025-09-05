@@ -17,7 +17,7 @@ from sqlalchemy.dialects.postgresql import UUID, ARRAY as PG_ARRAY, INET
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
-from ..core.database import Base
+from core.database import Base
 
 
 class SecurityLevel(str, Enum):
@@ -91,7 +91,7 @@ class SecurityRole(Base):
     
     # Relationships
     permissions = relationship("SecurityPermission", secondary="role_permissions", back_populates="roles")
-    users = relationship("User", secondary="user_roles", back_populates="security_roles")
+    users = relationship("User", secondary="user_roles", foreign_keys="[UserRole.user_id, UserRole.role_id]", back_populates="security_roles")
     
     def __repr__(self):
         return f"<SecurityRole(id={self.id}, name='{self.name}', level='{self.security_level}')>"

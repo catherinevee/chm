@@ -12,7 +12,7 @@ from datetime import datetime, timedelta
 from typing import Optional, Dict, Any, List
 import enum
 
-from ..core.database import Base
+from core.database import Base
 
 class RuleStatus(str, enum.Enum):
     """Rule status enumeration"""

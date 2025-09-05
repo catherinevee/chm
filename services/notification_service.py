@@ -20,10 +20,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_, update
 from sqlalchemy.orm import selectinload
 
-from ..models import Notification, Alert, User, Device
-from ..models.notification import NotificationChannel, NotificationStatus, NotificationPriority
-from ..models.result_objects import OperationStatus
-from ..core.database import Base
+from models import Notification, Alert, User, Device
+from models.notification import NotificationChannel, NotificationStatus, NotificationPriority
+from models.result_objects import OperationStatus
+from core.database import Base
 
 logger = logging.getLogger(__name__)
 
@@ -70,7 +70,7 @@ class DeliveryResult:
 class NotificationService:
     """Service for delivering notifications through multiple channels"""
     
-    def __init__(self, db_session: AsyncSession):
+    def __init__(self, db_session: AsyncSession = None):
         self.db_session = db_session
         self.config = NotificationConfig()
         self._delivery_semaphore = asyncio.Semaphore(self.config.max_concurrent_deliveries)
@@ -613,3 +613,6 @@ class NotificationService:
                 "error": str(e),
                 "test_url": "https://httpbin.org/get"
             }
+
+# Global notification service instance
+notification_service = NotificationService()

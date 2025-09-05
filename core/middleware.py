@@ -76,7 +76,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         
         # Clean old entries
         self.request_counts = {
-            ip: count for ip, (count, timestamp) in self.request_counts.items()
+            ip: (count, timestamp) for ip, (count, timestamp) in self.request_counts.items()
             if current_time - timestamp < 60
         }
         

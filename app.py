@@ -11,9 +11,9 @@ from fastapi.openapi.utils import get_openapi
 import os
 from typing import Dict, Any
 
-from .core.config import get_settings
-from .api.v1.router import api_router
-from .core.middleware import RequestLoggingMiddleware
+from core.config import get_settings
+from api.v1.router import api_router
+from core.middleware import RequestLoggingMiddleware
 
 # Get application settings
 settings = get_settings()

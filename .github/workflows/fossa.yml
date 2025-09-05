@@ -1,4 +1,4 @@
-name: FOSSA License Compliance
+name: FOSSA License & Security Analysis
 
 on:
   push:
@@ -6,19 +6,396 @@ on:
   pull_request:
     branches: [ main, develop ]
   schedule:
-    - cron: '0 2 * * 1'  # Run weekly on Mondays at 2 AM
+    - cron: '0 6 * * 1'  # Weekly on Monday at 6 AM UTC
+  workflow_dispatch:
+
+env:
+  FOSSA_API_KEY: ${{ secrets.FOSSA_API_KEY }}
 
 jobs:
-  fossa-scan:
-    name: FOSSA License Scan
+  # License Compliance Analysis
+  license-analysis:
+    name: License Compliance Analysis
     runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Full history for better analysis
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+
+    - name: Install Python dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install -r requirements-dev.txt
+
+    - name: Install Node.js dependencies
+      run: |
+        cd frontend
+        npm ci
+
+    - name: Run FOSSA analysis
+      uses: fossa-contrib/fossa-action@v2
+      with:
+        api-key: ${{ env.FOSSA_API_KEY }}
+        options: |
+          --branch ${{ github.ref_name }}
+          --commit ${{ github.sha }}
+          --project ${{ github.repository }}
+          --title "CHM License Analysis - ${{ github.ref_name }}"
+          --upload-builds
+          --test
+
+    - name: Generate license report
+      run: |
+        echo "Generating comprehensive license report..."
+        pip install pip-licenses
+        pip-licenses --format=json --output-file=python-licenses.json
+        pip-licenses --format=csv --output-file=python-licenses.csv
+        pip-licenses --format=html --output-file=python-licenses.html
+        
+        cd frontend
+        npm install -g license-checker
+        license-checker --json --out ../node-licenses.json
+        license-checker --csv --out ../node-licenses.csv
+
+    - name: Check for problematic licenses
+      run: |
+        echo "Checking for problematic licenses..."
+        python -c "
+        import json
+        import sys
+        
+        # Load Python licenses
+        with open('python-licenses.json', 'r') as f:
+            python_licenses = json.load(f)
+        
+        # Load Node.js licenses
+        with open('node-licenses.json', 'r') as f:
+            node_licenses = json.load(f)
+        
+        # Define problematic licenses
+        problematic_licenses = [
+            'GPL-2.0', 'GPL-3.0', 'AGPL-3.0', 'LGPL-2.1', 'LGPL-3.0',
+            'Copyleft', 'CC-BY-NC', 'CC-BY-NC-SA', 'CC-BY-NC-ND'
+        ]
+        
+        issues = []
+        
+        # Check Python licenses
+        for pkg in python_licenses:
+            license_name = pkg.get('License', '').upper()
+            for problematic in problematic_licenses:
+                if problematic.upper() in license_name:
+                    issues.append(f'Python: {pkg[\"Name\"]} uses {pkg[\"License\"]}')
+        
+        # Check Node.js licenses
+        for pkg, info in node_licenses.items():
+            license_name = info.get('licenses', '').upper()
+            for problematic in problematic_licenses:
+                if problematic.upper() in license_name:
+                    issues.append(f'Node.js: {pkg} uses {info.get(\"licenses\", \"Unknown\")}')
+        
+        if issues:
+            print('⚠️  Found potentially problematic licenses:')
+            for issue in issues:
+                print(f'  - {issue}')
+            sys.exit(1)
+        else:
+            print('✅ No problematic licenses found')
+        "
+
+    - name: Upload license reports
+      uses: actions/upload-artifact@v3
+      with:
+        name: license-reports
+        path: |
+          python-licenses.json
+          python-licenses.csv
+          python-licenses.html
+          node-licenses.json
+          node-licenses.csv
+
+  # Security Vulnerability Analysis
+  security-analysis:
+    name: Security Vulnerability Analysis
+    runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+
+    - name: Install Python dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install -r requirements-dev.txt
+
+    - name: Install Node.js dependencies
+      run: |
+        cd frontend
+        npm ci
+
+    - name: Run Python security scan
+      run: |
+        echo "Running Python security vulnerability scan..."
+        pip install safety bandit
+        safety check --json --output safety-report.json || true
+        bandit -r . -f json -o bandit-report.json || true
+
+    - name: Run Node.js security scan
+      run: |
+        echo "Running Node.js security vulnerability scan..."
+        cd frontend
+        npm audit --json > ../npm-audit-report.json || true
+        npm audit --audit-level=high || true
+
+    - name: Run FOSSA security analysis
+      uses: fossa-contrib/fossa-action@v2
+      with:
+        api-key: ${{ env.FOSSA_API_KEY }}
+        options: |
+          --branch ${{ github.ref_name }}
+          --commit ${{ github.sha }}
+          --project ${{ github.repository }}
+          --title "CHM Security Analysis - ${{ github.ref_name }}"
+          --upload-builds
+          --test
+          --fail-on-issues
+
+    - name: Generate security summary
+      run: |
+        echo "Generating security analysis summary..."
+        python -c "
+        import json
+        import os
+        
+        summary = {
+            'timestamp': '${{ github.run_number }}',
+            'branch': '${{ github.ref_name }}',
+            'commit': '${{ github.sha }}',
+            'python_security': {},
+            'nodejs_security': {},
+            'fossa_analysis': 'Completed'
+        }
+        
+        # Process Python security reports
+        if os.path.exists('safety-report.json'):
+            with open('safety-report.json', 'r') as f:
+                safety_data = json.load(f)
+                summary['python_security']['safety'] = {
+                    'vulnerabilities_found': len(safety_data.get('vulnerabilities', [])),
+                    'status': 'PASS' if not safety_data.get('vulnerabilities') else 'FAIL'
+                }
+        
+        if os.path.exists('bandit-report.json'):
+            with open('bandit-report.json', 'r') as f:
+                bandit_data = json.load(f)
+                summary['python_security']['bandit'] = {
+                    'issues_found': len(bandit_data.get('results', [])),
+                    'high_severity': len([r for r in bandit_data.get('results', []) if r.get('issue_severity') == 'HIGH']),
+                    'status': 'PASS' if not bandit_data.get('results') else 'REVIEW'
+                }
+        
+        # Process Node.js security reports
+        if os.path.exists('npm-audit-report.json'):
+            with open('npm-audit-report.json', 'r') as f:
+                npm_data = json.load(f)
+                summary['nodejs_security'] = {
+                    'vulnerabilities_found': npm_data.get('metadata', {}).get('vulnerabilities', {}).get('total', 0),
+                    'high_severity': npm_data.get('metadata', {}).get('vulnerabilities', {}).get('high', 0),
+                    'status': 'PASS' if npm_data.get('metadata', {}).get('vulnerabilities', {}).get('total', 0) == 0 else 'REVIEW'
+                }
+        
+        with open('security-summary.json', 'w') as f:
+            json.dump(summary, f, indent=2)
+        
+        print('Security Analysis Summary:')
+        print(json.dumps(summary, indent=2))
+        "
+
+    - name: Upload security reports
+      uses: actions/upload-artifact@v3
+      with:
+        name: security-reports
+        path: |
+          safety-report.json
+          bandit-report.json
+          npm-audit-report.json
+          security-summary.json
+
+  # Compliance Check
+  compliance-check:
+    name: Compliance Check
+    runs-on: ubuntu-latest
+    needs: [license-analysis, security-analysis]
+    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
 
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Run FOSSA scan
-      uses: fossas/fossa-action@v1
+    - name: Download artifacts
+      uses: actions/download-artifact@v3
       with:
-        api-key: ${{ secrets.FOSSA_API_KEY }}
-        options: '--test'
+        path: artifacts/
+
+    - name: Run compliance validation
+      run: |
+        echo "Running compliance validation..."
+        python -c "
+        import json
+        import os
+        import sys
+        
+        compliance_status = {
+            'license_compliance': 'PASS',
+            'security_compliance': 'PASS',
+            'overall_status': 'PASS'
+        }
+        
+        # Check license compliance
+        if os.path.exists('artifacts/license-reports/python-licenses.json'):
+            with open('artifacts/license-reports/python-licenses.json', 'r') as f:
+                python_licenses = json.load(f)
+            
+            problematic_licenses = ['GPL-2.0', 'GPL-3.0', 'AGPL-3.0']
+            for pkg in python_licenses:
+                license_name = pkg.get('License', '').upper()
+                for problematic in problematic_licenses:
+                    if problematic.upper() in license_name:
+                        compliance_status['license_compliance'] = 'FAIL'
+                        break
+        
+        # Check security compliance
+        if os.path.exists('artifacts/security-reports/security-summary.json'):
+            with open('artifacts/security-reports/security-summary.json', 'r') as f:
+                security_summary = json.load(f)
+            
+            if security_summary.get('python_security', {}).get('safety', {}).get('status') == 'FAIL':
+                compliance_status['security_compliance'] = 'FAIL'
+            
+            if security_summary.get('nodejs_security', {}).get('status') == 'FAIL':
+                compliance_status['security_compliance'] = 'FAIL'
+        
+        # Determine overall status
+        if compliance_status['license_compliance'] == 'FAIL' or compliance_status['security_compliance'] == 'FAIL':
+            compliance_status['overall_status'] = 'FAIL'
+        
+        with open('compliance-report.json', 'w') as f:
+            json.dump(compliance_status, f, indent=2)
+        
+        print('Compliance Status:')
+        print(json.dumps(compliance_status, indent=2))
+        
+        if compliance_status['overall_status'] == 'FAIL':
+            print('❌ Compliance check failed!')
+            sys.exit(1)
+        else:
+            print('✅ Compliance check passed!')
+        "
+
+    - name: Upload compliance report
+      uses: actions/upload-artifact@v3
+      with:
+        name: compliance-report
+        path: compliance-report.json
+
+    - name: Comment on PR (if applicable)
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const fs = require('fs');
+          const compliance = JSON.parse(fs.readFileSync('compliance-report.json', 'utf8'));
+          
+          const comment = `## 🔍 FOSSA Compliance Report
+          
+          ### License Compliance: ${compliance.license_compliance === 'PASS' ? '✅ PASS' : '❌ FAIL'}
+          ### Security Compliance: ${compliance.security_compliance === 'PASS' ? '✅ PASS' : '❌ FAIL'}
+          ### Overall Status: ${compliance.overall_status === 'PASS' ? '✅ PASS' : '❌ FAIL'}
+          
+          ${compliance.overall_status === 'PASS' ? 
+            '🎉 All compliance checks passed! This PR is ready for review.' : 
+            '⚠️ Compliance issues detected. Please review the security and license reports.'}
+          
+          ---
+          *Generated by FOSSA workflow*`;
+          
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: comment
+          });
+
+  # Badge Update
+  update-badges:
+    name: Update FOSSA Badges
+    runs-on: ubuntu-latest
+    needs: [compliance-check]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Update FOSSA badges in README
+      run: |
+        echo "Updating FOSSA badges in README..."
+        python -c "
+        import re
+        
+        # Read current README
+        with open('README.md', 'r') as f:
+            content = f.read()
+        
+        # Update FOSSA badges with current status
+        fossa_license_badge = '[![FOSSA License](https://app.fossa.com/api/projects/git%2Bgithub.com%2F${{ github.repository_owner }}%2F${{ github.event.repository.name }}.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2F${{ github.repository_owner }}%2F${{ github.event.repository.name }})'
+        fossa_security_badge = '[![FOSSA Security](https://app.fossa.com/api/projects/git%2Bgithub.com%2F${{ github.repository_owner }}%2F${{ github.event.repository.name }}.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2F${{ github.repository_owner }}%2F${{ github.event.repository.name }})'
+        
+        # Replace existing FOSSA badges
+        content = re.sub(r'\[!\[FOSSA License\].*?\]\(.*?\)', fossa_license_badge, content)
+        content = re.sub(r'\[!\[FOSSA Security\].*?\]\(.*?\)', fossa_security_badge, content)
+        
+        # Write updated README
+        with open('README.md', 'w') as f:
+            f.write(content)
+        
+        print('✅ FOSSA badges updated in README')
+        "
+
+    - name: Commit and push changes
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add README.md
+        git diff --staged --quiet || git commit -m "Update FOSSA badges [skip ci]"
+        git push

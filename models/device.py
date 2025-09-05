@@ -11,7 +11,7 @@ import uuid
 import enum
 from typing import Any
 
-from ..core.database import Base
+from core.database import Base
 
 class DeviceStatus(str, enum.Enum):
     """Device operational status"""
@@ -115,9 +115,16 @@ class Device(Base):
     deleted_by = Column(Integer, ForeignKey("users.id"), nullable=True)
     
     # Relationships
+    owner = relationship("User", foreign_keys=[created_by], back_populates="devices")
     credentials = relationship("DeviceCredentials", back_populates="device", cascade="all, delete-orphan")
     metrics = relationship("Metric", back_populates="device", cascade="all, delete-orphan")
     alerts = relationship("Alert", back_populates="device", cascade="all, delete-orphan")
+    notifications = relationship("Notification", back_populates="device")
+    interfaces = relationship("NetworkInterface", foreign_keys="NetworkInterface.device_id", back_populates="device")
+    performance_analyses = relationship("PerformanceAnalysis", back_populates="device")
+    anomaly_detections = relationship("AnomalyDetection", back_populates="device")
+    capacity_planning = relationship("CapacityPlanning", back_populates="device")
+    trend_forecasts = relationship("TrendForecast", back_populates="device")
     
     def __repr__(self):
         return f"<Device(id={self.id}, name='{self.name}', ip='{self.ip_address}', status='{self.status}')>"

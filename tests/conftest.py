@@ -14,12 +14,12 @@ import tempfile
 import shutil
 from datetime import datetime
 
-from ..core.database import get_db, Base, metadata
-from ..core.config import get_settings
-from ..app import create_app
-from ..models import User, Device, Metric, Alert, DiscoveryJob, Notification
-from ..models.user import UserRole, UserStatus
-from ..services.auth_service import auth_service
+from core.database import get_db, Base, metadata
+from core.config import get_settings
+from app import create_app
+from models import User, Device, Metric, Alert, DiscoveryJob, Notification
+from models.user import UserRole, UserStatus
+from services.auth_service import auth_service
 
 # Test database URL
 TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"

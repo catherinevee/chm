@@ -10,7 +10,7 @@ from sqlalchemy.dialects.postgresql import UUID
 import uuid
 import enum
 
-from ..core.database import Base
+from core.database import Base
 
 class CredentialType(str, enum.Enum):
     """Types of device credentials"""
@@ -93,11 +93,21 @@ class DeviceCredentials(Base):
     @property
     def is_usable(self) -> bool:
         """Check if credential can be used"""
-        return (
-            self.status == CredentialStatus.ACTIVE and
-            not self.is_expired and
-            not self.is_deleted
-        )
+        if self.expires_at is None:
+            # No expiration date, so not expired
+            return (
+                self.status == CredentialStatus.ACTIVE and
+                not self.is_deleted
+            )
+        else:
+            # Has expiration date, so is_expired returns a SQLAlchemy expression
+            # We can't evaluate this in Python, so we return the expression
+            # This will be evaluated by the database
+            return (
+                self.status == CredentialStatus.ACTIVE and
+                not self.is_expired and
+                not self.is_deleted
+            )
     
     def mark_used(self):
         """Mark credential as used"""

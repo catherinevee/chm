@@ -1,48 +1,576 @@
-name: Test Workflow
+name: Comprehensive Test Suite
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, develop ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, develop ]
+  schedule:
+    - cron: '0 4 * * *'  # Daily at 4 AM UTC
+  workflow_dispatch:
+    inputs:
+      test_type:
+        description: 'Type of tests to run'
+        required: false
+        default: 'all'
+        type: choice
+        options:
+        - all
+        - unit
+        - integration
+        - api
+        - performance
+        - security
+
+env:
+  PYTHON_VERSION: '3.9'
+  NODE_VERSION: '18'
+  POSTGRES_VERSION: '13'
+  REDIS_VERSION: '6'
 
 jobs:
-  test:
-    name: Test
+  # Unit Tests
+  unit-tests:
+    name: Unit Tests
     runs-on: ubuntu-latest
-    
+    if: github.event.inputs.test_type == 'unit' || github.event.inputs.test_type == 'all' || github.event.inputs.test_type == ''
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Test Python syntax
-      run: |
-        python -c "print('Python syntax check passed')"
-        python -c "import sys; print(f'Python version: {sys.version}')"
+    - name: Set up Python ${{ env.PYTHON_VERSION }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
 
-    - name: Test Node.js syntax
-      run: |
-        node -e "console.log('Node.js syntax check passed')"
-        node -e "console.log('Node.js version:', process.version)"
+    - name: Cache Python dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements*.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
 
-    - name: Verify file structure
+    - name: Install Python dependencies
       run: |
-        echo "Verifying CHM project structure..."
-        ls -la
-        echo "Backend directory:"
-        ls -la backend/ || echo "Backend directory not found"
-        echo "Frontend directory:"
-        ls -la frontend/ || echo "Frontend directory not found"
-        echo "Models directory:"
-        ls -la models/ || echo "Models directory not found"
-        echo "Services directory:"
-        ls -la services/ || echo "Services directory not found"
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install -r requirements-dev.txt
 
-    - name: Test badge URLs
+    - name: Run unit tests
       run: |
-        echo "Testing badge URLs..."
-        echo "Build Status: https://github.com/cathe/chm2/actions/workflows/ci-cd.yml/badge.svg"
-        echo "Security Scan: https://snyk.io/test/github/cathe/chm2/badge.svg"
-        echo "FOSSA Status: https://app.fossa.com/api/projects/git%2Bgithub.com%2Fcathe%2Fchm2.svg?type=shield"
-        echo "License: https://img.shields.io/badge/License-MIT-yellow.svg"
-        echo "Enterprise Ready: https://img.shields.io/badge/Enterprise-Production%20Ready%20%2B%20SLA%20%2B%20Compliance%20%2B%20Support-purple.svg"
+        echo "Running unit tests..."
+        pytest tests/unit/ -v --cov=. --cov-report=xml --cov-report=html --cov-report=term-missing --cov-fail-under=85
+
+    - name: Upload unit test coverage
+      uses: actions/upload-artifact@v3
+      with:
+        name: unit-test-coverage
+        path: |
+          coverage.xml
+          htmlcov/
+
+  # Integration Tests
+  integration-tests:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    if: github.event.inputs.test_type == 'integration' || github.event.inputs.test_type == 'all' || github.event.inputs.test_type == ''
+
+    services:
+      postgres:
+        image: postgres:${{ env.POSTGRES_VERSION }}
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: chm_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+      redis:
+        image: redis:${{ env.REDIS_VERSION }}
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python ${{ env.PYTHON_VERSION }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    - name: Cache Python dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements*.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+
+    - name: Install Python dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install -r requirements-dev.txt
+
+    - name: Run integration tests
+      env:
+        DATABASE_URL: postgresql://postgres:postgres@localhost:5432/chm_test
+        REDIS_URL: redis://localhost:6379/0
+        JWT_SECRET_KEY: test-secret-key-for-integration
+        ENCRYPTION_KEY: test-encryption-key-for-integration
+      run: |
+        echo "Running integration tests..."
+        pytest tests/integration/ -v --cov=. --cov-report=xml --cov-report=html --cov-report=term-missing --cov-fail-under=80
+
+    - name: Upload integration test coverage
+      uses: actions/upload-artifact@v3
+      with:
+        name: integration-test-coverage
+        path: |
+          coverage.xml
+          htmlcov/
+
+  # API Tests
+  api-tests:
+    name: API Tests
+    runs-on: ubuntu-latest
+    if: github.event.inputs.test_type == 'api' || github.event.inputs.test_type == 'all' || github.event.inputs.test_type == ''
+
+    services:
+      postgres:
+        image: postgres:${{ env.POSTGRES_VERSION }}
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: chm_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+      redis:
+        image: redis:${{ env.REDIS_VERSION }}
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python ${{ env.PYTHON_VERSION }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    - name: Cache Python dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements*.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+
+    - name: Install Python dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install -r requirements-dev.txt
+
+    - name: Run API tests
+      env:
+        DATABASE_URL: postgresql://postgres:postgres@localhost:5432/chm_test
+        REDIS_URL: redis://localhost:6379/0
+        JWT_SECRET_KEY: test-secret-key-for-api
+        ENCRYPTION_KEY: test-encryption-key-for-api
+      run: |
+        echo "Running API tests..."
+        pytest tests/api/ -v --cov=. --cov-report=xml --cov-report=html --cov-report=term-missing --cov-fail-under=90
+
+    - name: Upload API test coverage
+      uses: actions/upload-artifact@v3
+      with:
+        name: api-test-coverage
+        path: |
+          coverage.xml
+          htmlcov/
+
+  # Frontend Tests
+  frontend-tests:
+    name: Frontend Tests
+    runs-on: ubuntu-latest
+    if: github.event.inputs.test_type == 'all' || github.event.inputs.test_type == ''
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Node.js ${{ env.NODE_VERSION }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: |
+        cd frontend
+        npm ci
+
+    - name: Run frontend tests
+      run: |
+        cd frontend
+        npm run test:coverage
+
+    - name: Upload frontend test coverage
+      uses: actions/upload-artifact@v3
+      with:
+        name: frontend-test-coverage
+        path: frontend/coverage/
+
+  # Performance Tests
+  performance-tests:
+    name: Performance Tests
+    runs-on: ubuntu-latest
+    if: github.event.inputs.test_type == 'performance' || github.event.inputs.test_type == 'all' || github.event.inputs.test_type == ''
+
+    services:
+      postgres:
+        image: postgres:${{ env.POSTGRES_VERSION }}
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: chm_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+      redis:
+        image: redis:${{ env.REDIS_VERSION }}
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python ${{ env.PYTHON_VERSION }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    - name: Install Python dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install -r requirements-dev.txt
+        pip install pytest-benchmark locust
+
+    - name: Run performance benchmarks
+      env:
+        DATABASE_URL: postgresql://postgres:postgres@localhost:5432/chm_test
+        REDIS_URL: redis://localhost:6379/0
+        JWT_SECRET_KEY: test-secret-key-for-performance
+        ENCRYPTION_KEY: test-encryption-key-for-performance
+      run: |
+        echo "Running performance benchmarks..."
+        pytest tests/ -k "performance" -v --benchmark-only --benchmark-sort=mean --benchmark-save=performance-results
+
+    - name: Run load tests
+      env:
+        DATABASE_URL: postgresql://postgres:postgres@localhost:5432/chm_test
+        REDIS_URL: redis://localhost:6379/0
+        JWT_SECRET_KEY: test-secret-key-for-performance
+        ENCRYPTION_KEY: test-encryption-key-for-performance
+      run: |
+        echo "Running load tests..."
+        locust -f tests/performance/locustfile.py --headless -u 100 -r 10 -t 60s --html=load-test-report.html || true
+
+    - name: Upload performance reports
+      uses: actions/upload-artifact@v3
+      with:
+        name: performance-reports
+        path: |
+          .benchmarks/
+          load-test-report.html
+
+  # Security Tests
+  security-tests:
+    name: Security Tests
+    runs-on: ubuntu-latest
+    if: github.event.inputs.test_type == 'security' || github.event.inputs.test_type == 'all' || github.event.inputs.test_type == ''
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python ${{ env.PYTHON_VERSION }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    - name: Install Python dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install -r requirements-dev.txt
+        pip install bandit safety semgrep
+
+    - name: Run security tests
+      run: |
+        echo "Running security tests..."
+        pytest tests/ -k "security" -v || true
+
+    - name: Run Bandit security scan
+      run: |
+        echo "Running Bandit security scan..."
+        bandit -r . -f json -o bandit-report.json || true
+        bandit -r . -f txt || true
+
+    - name: Run Safety dependency check
+      run: |
+        echo "Running Safety dependency check..."
+        safety check --json --output safety-report.json || true
+        safety check || true
+
+    - name: Run Semgrep security scan
+      run: |
+        echo "Running Semgrep security scan..."
+        semgrep --config=auto --json --output=semgrep-report.json . || true
+        semgrep --config=auto . || true
+
+    - name: Upload security reports
+      uses: actions/upload-artifact@v3
+      with:
+        name: security-reports
+        path: |
+          bandit-report.json
+          safety-report.json
+          semgrep-report.json
+
+  # Test Coverage Aggregation
+  coverage-aggregation:
+    name: Coverage Aggregation
+    runs-on: ubuntu-latest
+    needs: [unit-tests, integration-tests, api-tests]
+    if: always()
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Download all coverage artifacts
+      uses: actions/download-artifact@v3
+      with:
+        path: coverage-artifacts/
+
+    - name: Aggregate coverage reports
+      run: |
+        echo "Aggregating coverage reports..."
+        python -c "
+        import json
+        import os
+        import xml.etree.ElementTree as ET
+        
+        # Initialize aggregated coverage data
+        aggregated_coverage = {
+            'unit_tests': {'coverage': 0, 'status': 'SKIPPED'},
+            'integration_tests': {'coverage': 0, 'status': 'SKIPPED'},
+            'api_tests': {'coverage': 0, 'status': 'SKIPPED'},
+            'overall_coverage': 0,
+            'overall_status': 'PASS'
+        }
+        
+        # Process each coverage report
+        for test_type in ['unit-tests', 'integration-tests', 'api-tests']:
+            coverage_file = f'coverage-artifacts/{test_type}-coverage/coverage.xml'
+            if os.path.exists(coverage_file):
+                try:
+                    tree = ET.parse(coverage_file)
+                    root = tree.getroot()
+                    line_rate = float(root.get('line-rate', 0))
+                    coverage_percent = line_rate * 100
+                    
+                    aggregated_coverage[f'{test_type.replace(\"-\", \"_\")}'] = {
+                        'coverage': round(coverage_percent, 2),
+                        'status': 'PASS' if coverage_percent >= 80 else 'FAIL'
+                    }
+                except Exception as e:
+                    print(f'Error processing {coverage_file}: {e}')
+                    aggregated_coverage[f'{test_type.replace(\"-\", \"_\")}'] = {
+                        'coverage': 0,
+                        'status': 'ERROR'
+                    }
+        
+        # Calculate overall coverage
+        valid_coverages = [data['coverage'] for data in aggregated_coverage.values() 
+                          if isinstance(data, dict) and data['coverage'] > 0]
+        
+        if valid_coverages:
+            aggregated_coverage['overall_coverage'] = round(sum(valid_coverages) / len(valid_coverages), 2)
+            aggregated_coverage['overall_status'] = 'PASS' if aggregated_coverage['overall_coverage'] >= 85 else 'FAIL'
+        
+        # Save aggregated report
+        with open('aggregated-coverage-report.json', 'w') as f:
+            json.dump(aggregated_coverage, f, indent=2)
+        
+        print('Aggregated Coverage Report:')
+        print(json.dumps(aggregated_coverage, indent=2))
+        
+        # Exit with error if overall coverage is too low
+        if aggregated_coverage['overall_status'] == 'FAIL':
+            print(f'❌ Overall coverage {aggregated_coverage[\"overall_coverage\"]}% is below 85% threshold')
+            exit(1)
+        else:
+            print(f'✅ Overall coverage {aggregated_coverage[\"overall_coverage\"]}% meets 85% threshold')
+        "
+
+    - name: Upload aggregated coverage report
+      uses: actions/upload-artifact@v3
+      with:
+        name: aggregated-coverage-report
+        path: aggregated-coverage-report.json
+
+  # Test Results Summary
+  test-summary:
+    name: Test Results Summary
+    runs-on: ubuntu-latest
+    needs: [unit-tests, integration-tests, api-tests, frontend-tests, performance-tests, security-tests, coverage-aggregation]
+    if: always()
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Download aggregated coverage report
+      uses: actions/download-artifact@v3
+      with:
+        name: aggregated-coverage-report
+        path: ./
+
+    - name: Generate test summary
+      run: |
+        echo "Generating test results summary..."
+        python -c "
+        import json
+        import os
+        
+        # Load aggregated coverage data
+        coverage_data = {}
+        if os.path.exists('aggregated-coverage-report.json'):
+            with open('aggregated-coverage-report.json', 'r') as f:
+                coverage_data = json.load(f)
+        
+        # Generate summary
+        summary = {
+            'test_run_id': '${{ github.run_id }}',
+            'branch': '${{ github.ref_name }}',
+            'commit': '${{ github.sha }}',
+            'timestamp': '${{ github.run_number }}',
+            'test_results': {
+                'unit_tests': '${{ needs.unit-tests.result }}',
+                'integration_tests': '${{ needs.integration-tests.result }}',
+                'api_tests': '${{ needs.api-tests.result }}',
+                'frontend_tests': '${{ needs.frontend-tests.result }}',
+                'performance_tests': '${{ needs.performance-tests.result }}',
+                'security_tests': '${{ needs.security-tests.result }}'
+            },
+            'coverage_data': coverage_data,
+            'overall_status': 'PASS'
+        }
+        
+        # Determine overall status
+        failed_tests = [test for test, result in summary['test_results'].items() if result == 'failure']
+        if failed_tests:
+            summary['overall_status'] = 'FAIL'
+            summary['failed_tests'] = failed_tests
+        
+        if coverage_data.get('overall_status') == 'FAIL':
+            summary['overall_status'] = 'FAIL'
+            summary['coverage_issue'] = f\"Coverage {coverage_data.get('overall_coverage', 0)}% below 85% threshold\"
+        
+        # Save summary
+        with open('test-summary.json', 'w') as f:
+            json.dump(summary, f, indent=2)
+        
+        print('Test Results Summary:')
+        print(json.dumps(summary, indent=2))
+        
+        # Exit with error if any tests failed
+        if summary['overall_status'] == 'FAIL':
+            print('❌ Test suite failed!')
+            exit(1)
+        else:
+            print('✅ All tests passed!')
+        "
+
+    - name: Upload test summary
+      uses: actions/upload-artifact@v3
+      with:
+        name: test-summary
+        path: test-summary.json
+
+    - name: Comment on PR (if applicable)
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const fs = require('fs');
+          const summary = JSON.parse(fs.readFileSync('test-summary.json', 'utf8'));
+          
+          const statusEmoji = summary.overall_status === 'PASS' ? '✅' : '❌';
+          const coverageEmoji = summary.coverage_data.overall_status === 'PASS' ? '✅' : '❌';
+          
+          const comment = `## 🧪 Test Results Summary ${statusEmoji}
+          
+          ### Test Results:
+          - **Unit Tests**: ${summary.test_results.unit_tests}
+          - **Integration Tests**: ${summary.test_results.integration_tests}
+          - **API Tests**: ${summary.test_results.api_tests}
+          - **Frontend Tests**: ${summary.test_results.frontend_tests}
+          - **Performance Tests**: ${summary.test_results.performance_tests}
+          - **Security Tests**: ${summary.test_results.security_tests}
+          
+          ### Coverage Results: ${coverageEmoji}
+          - **Overall Coverage**: ${summary.coverage_data.overall_coverage}%
+          - **Unit Tests**: ${summary.coverage_data.unit_tests.coverage}%
+          - **Integration Tests**: ${summary.coverage_data.integration_tests.coverage}%
+          - **API Tests**: ${summary.coverage_data.api_tests.coverage}%
+          
+          ### Overall Status: ${summary.overall_status}
+          
+          ${summary.overall_status === 'PASS' ? 
+            '🎉 All tests passed and coverage requirements met!' : 
+            '⚠️ Some tests failed or coverage requirements not met. Please review the results.'}
+          
+          ---
+          *Generated by Test workflow*`;
+          
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: comment
+          });
