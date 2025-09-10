@@ -834,29 +834,120 @@ class AuthService:
         except Exception:
             return None
     
-    def _validate_password(self, password: str):
-        """Validate password strength"""
-        errors = []
+    def validate_password_strength(self, password: str) -> Dict[str, Any]:
+        """
+        Validate password strength and return detailed results
         
-        if len(password) < self.password_min_length:
+        Args:
+            password: Password to validate
+            
+        Returns:
+            Dictionary with validation results
+        """
+        errors = []
+        score = 0
+        max_score = 5
+        
+        # Length check
+        if len(password) >= self.password_min_length:
+            score += 1
+        else:
             errors.append(f"Password must be at least {self.password_min_length} characters")
         
-        if self.password_require_uppercase and not any(c.isupper() for c in password):
-            errors.append("Password must contain uppercase letter")
+        # Uppercase check
+        if self.password_require_uppercase:
+            if any(c.isupper() for c in password):
+                score += 1
+            else:
+                errors.append("Password must contain uppercase letter")
+        else:
+            score += 1
         
-        if self.password_require_lowercase and not any(c.islower() for c in password):
-            errors.append("Password must contain lowercase letter")
+        # Lowercase check
+        if self.password_require_lowercase:
+            if any(c.islower() for c in password):
+                score += 1
+            else:
+                errors.append("Password must contain lowercase letter")
+        else:
+            score += 1
         
-        if self.password_require_numbers and not any(c.isdigit() for c in password):
-            errors.append("Password must contain number")
+        # Numbers check
+        if self.password_require_numbers:
+            if any(c.isdigit() for c in password):
+                score += 1
+            else:
+                errors.append("Password must contain number")
+        else:
+            score += 1
         
+        # Special characters check
         if self.password_require_special:
             special_chars = "!@#$%^&*()_+-=[]{}|;:,.<>?"
-            if not any(c in special_chars for c in password):
+            if any(c in special_chars for c in password):
+                score += 1
+            else:
                 errors.append("Password must contain special character")
+        else:
+            score += 1
         
-        if errors:
-            raise ValidationException("; ".join(errors))
+        strength_levels = ["Very Weak", "Weak", "Fair", "Good", "Strong"]
+        strength_index = min(int((score / max_score) * len(strength_levels)), len(strength_levels) - 1)
+        
+        return {
+            "valid": len(errors) == 0,
+            "score": score,
+            "max_score": max_score,
+            "strength": strength_levels[strength_index],
+            "errors": errors
+        }
+    
+    def _validate_password(self, password: str):
+        """Validate password strength (raises exception if invalid)"""
+        result = self.validate_password_strength(password)
+        if not result["valid"]:
+            raise ValidationException("; ".join(result["errors"]))
+    
+    async def authenticate_user(
+        self,
+        db: AsyncSession,
+        username: str,
+        password: str
+    ) -> Optional[User]:
+        """
+        Authenticate user with username/email and password
+        
+        Args:
+            db: Database session
+            username: Username or email
+            password: Password
+            
+        Returns:
+            User if authenticated, None otherwise
+        """
+        try:
+            # Find user
+            user = await self._get_user_by_username_or_email(db, username)
+            if not user:
+                return None
+            
+            # Check account status
+            if user.status in [UserStatus.LOCKED, UserStatus.SUSPENDED, UserStatus.INACTIVE]:
+                return None
+            
+            # Verify password
+            if not self.verify_password(password, user.password_hash):
+                return None
+            
+            # Check if email verified (optional - depends on requirements)
+            if not user.email_verified:
+                return None
+            
+            return user
+            
+        except Exception as e:
+            logger.error(f"Authentication failed: {e}")
+            return None
     
     async def _get_user_by_username_or_email(
         self,
