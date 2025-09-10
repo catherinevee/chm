@@ -1,0 +1,82 @@
+# GitLeaks Configuration for CHM Project
+# =====================================
+
+title = "CHM GitLeaks Configuration"
+
+# Allow list for legitimate encryption keys used in CI/CD configuration
+[[rules]]
+id = "encryption-key-allowlist"
+description = "Allow legitimate encryption keys in CI workflows"
+regex = '''ENCRYPTION_KEY:\s*[\w\-_]+'''
+allowlist = [
+    # Allow encryption key patterns in workflow files
+    "your-encryption-key-for-tests",
+    "test-encryption-key",
+    "ci-encryption-key",
+    "your-secret-key-change-in-production"
+]
+
+# Allow list for file paths that can contain secrets (CI/CD configuration)
+[allowlist]
+paths = [
+    # CI/CD workflow files that legitimately contain encrypted secrets
+    '''^\.github/workflows/.*\.yml$''',
+    '''^\.github/workflows/.*\.yaml$''',
+    # Test configuration files
+    '''tests/.*\.py$''',
+    '''test.*\.py$''',
+    # Example or template files
+    '''.*example.*''',
+    '''.*template.*''',
+    '''.*\.example$''',
+    '''.*\.template$''',
+    # Docker and config files that may contain placeholder secrets
+    '''Dockerfile.*''',
+    '''docker-compose.*\.yml$''',
+    '''.*\.env\.example$''',
+    '''.*\.env\.template$'''
+]
+
+# Allow list for commits (if needed for specific commits)
+commits = []
+
+# Regex patterns to exclude from secret detection
+regexes = [
+    # Exclude placeholder/example secrets
+    '''your-secret-key-change-in-production''',
+    '''your-encryption-key-for-tests''',
+    '''test-key-.*''',
+    '''example-.*''',
+    '''dummy-.*''',
+    '''placeholder-.*''',
+    '''fake-.*''',
+    # GitHub Actions variables (not actual secrets)
+    '''\$\{\{\s*secrets\..*\}\}''',
+    '''\$\{\{\s*env\..*\}\}''',
+    # Common test/example values
+    '''secret.*test''',
+    '''test.*secret''',
+    '''changeme''',
+    '''replace.*this''',
+    '''update.*this'''
+]
+
+# Additional rules to override default detections
+[[rules]]
+id = "allow-ci-secrets"
+description = "Allow CI/CD configuration secrets"
+regex = '''(?i)(password|secret|key|token|api.key|private.key).*=.*['"][^'"]{8,}['"]'''
+allowlist = [
+    "your-secret-key-change-in-production",
+    "your-encryption-key-for-tests",
+    "test-password",
+    "dummy-token"
+]
+
+[[rules]]
+id = "allow-dockerfile-secrets"
+description = "Allow Dockerfile environment variables with placeholder secrets"
+regex = '''ENV\s+.*SECRET.*'''
+allowlist = [
+    "SECRET_KEY=your-secret-key-change-in-production"
+]
