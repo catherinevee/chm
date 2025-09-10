@@ -32,6 +32,9 @@ async def init_database():
         
         logger.info("✅ Database tables created successfully")
         
+        # Wait a moment to ensure transaction is committed
+        await asyncio.sleep(1)
+        
         # Create initial data if needed
         await create_initial_data()
         
@@ -47,9 +50,20 @@ async def create_initial_data():
     """Create initial data for the application"""
     try:
         async with async_session() as session:
-            # Check if we already have users
+            # Check if tables exist and we already have users
             from models.user import User
-            from sqlalchemy import select
+            from sqlalchemy import select, text
+            
+            # First verify the table exists
+            try:
+                table_check = await session.execute(text("SELECT COUNT(*) FROM users LIMIT 1"))
+                logger.info("✅ Users table exists and is accessible")
+            except Exception as e:
+                logger.error(f"❌ Users table not accessible: {e}")
+                # Try to create tables again just in case
+                async with engine.begin() as conn:
+                    await conn.run_sync(metadata.create_all)
+                logger.info("Retried table creation")
             
             result = await session.execute(select(User))
             existing_users = result.scalars().first()
