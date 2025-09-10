@@ -87,7 +87,7 @@ jobs:
         pip install safety bandit semgrep
     
     - name: Run Safety check
-      run: safety check || echo "Safety check completed"
+      run: pip-audit --format=json || echo "Pip-audit check completed"
     
     - name: Run Bandit
       run: bandit -r api/ backend/ core/ models/ services/ || echo "Bandit scan completed"
