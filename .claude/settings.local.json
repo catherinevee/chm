@@ -48,7 +48,21 @@
       "Read(\\c\\Users\\cathe\\OneDrive\\Desktop\\github/**)",
       "Read(\\c\\Users\\cathe\\OneDrive\\Desktop\\github/**)",
       "Bash(tree:*)",
-      "Bash(mkdir:*)"
+      "Bash(mkdir:*)",
+      "Bash(gh run list:*)",
+      "Bash(gh run view:*)",
+      "Bash(pip index versions:*)",
+      "Bash(find:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "WebSearch",
+      "WebFetch(domain:pypi.org)",
+      "Bash(gh workflow:*)",
+      "Bash(black:*)",
+      "Bash(ln:*)",
+      "Bash(pip install:*)",
+      "Bash(docker build:*)"
     ],
     "deny": [],
     "ask": []
