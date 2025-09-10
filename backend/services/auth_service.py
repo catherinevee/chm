@@ -949,6 +949,47 @@ class AuthService:
             logger.error(f"Authentication failed: {e}")
             return None
     
+    async def create_user(
+        self,
+        db: AsyncSession,
+        username: str,
+        email: EmailStr,
+        password: str,
+        full_name: Optional[str] = None,
+        role: str = UserRole.VIEWER
+    ) -> Optional[User]:
+        """
+        Create a new user (wrapper around register method)
+        
+        Args:
+            db: Database session
+            username: Username
+            email: Email address
+            password: Password
+            full_name: Full name
+            role: User role
+            
+        Returns:
+            Created user or None if failed
+        """
+        try:
+            # Initialize UserService if not already done
+            if not self.user_service:
+                from backend.services.user_service import UserService
+                self.user_service = UserService()
+            
+            return await self.register(
+                username=username,
+                email=email,
+                password=password,
+                full_name=full_name,
+                role=role,
+                db=db
+            )
+        except Exception as e:
+            logger.error(f"User creation failed: {e}")
+            return None
+    
     async def _get_user_by_username_or_email(
         self,
         db: AsyncSession,

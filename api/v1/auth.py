@@ -97,7 +97,7 @@ async def register_user(user_data: UserRegister, db: AsyncSession = Depends(get_
     try:
         # Validate password strength
         password_validation = auth_service.validate_password_strength(user_data.password)
-        if not password_validation["is_valid"]:
+        if not password_validation["valid"]:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=f"Password validation failed: {', '.join(password_validation['errors'])}",
@@ -318,7 +318,7 @@ async def change_password(
     try:
         # Validate new password strength
         password_validation = auth_service.validate_password_strength(password_data.new_password)
-        if not password_validation["is_valid"]:
+        if not password_validation["valid"]:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=f"Password validation failed: {', '.join(password_validation['errors'])}",
