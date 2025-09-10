@@ -5,7 +5,7 @@
 
 # Core Framework & Web Server
 # ---------------------------
-setuptools==78.1.1  # Security fix for PYSEC-2022-43012 and PYSEC-2025-49
+setuptools==75.1.0  # Security fix for PYSEC-2022-43012 and PYSEC-2025-49
 fastapi==0.115.0
 uvicorn[standard]==0.24.0
 gunicorn==21.2.0
@@ -79,7 +79,7 @@ email-validator==2.1.0
 
 # Data Processing & Time-series
 # ------------------------------
-numpy==1.24.3
+numpy==1.26.4
 pandas==2.1.4
 influxdb-client==1.38.0  # Time-series metrics storage
 
