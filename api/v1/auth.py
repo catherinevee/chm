@@ -48,6 +48,7 @@ class TokenResponse(BaseModel):
 
 class UserProfile(BaseModel):
     id: int
+    uuid: str
     username: str
     email: str
     full_name: Optional[str] = None
@@ -95,11 +96,11 @@ async def register_user(user_data: UserRegister, db: AsyncSession = Depends(get_
     logger.info(f"User registration attempt for: {user_data.username}")
 
     try:
-        # Validate password strength
+        # Validate password strength  
         password_validation = auth_service.validate_password_strength(user_data.password)
         if not password_validation["valid"]:
             raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
                 detail=f"Password validation failed: {', '.join(password_validation['errors'])}",
             )
 
@@ -129,6 +130,7 @@ async def register_user(user_data: UserRegister, db: AsyncSession = Depends(get_
 
         return UserProfile(
             id=user.id,
+            uuid=user.uuid,
             username=user.username,
             email=user.email,
             full_name=user.full_name,

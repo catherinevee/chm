@@ -181,11 +181,14 @@ class AuthService:
                 await db.rollback()
                 # Check if it's a duplicate username or email
                 if "username" in str(e).lower():
-                    raise DuplicateUserException("Username already exists")
+                    logger.error(f"Duplicate username error: {username}")
+                    return None  # This will trigger the 400 error in the API
                 elif "email" in str(e).lower():
-                    raise DuplicateUserException("Email already exists")
+                    logger.error(f"Duplicate email error: {email}")
+                    return None  # This will trigger the 400 error in the API
                 else:
-                    raise DuplicateUserException("User already exists")
+                    logger.error(f"Database integrity error: {e}")
+                    return None  # This will trigger the 400 error in the API
             
             # Send verification email
             verification_token = self._generate_verification_token()

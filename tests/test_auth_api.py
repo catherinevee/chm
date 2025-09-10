@@ -39,8 +39,18 @@ class TestAuthAPI:
         assert "uuid" in data
     
     @pytest.mark.asyncio
-    async def test_register_user_duplicate_username(self, test_client: TestClient, test_session: AsyncSession, test_user: User):
+    async def test_register_user_duplicate_username(self, test_client: TestClient):
         """Test user registration with duplicate username"""
+        # First register a user
+        first_user_data = {
+            "username": "testuser",
+            "email": "first@example.com",
+            "password": "Password123!"
+        }
+        first_response = test_client.post("/api/v1/auth/register", json=first_user_data)
+        assert first_response.status_code == 200
+        
+        # Try to register another user with same username
         user_data = {
             "username": "testuser",  # Already exists
             "email": "different@example.com",
@@ -51,11 +61,21 @@ class TestAuthAPI:
         
         assert response.status_code == 400
         data = response.json()
-        assert "error" in data
+        assert "detail" in data
     
     @pytest.mark.asyncio
-    async def test_register_user_duplicate_email(self, test_client: TestClient, test_session: AsyncSession, test_user: User):
+    async def test_register_user_duplicate_email(self, test_client: TestClient):
         """Test user registration with duplicate email"""
+        # First register a user
+        first_user_data = {
+            "username": "firstuser",
+            "email": "test@example.com",
+            "password": "Password123!"
+        }
+        first_response = test_client.post("/api/v1/auth/register", json=first_user_data)
+        assert first_response.status_code == 200
+        
+        # Try to register another user with same email
         user_data = {
             "username": "differentuser",
             "email": "test@example.com",  # Already exists
@@ -66,7 +86,7 @@ class TestAuthAPI:
         
         assert response.status_code == 400
         data = response.json()
-        assert "error" in data
+        assert "detail" in data
     
     @pytest.mark.asyncio
     async def test_register_user_weak_password(self, test_client: TestClient, test_session: AsyncSession):
@@ -94,12 +114,24 @@ class TestAuthAPI:
         
         assert response.status_code == 422  # Validation error
     
-    @pytest.mark.asyncio
-    async def test_login_user_success(self, test_client: TestClient, test_session: AsyncSession, test_user: User):
+    @pytest.mark.asyncio  
+    async def test_login_user_success(self, test_client: TestClient):
         """Test successful user login"""
+        # First register a user
+        register_data = {
+            "username": "testuser",
+            "email": "testuser@example.com", 
+            "password": "TestPassword123!",
+            "full_name": "Test User"
+        }
+        
+        register_response = test_client.post("/api/v1/auth/register", json=register_data)
+        assert register_response.status_code == 200
+        
+        # Now try to login
         login_data = {
             "username": "testuser",
-            "password": "testpassword123"
+            "password": "TestPassword123!"
         }
         
         response = test_client.post("/api/v1/auth/login", json=login_data)

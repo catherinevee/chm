@@ -62,6 +62,9 @@ class Settings(BaseSettings):
     ssh_timeout: int = 30
     http_timeout: int = 30
     
+    # Frontend
+    frontend_url: str = "http://localhost:3000"
+    
     @field_validator("allowed_hosts", mode="before")
     @classmethod
     def parse_allowed_hosts(cls, v):
