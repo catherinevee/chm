@@ -81,7 +81,7 @@ def test_client(test_session) -> Generator[TestClient, None, None]:
     
     # Override database dependency
     def override_get_db():
-        return test_session
+        yield test_session
     
     app.dependency_overrides[get_db] = override_get_db
     
@@ -390,7 +390,7 @@ async def async_client(test_session):
     """Create async test client"""
     app = create_app()
     
-    async def override_get_db():
+    def override_get_db():
         yield test_session
     
     app.dependency_overrides[get_db] = override_get_db

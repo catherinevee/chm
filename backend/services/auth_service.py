@@ -125,8 +125,6 @@ class AuthService:
         self.mfa_issuer = settings.mfa_issuer or "CHM"
         
         # Services
-        # UserService requires session - will be set at runtime
-        self.user_service = None
         self.email_service = EmailService()
         self.session_manager = SessionManager()
         
@@ -162,15 +160,32 @@ class AuthService:
             # Hash password
             password_hash = self.hash_password(password)
             
-            # Create user
-            user = await self.user_service.create_user(
-                db=db,
+            # Create user directly (avoiding UserService mismatch for now)
+            from models.user import User as MainUser
+            
+            user = MainUser(
                 username=username,
                 email=email,
-                password_hash=password_hash,
+                hashed_password=password_hash,
                 full_name=full_name,
-                role=role
+                role=role,
+                status=UserStatus.ACTIVE,
+                is_verified=False  # Will be verified via email
             )
+            
+            try:
+                db.add(user)
+                await db.commit()
+                await db.refresh(user)
+            except IntegrityError as e:
+                await db.rollback()
+                # Check if it's a duplicate username or email
+                if "username" in str(e).lower():
+                    raise DuplicateUserException("Username already exists")
+                elif "email" in str(e).lower():
+                    raise DuplicateUserException("Email already exists")
+                else:
+                    raise DuplicateUserException("User already exists")
             
             # Send verification email
             verification_token = self._generate_verification_token()
@@ -345,8 +360,11 @@ class AuthService:
             if not user_id:
                 raise AuthenticationException("Invalid MFA token")
             
-            # Get user
-            user = await self.user_service.get_user_by_id(db, user_id)
+            # Get user directly
+            from models.user import User as MainUser
+            query = select(MainUser).where(MainUser.id == user_id)
+            result = await db.execute(query)
+            user = result.scalar_one_or_none()
             if not user:
                 raise UserNotFoundException("User not found")
             
@@ -486,8 +504,11 @@ class AuthService:
                 user_agent
             )
             
-            # Get user
-            user = await self.user_service.get_user_by_id(db, token_data.user_id)
+            # Get user directly
+            from models.user import User as MainUser
+            query = select(MainUser).where(MainUser.id == token_data.user_id)
+            result = await db.execute(query)
+            user = result.scalar_one_or_none()
             if not user:
                 raise UserNotFoundException("User not found")
             
@@ -595,12 +616,16 @@ class AuthService:
             # Validate new password
             self._validate_password(new_password)
             
-            # Update password
-            success = await self.user_service.update_password(
-                db=db,
-                user_id=user_id,
-                new_password=new_password
+            # Update password directly
+            from models.user import User as MainUser
+            new_password_hash = self.hash_password(new_password)
+            query = update(MainUser).where(MainUser.id == user_id).values(
+                hashed_password=new_password_hash,
+                password_changed_at=datetime.utcnow()
             )
+            await db.execute(query)
+            await db.commit()
+            success = True
             
             if success:
                 # Invalidate all sessions
@@ -645,13 +670,16 @@ class AuthService:
             True if successful
         """
         try:
-            # Get user
-            user = await self.user_service.get_user_by_id(db, user_id)
+            # Get user directly
+            from models.user import User as MainUser
+            query = select(MainUser).where(MainUser.id == user_id)
+            result = await db.execute(query)
+            user = result.scalar_one_or_none()
             if not user:
                 raise UserNotFoundException("User not found")
             
             # Verify current password
-            if not self.verify_password(current_password, user.password_hash):
+            if not self.verify_password(current_password, user.hashed_password):
                 raise AuthenticationException("Invalid current password")
             
             # Validate new password
@@ -661,12 +689,15 @@ class AuthService:
             if await self._is_password_in_history(db, user_id, new_password):
                 raise ValidationException(f"Password was used recently. Choose a different password.")
             
-            # Update password
-            success = await self.user_service.update_password(
-                db=db,
-                user_id=user_id,
-                new_password=new_password
+            # Update password directly
+            new_password_hash = self.hash_password(new_password)
+            query = update(MainUser).where(MainUser.id == user_id).values(
+                hashed_password=new_password_hash,
+                password_changed_at=datetime.utcnow()
             )
+            await db.execute(query)
+            await db.commit()
+            success = True
             
             if success:
                 # Log password change
@@ -973,11 +1004,6 @@ class AuthService:
             Created user or None if failed
         """
         try:
-            # Initialize UserService if not already done
-            if not self.user_service:
-                from backend.services.user_service import UserService
-                self.user_service = UserService()
-            
             return await self.register(
                 username=username,
                 email=email,
@@ -1020,7 +1046,6 @@ class AuthService:
         """Get user permissions based on role"""
         # This will be expanded with PermissionService
         role_permissions = {
-            UserRole.SUPER_ADMIN: ['*'],  # All permissions
             UserRole.ADMIN: [
                 'users.read', 'users.write', 'users.delete',
                 'devices.read', 'devices.write', 'devices.delete',
@@ -1043,7 +1068,12 @@ class AuthService:
             ]
         }
         
-        user = await self.user_service.get_user_by_id(db, user_id)
+        # Get user directly
+        from models.user import User as MainUser
+        query = select(MainUser).where(MainUser.id == user_id)
+        result = await db.execute(query)
+        user = result.scalar_one_or_none()
+        
         if user:
             return role_permissions.get(user.role, [])
         return []
