@@ -75,13 +75,36 @@ async def test_session(test_engine) -> AsyncGenerator[AsyncSession, None]:
         await session.rollback()
 
 @pytest.fixture
-def test_client(test_session) -> Generator[TestClient, None, None]:
+def test_client() -> Generator[TestClient, None, None]:
     """Create test client"""
     app = create_app()
     
-    # Override database dependency
-    def override_get_db():
-        yield test_session
+    # Create a test database session using the same async setup but for testing
+    from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
+    test_engine = create_async_engine(
+        "sqlite+aiosqlite:///:memory:",
+        poolclass=StaticPool,
+        connect_args={"check_same_thread": False},
+        echo=False
+    )
+    
+    test_async_session = async_sessionmaker(
+        test_engine,
+        class_=AsyncSession,
+        expire_on_commit=False
+    )
+    
+    # Create tables
+    import asyncio
+    async def create_tables():
+        async with test_engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+    
+    asyncio.run(create_tables())
+    
+    async def override_get_db():
+        async with test_async_session() as session:
+            yield session
     
     app.dependency_overrides[get_db] = override_get_db
     
