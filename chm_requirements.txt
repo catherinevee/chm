@@ -56,9 +56,8 @@ aioredis==2.0.1
 
 # Background Tasks & Scheduling
 # ------------------------------
-celery[redis]==5.3.4
+celery[redis]==5.3.4  # Includes celery beat for scheduled tasks
 flower==2.0.1  # Celery monitoring
-celery-beat==2.5.0  # Scheduled tasks
 
 # WebSocket Support (Real-time Updates)
 # --------------------------------------
