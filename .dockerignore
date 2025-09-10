@@ -1,0 +1,94 @@
+# Git and version control
+.git
+.gitignore
+.gitattributes
+.gitmodules
+
+# Documentation
+*.md
+README*
+docs/
+CHANGELOG*
+LICENSE*
+
+# Development and testing
+.pytest_cache/
+.tox/
+.coverage
+.coverage.*
+htmlcov/
+.nox/
+tests/
+test_*.py
+*_test.py
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+.claude/
+
+# Python cache and build
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+.env
+.venv
+
+# Temporary files and logs
+*.log
+*.tmp
+*.temp
+.tmp/
+logs/
+*.pid
+*.seed
+*.pid.lock
+
+# OS files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Node.js (if any)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+.travis.yml
+.circleci/
+
+# Docker
+Dockerfile.dev
+docker-compose.dev.yml
+docker-compose.override.yml
