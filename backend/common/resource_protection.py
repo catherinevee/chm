@@ -3,17 +3,18 @@ Comprehensive resource protection and limits for network monitoring operations
 """
 
 import asyncio
-import psutil
-import time
-import logging
 import functools
-from datetime import datetime, timedelta
-from typing import Dict, Any, Optional, List, Callable, Tuple
-from dataclasses import dataclass
-from contextlib import asynccontextmanager
-from collections import deque, defaultdict
+import logging
 import threading
+import time
 import weakref
+from collections import defaultdict, deque
+from contextlib import asynccontextmanager
+from dataclasses import dataclass
+from datetime import datetime, timedelta
+from typing import Any, Callable, Dict, List, Optional, Tuple
+
+import psutil
 
 from backend.config import settings
 

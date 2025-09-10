@@ -3,17 +3,19 @@ CHM Notifications API
 User notification management endpoints
 """
 
-from fastapi import APIRouter, HTTPException, Query, Depends
-from pydantic import BaseModel
-from typing import List, Optional
 import logging
 from datetime import datetime
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func, and_, update
+from typing import List, Optional
 
-from core.database import get_db
+from fastapi import APIRouter, Depends, HTTPException, Query
+from pydantic import BaseModel
+from sqlalchemy import and_, func, select, update
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from core.auth_middleware import get_current_user
-from models.notification import Notification as NotificationModel, NotificationType, NotificationStatus
+from core.database import get_db
+from models.notification import Notification as NotificationModel
+from models.notification import NotificationStatus, NotificationType
 from models.user import User
 
 logger = logging.getLogger(__name__)

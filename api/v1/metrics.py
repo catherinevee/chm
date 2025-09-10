@@ -3,18 +3,21 @@ CHM Metrics API
 Metrics and monitoring data endpoints
 """
 
-from fastapi import APIRouter, Query, Depends, HTTPException
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func, and_, desc
-from pydantic import BaseModel
-from typing import List, Optional
 import logging
 from datetime import datetime, timedelta
+from typing import List, Optional
 
-from core.database import get_db
-from models.metric import Metric as MetricModel, MetricType, MetricCategory, CollectionMethod, MetricQuality
-from models.device import Device as DeviceModel
+from fastapi import APIRouter, Depends, HTTPException, Query
+from pydantic import BaseModel
+from sqlalchemy import and_, desc, func, select
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from backend.services.metrics_service import MetricsService
+from core.database import get_db
+from models.device import Device as DeviceModel
+from models.metric import CollectionMethod
+from models.metric import Metric as MetricModel
+from models.metric import MetricCategory, MetricQuality, MetricType
 
 logger = logging.getLogger(__name__)
 

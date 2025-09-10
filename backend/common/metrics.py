@@ -2,10 +2,11 @@
 Prometheus metrics for application monitoring
 """
 
-from prometheus_client import Counter, Histogram, Gauge, Info
+import asyncio
 import time
 from functools import wraps
-import asyncio
+
+from prometheus_client import Counter, Gauge, Histogram, Info
 
 # Define metrics
 snmp_requests_total = Counter(
@@ -91,9 +92,11 @@ def track_time(metric: Histogram):
         return async_wrapper if asyncio.iscoroutinefunction(func) else sync_wrapper
     return decorator
 
-# Export metrics endpoint
-from prometheus_client import generate_latest, CONTENT_TYPE_LATEST
 from fastapi import Response
+
+# Export metrics endpoint
+from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
+
 
 async def metrics_endpoint():
     """Endpoint to export Prometheus metrics"""

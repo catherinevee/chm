@@ -5,8 +5,10 @@ Database migration script to add missing columns to the devices table
 
 import os
 import sys
+
 from sqlalchemy import create_engine, text
 from sqlalchemy.exc import ProgrammingError
+
 
 def migrate_database():
     """Add missing columns to the devices table"""

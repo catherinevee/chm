@@ -2,12 +2,13 @@
 Custom middleware for the application
 """
 
-import time
 import logging
-from typing import Dict, Optional, Callable
+import time
 from collections import defaultdict
 from datetime import datetime, timedelta
-from fastapi import Request, Response, HTTPException, status
+from typing import Callable, Dict, Optional
+
+from fastapi import HTTPException, Request, Response, status
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.types import ASGIApp
 

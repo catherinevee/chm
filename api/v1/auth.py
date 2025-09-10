@@ -3,16 +3,17 @@ CHM Authentication API
 User authentication and authorization endpoints
 """
 
-from fastapi import APIRouter, HTTPException, Depends, status
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from pydantic import BaseModel, EmailStr
-from typing import Optional
-from sqlalchemy.ext.asyncio import AsyncSession
 import logging
+from typing import Optional
 
-from core.database import get_db
-from core.auth_middleware import get_current_user, get_current_active_user
+from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from pydantic import BaseModel, EmailStr
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from backend.services.auth_service import auth_service
+from core.auth_middleware import get_current_active_user, get_current_user
+from core.database import get_db
 from models.user import User, UserRole
 
 logger = logging.getLogger(__name__)
@@ -378,9 +379,9 @@ async def setup_mfa(current_user: User = Depends(get_current_user)):
     
     try:
         # Generate MFA secret (in production, use a proper MFA library like pyotp)
-        import secrets
         import base64
-        
+        import secrets
+
         # Generate a random secret
         secret = base64.b32encode(secrets.token_bytes(20)).decode('utf-8')
         

@@ -2,21 +2,23 @@
 CHM - Cloud Health Monitor
 Main application entry point
 """
-import uvicorn
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-from contextlib import asynccontextmanager
 import asyncio
+from contextlib import asynccontextmanager
 from typing import AsyncGenerator
 
-from api.routers import auth, devices, metrics, alerts, discovery, monitoring, reports, sla, maintenance
-from database.connection import init_db, close_db
+import uvicorn
+from config import settings
+from database.connection import close_db, init_db
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from security.audit import audit_logger
+
+from api.routers import alerts, auth, devices, discovery, maintenance, metrics, monitoring, reports, sla
 from backend.services.background_tasks import start_background_tasks, stop_background_tasks
-from backend.services.websocket_manager import websocket_manager
 from backend.services.cache_service import cache_service
 from backend.services.connection_pool import connection_pool
-from security.audit import audit_logger
-from config import settings
+from backend.services.websocket_manager import websocket_manager
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator:

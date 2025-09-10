@@ -3,22 +3,26 @@ CHM Monitoring API
 Health checks and Prometheus metrics endpoints
 """
 
-from fastapi import APIRouter, Response, Depends
-from fastapi.responses import PlainTextResponse, JSONResponse
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func
-from prometheus_client import CONTENT_TYPE_LATEST
-import psutil
 import logging
 from datetime import datetime
-from typing import Dict, Any
+from typing import Any, Dict
 
-from core.database import get_db
-from models.device import Device as DeviceModel, DeviceStatus
-from models.alert import Alert as AlertModel, AlertSeverity, AlertStatus
-from models.metric import Metric as MetricModel
+import psutil
+from fastapi import APIRouter, Depends, Response
+from fastapi.responses import JSONResponse, PlainTextResponse
+from prometheus_client import CONTENT_TYPE_LATEST
+from sqlalchemy import func, select
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from backend.services.prometheus_metrics import prometheus_metrics
 from backend.services.websocket_service import websocket_manager
+from core.database import get_db
+from models.alert import Alert as AlertModel
+from models.alert import AlertSeverity, AlertStatus
+from models.device import Device as DeviceModel
+from models.device import DeviceStatus
+from models.metric import Metric as MetricModel
+
 # Redis service not yet implemented
 redis_cache = None
 # Metrics collector not yet implemented

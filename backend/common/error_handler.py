@@ -2,20 +2,20 @@
 Comprehensive Error Handler - Global error handling and recovery system
 """
 
+import asyncio
 import logging
-import traceback
 import sys
-from typing import Any, Dict, Optional, Type, Callable, List
+import traceback
+from contextlib import asynccontextmanager
 from datetime import datetime
 from functools import wraps
-import asyncio
-from contextlib import asynccontextmanager
+from typing import Any, Callable, Dict, List, Optional, Type
 
+import redis.exceptions
 from fastapi import HTTPException, Request, status
 from fastapi.responses import JSONResponse
-from sqlalchemy.exc import SQLAlchemyError, IntegrityError, DataError
 from pydantic import ValidationError
-import redis.exceptions
+from sqlalchemy.exc import DataError, IntegrityError, SQLAlchemyError
 
 logger = logging.getLogger(__name__)
 

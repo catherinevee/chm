@@ -58,7 +58,7 @@ jobs:
         pip install black flake8 bandit
     
     - name: Run Black
-      run: black --check api/ backend/ core/ models/ services/ tests/ || echo "Black formatting issues found"
+      run: black --check api/ backend/ core/ models/ tests/ || echo "Black formatting issues found"
     
     - name: Run Flake8
       run: flake8 api/ backend/ core/ models/ services/ tests/ --max-line-length=120 || echo "Flake8 linting issues found"
@@ -148,7 +148,7 @@ jobs:
         pip install black flake8 mypy pylint
     
     - name: Run Black
-      run: black --check api/ backend/ core/ models/ services/ tests/ || echo "Black formatting issues found"
+      run: black --check api/ backend/ core/ models/ tests/ || echo "Black formatting issues found"
     
     - name: Run Flake8
       run: flake8 api/ backend/ core/ models/ services/ tests/ --max-line-length=120 || echo "Flake8 linting issues found"

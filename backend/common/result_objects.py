@@ -2,10 +2,10 @@
 Result objects for CHM application to replace None returns with meaningful data
 """
 
-from typing import Any, Dict, List, Optional, Union
-from datetime import datetime, timedelta
 from dataclasses import dataclass, field
+from datetime import datetime, timedelta
 from enum import Enum
+from typing import Any, Dict, List, Optional, Union
 
 
 class ResultStatus(Enum):

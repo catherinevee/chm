@@ -3,25 +3,30 @@ Security utilities for encryption and authentication
 Enhanced with credential encryption, key rotation, and secure storage
 """
 
-from cryptography.fernet import Fernet, MultiFernet
-from cryptography.hazmat.primitives import hashes
-from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
-from cryptography.hazmat.backends import default_backend
-from passlib.context import CryptContext
-from jose import JWTError, jwt
-from datetime import datetime, timedelta
-import os
-import secrets
 import base64
 import binascii
 import json
 import logging
-from typing import Optional, Dict, Any, List
+import os
+import secrets
+from datetime import datetime, timedelta
+from typing import Any, Dict, List, Optional
+
+from cryptography.fernet import Fernet, MultiFernet
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+from jose import JWTError, jwt
+from passlib.context import CryptContext
 
 # Import result objects
 from backend.common.result_objects import (
-    create_success_result, create_failure_result, create_partial_success_result,
-    FallbackData, HealthStatus, HealthLevel
+    FallbackData,
+    HealthLevel,
+    HealthStatus,
+    create_failure_result,
+    create_partial_success_result,
+    create_success_result,
 )
 
 logger = logging.getLogger(__name__)
@@ -284,9 +289,10 @@ class SecureCredentialStore:
     @staticmethod
     async def store_device_credential(db, device_id: str, credential_type: str, credential: str):
         """Store encrypted device credential"""
-        from backend.database.models import Device
         from sqlalchemy import select
-        
+
+        from backend.database.models import Device
+
         # Encrypt credential
         encrypted = credential_encryption.encrypt_credential(
             credential,
@@ -312,8 +318,9 @@ class SecureCredentialStore:
     @staticmethod
     async def get_device_credential(db, device_id: str, credential_type: str):
         """Retrieve and decrypt device credential"""
-        from backend.database.models import Device
         from sqlalchemy import select
+
+        from backend.database.models import Device
         
         result = await db.execute(
             select(Device).where(Device.id == device_id)

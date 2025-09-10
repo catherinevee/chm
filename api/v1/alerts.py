@@ -3,19 +3,21 @@ CHM Alerts API
 Alert management and notification endpoints
 """
 
-from fastapi import APIRouter, HTTPException, Query, Depends
-from pydantic import BaseModel
-from typing import List, Optional
 import logging
 from datetime import datetime
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func, and_
+from typing import List, Optional
 
-from core.database import get_db
-from models.alert import Alert as AlertModel, AlertStatus, AlertSeverity, AlertCategory
-from models.device import Device as DeviceModel
-from backend.services.notification_service import NotificationService
+from fastapi import APIRouter, Depends, HTTPException, Query
+from pydantic import BaseModel
+from sqlalchemy import and_, func, select
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from backend.services.alert_service import AlertService
+from backend.services.notification_service import NotificationService
+from core.database import get_db
+from models.alert import Alert as AlertModel
+from models.alert import AlertCategory, AlertSeverity, AlertStatus
+from models.device import Device as DeviceModel
 
 logger = logging.getLogger(__name__)
 

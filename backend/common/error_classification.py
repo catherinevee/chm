@@ -2,18 +2,18 @@
 Comprehensive error classification and handling system for network monitoring
 """
 
-import logging
-import traceback
-import re
-import inspect
-from datetime import datetime, timedelta
-from typing import Dict, Any, List, Optional, Type, Union, Callable, Tuple
-from dataclasses import dataclass, field
-from enum import Enum
-from collections import defaultdict, deque
 import asyncio
+import inspect
+import logging
+import re
 import socket
 import ssl
+import traceback
+from collections import defaultdict, deque
+from dataclasses import dataclass, field
+from datetime import datetime, timedelta
+from enum import Enum
+from typing import Any, Callable, Dict, List, Optional, Tuple, Type, Union
 
 try:
     import psutil
@@ -37,7 +37,7 @@ except ImportError:
     RedisError = Exception
 
 try:
-    from paramiko.ssh_exception import SSHException, NoValidConnectionsError, AuthenticationException
+    from paramiko.ssh_exception import AuthenticationException, NoValidConnectionsError, SSHException
     PARAMIKO_AVAILABLE = True
 except ImportError:
     PARAMIKO_AVAILABLE = False

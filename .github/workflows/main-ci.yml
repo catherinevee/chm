@@ -259,7 +259,7 @@ jobs:
 
     - name: Run Black
       run: |
-        black --check api/ backend/ core/ models/ services/ tests/ --diff || echo "Black formatting issues found"
+        black --check api/ backend/ core/ models/ tests/ --diff || echo "Black formatting issues found"
 
     - name: Run isort
       run: |

@@ -3,19 +3,21 @@ CHM Discovery API
 Network discovery and device detection endpoints
 """
 
-from fastapi import APIRouter, HTTPException, BackgroundTasks, Depends
-from pydantic import BaseModel
-from typing import List, Optional
-import logging
 import asyncio
+import logging
 from datetime import datetime
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from typing import List, Optional
 
-from core.database import get_db
-from models.discovery_job import DiscoveryJob as DiscoveryJobModel, DiscoveryType, DiscoveryStatus
-from models.device import Device as DeviceModel
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
+from pydantic import BaseModel
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from backend.services.discovery_service import DiscoveryService
+from core.database import get_db
+from models.device import Device as DeviceModel
+from models.discovery_job import DiscoveryJob as DiscoveryJobModel
+from models.discovery_job import DiscoveryStatus, DiscoveryType
 
 logger = logging.getLogger(__name__)
 

@@ -3,18 +3,20 @@ CHM Devices API
 Device management and monitoring endpoints
 """
 
-from fastapi import APIRouter, HTTPException, Depends, Query
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, update, delete
-from pydantic import BaseModel
-from typing import List, Optional
 import logging
 from datetime import datetime
+from typing import List, Optional
 
-from core.database import get_db
-from models.device import Device as DeviceModel, DeviceStatus, DeviceType, DeviceProtocol
+from fastapi import APIRouter, Depends, HTTPException, Query
+from pydantic import BaseModel
+from sqlalchemy import delete, select, update
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from backend.services.device_service import DeviceService
 from backend.services.discovery_service import DiscoveryService
+from core.database import get_db
+from models.device import Device as DeviceModel
+from models.device import DeviceProtocol, DeviceStatus, DeviceType
 
 logger = logging.getLogger(__name__)
 

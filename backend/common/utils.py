@@ -4,12 +4,12 @@ Common utility functions and decorators
 
 import asyncio
 import functools
-import logging
-from typing import Any, Callable, Optional, Type, Union, Tuple, Dict
-from datetime import datetime, timedelta
-import random
 import hashlib
+import logging
+import random
 import uuid
+from datetime import datetime, timedelta
+from typing import Any, Callable, Dict, Optional, Tuple, Type, Union
 
 logger = logging.getLogger(__name__)
 
@@ -497,6 +497,7 @@ def verify_password(password: str, hashed: str, salt: str) -> bool:
 def sanitize_filename(filename: str) -> str:
     """Sanitize a filename for safe storage"""
     import re
+
     # Remove any path components
     filename = filename.split('/')[-1].split('\\')[-1]
     # Remove dangerous characters

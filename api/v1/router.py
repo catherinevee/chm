@@ -4,7 +4,8 @@ Main router that includes all API endpoints
 """
 
 from fastapi import APIRouter
-from . import auth, devices, metrics, alerts, discovery, notifications, monitoring
+
+from . import alerts, auth, devices, discovery, metrics, monitoring, notifications
 
 # Create main API router
 api_router = APIRouter()
