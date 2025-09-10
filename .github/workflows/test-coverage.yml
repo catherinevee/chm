@@ -1,0 +1,370 @@
+name: Test Coverage
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  schedule:
+    - cron: '0 6 * * *'  # Daily at 6 AM UTC
+  workflow_dispatch:
+
+env:
+  PYTHON_VERSION: '3.11'
+  POSTGRES_VERSION: '15'
+  REDIS_VERSION: '7'
+
+jobs:
+  # Comprehensive test coverage analysis
+  coverage:
+    name: Test Coverage Analysis
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: test_user
+          POSTGRES_PASSWORD: test_password
+          POSTGRES_DB: test_chm
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Shallow clones should be disabled for better analysis
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+        cache: 'pip'
+        cache-dependency-path: |
+          requirements-prod.txt
+          requirements-dev.txt
+
+    - name: Install system dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libpq-dev libsnmp-dev
+
+    - name: Install Python dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements-prod.txt
+        pip install pytest pytest-cov pytest-asyncio pytest-mock coverage[toml] pytest-xdist
+        pip install pytest-asyncio
+
+    - name: Set up test environment
+      env:
+        DATABASE_URL: postgresql+asyncpg://test_user:test_password@localhost:5432/test_chm
+        REDIS_URL: redis://localhost:6379/0
+        SECRET_KEY: test-secret-key-for-testing-only
+        JWT_SECRET_KEY: test-jwt-secret-for-testing
+        ENCRYPTION_KEY: test-encryption-key-32-chars-long
+        PYTHONPATH: ${{ github.workspace }}
+      run: |
+        echo "DATABASE_URL=$DATABASE_URL" >> $GITHUB_ENV
+        echo "REDIS_URL=$REDIS_URL" >> $GITHUB_ENV
+        echo "SECRET_KEY=$SECRET_KEY" >> $GITHUB_ENV
+        echo "JWT_SECRET_KEY=$JWT_SECRET_KEY" >> $GITHUB_ENV
+        echo "ENCRYPTION_KEY=$ENCRYPTION_KEY" >> $GITHUB_ENV
+        echo "PYTHONPATH=${{ github.workspace }}" >> $GITHUB_ENV
+        
+        # Initialize database
+        echo "Initializing database..."
+        python scripts/init_db.py
+
+    - name: Run tests with coverage
+      run: |
+        echo "🧪 Running comprehensive test suite with coverage..."
+        export PYTHONPATH="${PYTHONPATH}:$(pwd)"
+        
+        # Run robust test suite only
+        coverage run --source=. -m pytest tests/test_robust.py -v --tb=short --maxfail=2
+        
+        # Generate coverage reports
+        coverage report -m --show-missing
+        coverage xml
+        coverage html
+        
+        # Generate coverage badge
+        coverage-badge -o coverage-badge.svg
+
+    - name: Upload coverage reports to Codecov
+      uses: codecov/codecov-action@v5
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        files: ./coverage.xml
+        flags: unittests
+        name: codecov-umbrella
+        fail_ci_if_error: false
+        verbose: true
+        directory: ./
+        root_dir: ./
+        yml: ./codecov.yml
+
+    - name: Upload coverage reports
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage-reports-${{ github.sha }}
+        path: |
+          coverage.xml
+          coverage.json
+          htmlcov/
+          coverage-badge.svg
+        retention-days: 30
+
+    - name: Comment PR with coverage
+      if: github.event_name == 'pull_request'
+      uses: py-cov-action/python-coverage-comment-action@v3
+      with:
+        GITHUB_TOKEN: ${{ github.token }}
+        MINIMUM_GREEN: 80
+        MINIMUM_ORANGE: 60
+        COVERAGE_XML_PATH: coverage.xml
+
+    - name: Coverage Summary
+      run: |
+        echo "📊 Coverage Summary:"
+        coverage report --show-missing | tail -1
+        echo ""
+        echo "📈 Detailed coverage by module:"
+        coverage report --show-missing
+
+  # Unit test coverage (faster, for PRs)
+  unit-coverage:
+    name: Unit Test Coverage
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+        cache: 'pip'
+        cache-dependency-path: 'requirements-ci.txt'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements-ci.txt
+        pip install pytest pytest-cov coverage[toml]
+
+    - name: Run unit tests with coverage
+      run: |
+        echo "🧪 Running unit tests with coverage..."
+        export PYTHONPATH="${PYTHONPATH}:$(pwd)"
+        
+        # Run only unit tests
+        coverage run --source=. -m pytest tests/unit/ -v --tb=short
+        
+        # Generate coverage reports
+        coverage report -m
+        coverage xml
+
+    - name: Upload unit test coverage
+      uses: codecov/codecov-action@v5
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        files: ./coverage.xml
+        flags: unittests
+        name: codecov-unit-tests
+        fail_ci_if_error: false
+
+  # Integration test coverage
+  integration-coverage:
+    name: Integration Test Coverage
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
+    
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: test_user
+          POSTGRES_PASSWORD: test_password
+          POSTGRES_DB: test_chm
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+        cache: 'pip'
+        cache-dependency-path: 'requirements-prod.txt'
+
+    - name: Install system dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libpq-dev libsnmp-dev
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements-prod.txt
+        pip install pytest pytest-cov pytest-asyncio coverage[toml]
+
+    - name: Set up test environment
+      env:
+        DATABASE_URL: postgresql+asyncpg://test_user:test_password@localhost:5432/test_chm
+        REDIS_URL: redis://localhost:6379/0
+        SECRET_KEY: test-secret-key-for-testing-only
+        JWT_SECRET_KEY: test-jwt-secret-for-testing
+        ENCRYPTION_KEY: test-encryption-key-32-chars-long
+      run: |
+        echo "DATABASE_URL=$DATABASE_URL" >> $GITHUB_ENV
+        echo "REDIS_URL=$REDIS_URL" >> $GITHUB_ENV
+        echo "SECRET_KEY=$SECRET_KEY" >> $GITHUB_ENV
+        echo "JWT_SECRET_KEY=$JWT_SECRET_KEY" >> $GITHUB_ENV
+        echo "ENCRYPTION_KEY=$ENCRYPTION_KEY" >> $GITHUB_ENV
+
+    - name: Run integration tests with coverage
+      run: |
+        echo "🧪 Running integration tests with coverage..."
+        export PYTHONPATH="${PYTHONPATH}:$(pwd)"
+        
+        # Run integration tests
+        coverage run --source=. -m pytest tests/integration/ -v --tb=short
+        
+        # Generate coverage reports
+        coverage report -m
+        coverage xml
+
+    - name: Upload integration test coverage
+      uses: codecov/codecov-action@v5
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        files: ./coverage.xml
+        flags: integration
+        name: codecov-integration-tests
+        fail_ci_if_error: false
+
+  # API test coverage
+  api-coverage:
+    name: API Test Coverage
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
+    
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: test_user
+          POSTGRES_PASSWORD: test_password
+          POSTGRES_DB: test_chm
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+        cache: 'pip'
+        cache-dependency-path: 'requirements-prod.txt'
+
+    - name: Install system dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libpq-dev libsnmp-dev
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements-prod.txt
+        pip install pytest pytest-cov pytest-asyncio httpx coverage[toml]
+
+    - name: Set up test environment
+      env:
+        DATABASE_URL: postgresql+asyncpg://test_user:test_password@localhost:5432/test_chm
+        REDIS_URL: redis://localhost:6379/0
+        SECRET_KEY: test-secret-key-for-testing-only
+        JWT_SECRET_KEY: test-jwt-secret-for-testing
+        ENCRYPTION_KEY: test-encryption-key-32-chars-long
+      run: |
+        echo "DATABASE_URL=$DATABASE_URL" >> $GITHUB_ENV
+        echo "REDIS_URL=$REDIS_URL" >> $GITHUB_ENV
+        echo "SECRET_KEY=$SECRET_KEY" >> $GITHUB_ENV
+        echo "JWT_SECRET_KEY=$JWT_SECRET_KEY" >> $GITHUB_ENV
+        echo "ENCRYPTION_KEY=$ENCRYPTION_KEY" >> $GITHUB_ENV
+
+    - name: Run API tests with coverage
+      run: |
+        echo "🧪 Running API tests with coverage..."
+        export PYTHONPATH="${PYTHONPATH}:$(pwd)"
+        
+        # Run API tests
+        coverage run --source=. -m pytest tests/api/ -v --tb=short
+        
+        # Generate coverage reports
+        coverage report -m
+        coverage xml
+
+    - name: Upload API test coverage
+      uses: codecov/codecov-action@v5
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        files: ./coverage.xml
+        flags: api
+        name: codecov-api-tests
+        fail_ci_if_error: false

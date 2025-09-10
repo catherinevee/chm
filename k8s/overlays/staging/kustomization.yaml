@@ -1,0 +1,83 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: chm-staging
+
+bases:
+  - ../../
+
+namePrefix: staging-
+
+configMapGenerator:
+  - name: chm-environment
+    behavior: merge
+    literals:
+      - ENVIRONMENT=staging
+      - LOG_LEVEL=INFO
+      - WORKERS=4
+      - MAX_CONNECTIONS=50
+
+secretGenerator:
+  - name: chm-credentials
+    behavior: merge
+    literals:
+      - database-password=staging-secure-password
+      - jwt-secret=staging-jwt-secret-key
+      - snmp-community=staging-community
+
+replicas:
+  - name: chm-app
+    count: 2
+  - name: celery-worker
+    count: 2
+
+patches:
+  - target:
+      kind: Deployment
+      name: chm-app
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/memory
+        value: 512Mi
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/cpu
+        value: 500m
+  
+  - target:
+      kind: StatefulSet
+      name: postgres
+    patch: |-
+      - op: replace
+        path: /spec/volumeClaimTemplates/0/spec/resources/requests/storage
+        value: 10Gi
+  
+  - target:
+      kind: HorizontalPodAutoscaler
+      name: chm-hpa
+    patch: |-
+      - op: replace
+        path: /spec/minReplicas
+        value: 2
+      - op: replace
+        path: /spec/maxReplicas
+        value: 6
+  
+  - target:
+      kind: Ingress
+      name: chm-ingress
+    patch: |-
+      - op: replace
+        path: /spec/rules/0/host
+        value: api.chm-staging.example.com
+      - op: replace
+        path: /spec/rules/1/host
+        value: chm-staging.example.com
+      - op: replace
+        path: /spec/tls/0/hosts/0
+        value: api.chm-staging.example.com
+      - op: replace
+        path: /spec/tls/0/hosts/1
+        value: chm-staging.example.com
+      - op: add
+        path: /metadata/annotations/cert-manager.io~1cluster-issuer
+        value: letsencrypt-staging

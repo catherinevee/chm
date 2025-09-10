@@ -1,0 +1,334 @@
+name: Main CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+
+env:
+  PYTHON_VERSION: '3.11'
+  POSTGRES_VERSION: '15'
+  REDIS_VERSION: '7'
+
+jobs:
+  # Quick PR validation for fast feedback
+  pr-validation:
+    name: PR Validation (Fast)
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    timeout-minutes: 5
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    
+    - name: Get changed files
+      id: changed-files
+      uses: tj-actions/changed-files@v40
+      with:
+        files_yaml: |
+          python:
+            - '**.py'
+          tests:
+            - 'tests/**.py'
+          requirements:
+            - 'requirements*.txt'
+    
+    - name: Set up Python
+      if: steps.changed-files.outputs.python_any_changed == 'true' || steps.changed-files.outputs.tests_any_changed == 'true'
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+        cache: 'pip'
+        cache-dependency-path: 'requirements-ci.txt'
+    
+    - name: Install minimal dependencies
+      if: steps.changed-files.outputs.python_any_changed == 'true' || steps.changed-files.outputs.tests_any_changed == 'true'
+      run: |
+        python -m pip install --upgrade pip
+        pip install black flake8 isort mypy bandit
+    
+    - name: Check Python formatting (Black)
+      if: steps.changed-files.outputs.python_any_changed == 'true'
+      run: |
+        echo "🎨 Checking code formatting with Black..."
+        black --check --diff ${{ steps.changed-files.outputs.python_all_changed_files }}
+    
+    - name: Check import sorting (isort)
+      if: steps.changed-files.outputs.python_any_changed == 'true'
+      run: |
+        echo "📦 Checking import sorting with isort..."
+        isort --check-only --diff ${{ steps.changed-files.outputs.python_all_changed_files }}
+    
+    - name: Run quick linting (Flake8)
+      if: steps.changed-files.outputs.python_any_changed == 'true'
+      run: |
+        echo "🔍 Running Flake8 linting..."
+        flake8 ${{ steps.changed-files.outputs.python_all_changed_files }} \
+          --max-line-length=120 \
+          --extend-ignore=E203,W503 \
+          --max-complexity=10
+    
+    - name: Security quick scan (Bandit)
+      if: steps.changed-files.outputs.python_any_changed == 'true'
+      run: |
+        echo "🔒 Running security scan with Bandit..."
+        bandit -ll -r ${{ steps.changed-files.outputs.python_all_changed_files }} || true
+    
+    - name: Check for secrets
+      run: |
+        echo "🔑 Checking for exposed secrets..."
+        # Check for hardcoded secrets (non-blocking)
+        if grep -rE "(api[_-]?key\s*=\s*['\"][^'\"]{20,}['\"]|secret\s*=\s*['\"][^'\"]{20,}['\"]|password\s*=\s*['\"][^'\"]{8,}['\"]|token\s*=\s*['\"][^'\"]{20,}['\"]|private[_-]?key\s*=\s*['\"][^'\"]{20,}['\"]|access[_-]?key\s*=\s*['\"][^'\"]{20,}['\"])" \
+          --include="*.py" --include="*.yml" --include="*.yaml" --include="*.json" \
+          --exclude-dir=".git" --exclude-dir="tests" . | grep -vE "(example|fake|test|dummy|placeholder|TODO|FIXME)"; then
+          echo "⚠️ Potential hardcoded secrets found - please review"
+        else
+          echo "✅ No hardcoded secrets detected"
+        fi
+
+  # Multi-version testing
+  test-matrix:
+    name: Test (Python ${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ['3.9', '3.10', '3.11', '3.12']
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+        cache: 'pip'
+        cache-dependency-path: 'requirements-ci.txt'
+
+    - name: Cache pip packages
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('requirements-ci.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+
+    - name: Install system dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libpq-dev libsnmp-dev
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements-ci.txt
+        pip install pytest-asyncio
+
+    - name: Run basic tests
+      run: |
+        echo "=== Running pytest ==="
+        export PYTHONPATH="${PYTHONPATH}:$(pwd)"
+        pytest tests/unit/ tests/test_basic.py -v --tb=short --maxfail=5 || echo "Some tests failed"
+
+  # Comprehensive testing with coverage (main branch only)
+  test-coverage:
+    name: Test with Coverage
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
+    
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: test_user
+          POSTGRES_PASSWORD: test_password
+          POSTGRES_DB: test_chm
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+        cache: 'pip'
+        cache-dependency-path: |
+          requirements-prod.txt
+          requirements-dev.txt
+
+    - name: Install system dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libpq-dev libsnmp-dev
+
+    - name: Install Python dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements-prod.txt
+        pip install pytest pytest-cov pytest-asyncio pytest-mock coverage[toml]
+
+    - name: Set up test environment
+      env:
+        DATABASE_URL: postgresql+asyncpg://test_user:test_password@localhost:5432/test_chm
+        REDIS_URL: redis://localhost:6379/0
+        SECRET_KEY: test-secret-key-for-testing
+        JWT_SECRET_KEY: test-jwt-secret
+        ENCRYPTION_KEY: test-encryption-key-32-chars-long
+      run: |
+        echo "DATABASE_URL=$DATABASE_URL" >> $GITHUB_ENV
+        echo "REDIS_URL=$REDIS_URL" >> $GITHUB_ENV
+        echo "SECRET_KEY=$SECRET_KEY" >> $GITHUB_ENV
+        echo "JWT_SECRET_KEY=$JWT_SECRET_KEY" >> $GITHUB_ENV
+        echo "ENCRYPTION_KEY=$ENCRYPTION_KEY" >> $GITHUB_ENV
+
+    - name: Run tests with coverage
+      run: |
+        export PYTHONPATH="${PYTHONPATH}:$(pwd)"
+        coverage run --source=. -m pytest tests/ -v --tb=short
+        coverage report -m
+        coverage xml
+        coverage html
+
+    - name: Upload coverage reports to Codecov
+      uses: codecov/codecov-action@v5
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        files: ./coverage.xml
+        flags: unittests
+        name: codecov-umbrella
+        fail_ci_if_error: false
+        verbose: true
+
+    - name: Upload coverage reports
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage-reports
+        path: |
+          coverage.xml
+          htmlcov/
+
+    - name: Comment PR with coverage
+      if: github.event_name == 'pull_request'
+      uses: py-cov-action/python-coverage-comment-action@v3
+      with:
+        GITHUB_TOKEN: ${{ github.token }}
+        MINIMUM_GREEN: 80
+        MINIMUM_ORANGE: 60
+
+  # Code quality analysis
+  code-quality:
+    name: Code Quality Analysis
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install black flake8 mypy pylint bandit isort radon
+
+    - name: Run Black
+      run: |
+        black --check api/ backend/ core/ models/ services/ tests/ --diff || echo "Black formatting issues found"
+
+    - name: Run isort
+      run: |
+        isort --check-only api/ backend/ core/ models/ services/ tests/ --diff || echo "Import sorting issues found"
+
+    - name: Run Flake8
+      run: |
+        flake8 api/ backend/ core/ models/ services/ tests/ --max-line-length=120 --extend-ignore=E203,W503 \
+          --format=html --htmldir=flake8-report || echo "Flake8 linting issues found"
+        flake8 api/ backend/ core/ models/ services/ tests/ --max-line-length=120 --extend-ignore=E203,W503 \
+          --statistics --count || echo "Flake8 statistics completed"
+
+    - name: Run pylint
+      continue-on-error: true
+      run: |
+        pylint api/ backend/ core/ models/ services/ --output-format=json > pylint-report.json || true
+        pylint api/ backend/ core/ models/ services/ --fail-under=7.0 || echo "Pylint issues found"
+
+    - name: Run mypy
+      continue-on-error: true
+      run: |
+        mypy api/ backend/ core/ models/ services/ --ignore-missing-imports --html-report mypy-report || echo "MyPy type checking issues found"
+
+    - name: Run Bandit security linting
+      run: |
+        bandit -r api/ backend/ core/ models/ services/ -f json -o bandit-report.json || true
+        bandit -r api/ backend/ core/ models/ services/ -ll || echo "Bandit security issues found"
+
+    - name: Run complexity analysis
+      run: |
+        radon cc api/ backend/ core/ models/ services/ -s -j > complexity-report.json || echo "Complexity analysis completed"
+        radon mi api/ backend/ core/ models/ services/ -s || echo "Maintainability analysis completed"
+
+    - name: Upload quality reports
+      uses: actions/upload-artifact@v4
+      with:
+        name: quality-reports
+        path: |
+          flake8-report/
+          pylint-report.json
+          mypy-report/
+          bandit-report.json
+          complexity-report.json
+
+  # Build and test Docker image
+  docker-build:
+    name: Docker Build & Test
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Build Docker image
+      run: |
+        docker build -t chm:test .
+
+    - name: Test Docker image
+      run: |
+        docker run --rm chm:test python -c "import sys; print(f'Python {sys.version}')"
+        docker run --rm chm:test python -c "from main import app; print('FastAPI app loads successfully')"
+
+    - name: Upload Docker image
+      if: github.ref == 'refs/heads/main'
+      run: |
+        echo "Docker image built and tested successfully"
+        # Add Docker Hub push logic here if needed

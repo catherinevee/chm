@@ -1,0 +1,253 @@
+name: Security Scanning
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    - cron: '0 2 * * *'  # Daily at 2 AM UTC
+  workflow_dispatch:
+
+jobs:
+  # Security and License Scanning
+  security-scan:
+    name: Security and License Scanning
+    runs-on: ubuntu-latest
+    env:
+      PYTHON_VERSION: '3.11'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        submodules: false  # Disable submodule checkout since .gitmodules is missing
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+        cache: 'pip'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install safety bandit semgrep
+
+    - name: Run Safety check
+      run: |
+        echo "🔒 Running Safety vulnerability check..."
+        safety check --json --output safety-report.json || true
+        safety check
+
+    - name: Run Bandit security linting
+      run: |
+        echo "🛡️ Running Bandit security analysis..."
+        bandit -r api/ backend/ core/ models/ services/ -f json -o bandit-report.json || true
+        bandit -r api/ backend/ core/ models/ services/ -ll || true
+
+    - name: Run Semgrep SAST
+      run: |
+        echo "🔍 Running Semgrep static analysis..."
+        semgrep --config=auto --json --output=semgrep-report.json api/ backend/ core/ models/ services/ || true
+        semgrep --config=auto api/ backend/ core/ models/ services/ || true
+
+    - name: Check for secrets
+      run: |
+        echo "🔑 Checking for exposed secrets..."
+        # Check for hardcoded secrets (non-blocking)
+        if grep -rE "(api[_-]?key\s*=\s*['\"][^'\"]{20,}['\"]|secret\s*=\s*['\"][^'\"]{20,}['\"]|password\s*=\s*['\"][^'\"]{8,}['\"]|token\s*=\s*['\"][^'\"]{20,}['\"]|private[_-]?key\s*=\s*['\"][^'\"]{20,}['\"]|access[_-]?key\s*=\s*['\"][^'\"]{20,}['\"])" \
+          --include="*.py" --include="*.yml" --include="*.yaml" --include="*.json" \
+          --exclude-dir=".git" --exclude-dir="tests" --exclude-dir="node_modules" . | grep -vE "(example|fake|test|dummy|placeholder|TODO|FIXME|your-secret-key-change-in-production)"; then
+          echo "⚠️ Potential hardcoded secrets found. Please review the output above."
+          echo "This is a warning, not a failure. Review and fix any actual secrets."
+        else
+          echo "✅ No obvious hardcoded secrets found."
+        fi
+
+    - name: Upload security reports
+      uses: actions/upload-artifact@v4
+      with:
+        name: security-reports
+        path: |
+          safety-report.json
+          bandit-report.json
+          semgrep-report.json
+
+  # OSSF Scorecard
+  scorecard:
+    name: OSSF Scorecard Analysis
+    runs-on: ubuntu-latest
+    if: github.event.repository.default_branch == github.ref_name || github.event_name == 'pull_request'
+    permissions:
+      security-events: write
+      id-token: write
+      contents: read
+      actions: read
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        submodules: false  # Disable submodule checkout since .gitmodules is missing
+        persist-credentials: false
+
+    - name: Run OSSF Scorecard
+      uses: ossf/scorecard-action@f49aabe0b5af0936a0987cfb85d86b75731b0186
+      with:
+        results_file: results.sarif
+        results_format: sarif
+        publish_results: true
+
+    - name: Upload Scorecard results
+      uses: actions/upload-artifact@v4
+      with:
+        name: scorecard-results
+        path: results.sarif
+        retention-days: 5
+
+    - name: Upload to code-scanning
+      uses: github/codeql-action/upload-sarif@v3
+      with:
+        sarif_file: results.sarif
+
+  # Trivy vulnerability scanning
+  trivy-scan:
+    name: Trivy Vulnerability Scan
+    runs-on: ubuntu-latest
+    env:
+      DOCKER_REGISTRY: docker.io
+      DOCKER_IMAGE: catherinevee/chm
+    permissions:
+      contents: read
+      security-events: write
+      actions: read
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        submodules: false  # Disable submodule checkout since .gitmodules is missing
+
+    - name: Build Docker image
+      run: |
+        docker build -t ${{ env.DOCKER_IMAGE }}:${{ github.sha }} .
+
+    - name: Run Trivy vulnerability scanner
+      uses: aquasecurity/trivy-action@7b7aa264d83dc58691451798b4d117d53d21edfe
+      with:
+        image-ref: '${{ env.DOCKER_IMAGE }}:${{ github.sha }}'
+        format: 'template'
+        template: '@/contrib/sarif.tpl'
+        output: 'trivy-results.sarif'
+        severity: 'CRITICAL,HIGH'
+
+    - name: Upload Trivy scan results
+      uses: actions/upload-artifact@v4
+      with:
+        name: trivy-results
+        path: trivy-results.sarif
+
+    - name: Upload Trivy results to GitHub Security tab
+      uses: github/codeql-action/upload-sarif@v3
+      with:
+        sarif_file: 'trivy-results.sarif'
+
+  # License compliance check
+  license-check:
+    name: License Compliance
+    runs-on: ubuntu-latest
+    env:
+      PYTHON_VERSION: '3.11'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        submodules: false  # Disable submodule checkout since .gitmodules is missing
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pip-licenses
+
+    - name: Check licenses
+      run: |
+        echo "📄 Checking package licenses..."
+        pip-licenses --format=json --output-file=licenses.json
+        pip-licenses --format=plain  # Changed from table to plain format
+
+    - name: Upload license report
+      uses: actions/upload-artifact@v4
+      with:
+        name: license-report
+        path: licenses.json
+
+  # Dependency vulnerability scanning
+  dependency-scan:
+    name: Dependency Vulnerability Scan
+    runs-on: ubuntu-latest
+    env:
+      PYTHON_VERSION: '3.11'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pip-audit
+
+    - name: Run pip-audit
+      run: |
+        echo "🔍 Running pip-audit for dependency vulnerabilities..."
+        pip-audit --format=json --output=pip-audit-report.json || true
+        pip-audit --desc || true
+
+    - name: Upload dependency scan results
+      uses: actions/upload-artifact@v4
+      with:
+        name: dependency-scan-results
+        path: pip-audit-report.json
+
+  # CodeQL Analysis
+  codeql-analysis:
+    name: CodeQL Analysis
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [ 'python' ]
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v3
+      with:
+        languages: ${{ matrix.language }}
+
+    - name: Autobuild
+      uses: github/codeql-action/autobuild@v3
+
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v3
+      with:
+        category: "/language:${{matrix.language}}"

@@ -1,0 +1,33 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: chm-pdb
+  namespace: chm
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: chm
+      component: backend
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: postgres-pdb
+  namespace: chm
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: postgres
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: celery-worker-pdb
+  namespace: chm
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: celery-worker

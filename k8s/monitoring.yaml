@@ -1,0 +1,125 @@
+apiVersion: v1
+kind: ServiceMonitor
+metadata:
+  name: chm-metrics
+  namespace: chm
+  labels:
+    app: chm
+    prometheus: kube-prometheus
+spec:
+  selector:
+    matchLabels:
+      app: chm
+      component: backend
+  endpoints:
+  - port: metrics
+    path: /api/v1/monitoring/metrics
+    interval: 30s
+    scrapeTimeout: 10s
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: chm-alerts
+  namespace: chm
+  labels:
+    app: chm
+    prometheus: kube-prometheus
+spec:
+  groups:
+  - name: chm.rules
+    interval: 30s
+    rules:
+    - alert: CHMHighDeviceFailureRate
+      expr: rate(chm_poll_failure_total[5m]) > 0.1
+      for: 5m
+      labels:
+        severity: warning
+        service: chm
+      annotations:
+        summary: "High device polling failure rate"
+        description: "Device polling failure rate is {{ $value }} failures per second"
+    
+    - alert: CHMHighAlertCount
+      expr: chm_alerts_active{severity="critical"} > 10
+      for: 2m
+      labels:
+        severity: critical
+        service: chm
+      annotations:
+        summary: "High number of critical alerts"
+        description: "{{ $value }} critical alerts are currently active"
+    
+    - alert: CHMHighMemoryUsage
+      expr: chm_system_memory_usage_bytes / (1024*1024*1024) > 4
+      for: 5m
+      labels:
+        severity: warning
+        service: chm
+      annotations:
+        summary: "High memory usage"
+        description: "CHM is using {{ $value }}GB of memory"
+    
+    - alert: CHMHighAPILatency
+      expr: histogram_quantile(0.95, rate(chm_api_request_duration_seconds_bucket[5m])) > 2
+      for: 5m
+      labels:
+        severity: warning
+        service: chm
+      annotations:
+        summary: "High API latency"
+        description: "95th percentile API latency is {{ $value }} seconds"
+    
+    - alert: CHMDatabaseConnectionsHigh
+      expr: chm_db_connections_active > 50
+      for: 5m
+      labels:
+        severity: warning
+        service: chm
+      annotations:
+        summary: "High number of database connections"
+        description: "{{ $value }} active database connections"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboard-chm
+  namespace: monitoring
+  labels:
+    grafana_dashboard: "1"
+data:
+  chm-dashboard.json: |
+    {
+      "dashboard": {
+        "title": "CHM Monitoring Dashboard",
+        "panels": [
+          {
+            "title": "Device Status",
+            "targets": [
+              {"expr": "chm_devices_online"},
+              {"expr": "chm_devices_offline"}
+            ]
+          },
+          {
+            "title": "Polling Performance",
+            "targets": [
+              {"expr": "rate(chm_poll_success_total[5m])"},
+              {"expr": "rate(chm_poll_failure_total[5m])"}
+            ]
+          },
+          {
+            "title": "Active Alerts",
+            "targets": [
+              {"expr": "chm_alerts_active"}
+            ]
+          },
+          {
+            "title": "API Performance",
+            "targets": [
+              {"expr": "rate(chm_api_requests_total[5m])"},
+              {"expr": "histogram_quantile(0.95, rate(chm_api_request_duration_seconds_bucket[5m]))"}
+            ]
+          }
+        ]
+      }
+    }

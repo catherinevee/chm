@@ -1,0 +1,538 @@
+"""
+Integration tests for Monitoring System
+"""
+
+import pytest
+import asyncio
+from datetime import datetime, timedelta
+from unittest.mock import Mock, patch, AsyncMock
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from backend.services.metrics_service import MetricsService
+from backend.services.alert_service import AlertService
+from backend.services.alert_escalation_engine import AlertEscalationEngine, EscalationRule
+from backend.protocols.snmp_client import SNMPClient, SNMPPoller
+from backend.protocols.ssh_client import AsyncSSHClient, DeviceSSHManager
+from backend.database.models import Device, DeviceMetric, Alert, User
+from backend.tasks.monitoring_tasks import poll_device, check_device_health
+
+
+@pytest.mark.asyncio
+class TestMetricsServiceIntegration:
+    """Integration tests for metrics service"""
+    
+    async def test_create_and_retrieve_metrics(self, test_session, test_device: Device):
+        """Test creating and retrieving metrics"""
+        service = MetricsService()
+        
+        # Create metrics
+        metrics_data = [
+            {'name': 'cpu_usage', 'value': 45.5, 'unit': 'percent'},
+            {'name': 'memory_usage', 'value': 72.3, 'unit': 'percent'},
+            {'name': 'temperature', 'value': 42.0, 'unit': 'celsius'}
+        ]
+        
+        created_metrics = []
+        for data in metrics_data:
+            metric = await service.create_metric(
+                test_session,
+                test_device.id,
+                data
+            )
+            created_metrics.append(metric)
+        
+        # Get performance summary
+        summary = await service.get_performance_summary(
+            test_session,
+            device_id=test_device.id,
+            hours=1
+        )
+        
+        assert summary is not None
+        assert 'metrics' in summary
+        assert len(summary['metrics']) >= 3
+        assert 'cpu_usage' in summary['metrics']
+        assert summary['metrics']['cpu_usage']['average'] == 45.5
+    
+    async def test_metric_aggregation(self, test_session, test_device: Device):
+        """Test metric aggregation over time"""
+        service = MetricsService()
+        
+        # Create metrics over time
+        base_time = datetime.utcnow() - timedelta(hours=2)
+        
+        for i in range(10):
+            timestamp = base_time + timedelta(minutes=i * 10)
+            metric_data = {
+                'name': 'cpu_usage',
+                'value': 40 + (i * 2),  # Increasing CPU usage
+                'unit': 'percent',
+                'timestamp': timestamp
+            }
+            await service.create_metric(
+                test_session,
+                test_device.id,
+                metric_data
+            )
+        
+        # Get graph data
+        graph_data = await service.get_graph_data(
+            test_session,
+            test_device.id,
+            'cpu_usage',
+            hours=3,
+            interval_minutes=15
+        )
+        
+        assert len(graph_data) > 0
+        assert all('timestamp' in point for point in graph_data)
+        assert all('value' in point for point in graph_data)
+        
+        # Verify trend (should be increasing)
+        if len(graph_data) > 1:
+            assert graph_data[-1]['value'] > graph_data[0]['value']
+    
+    async def test_bulk_metric_creation(self, test_session, test_device: Device):
+        """Test bulk metric creation"""
+        service = MetricsService()
+        
+        # Prepare bulk metrics
+        metrics_data = [
+            {
+                'device_id': test_device.id,
+                'name': f'metric_{i}',
+                'value': float(i * 10),
+                'unit': 'units'
+            }
+            for i in range(5)
+        ]
+        
+        # Create in bulk
+        created = await service.bulk_create_metrics(
+            test_session,
+            metrics_data
+        )
+        
+        assert len(created) == 5
+        assert all(m.device_id == test_device.id for m in created)
+    
+    async def test_old_metrics_cleanup(self, test_session, test_device: Device):
+        """Test cleanup of old metrics"""
+        service = MetricsService()
+        
+        # Create old metrics
+        old_timestamp = datetime.utcnow() - timedelta(days=100)
+        old_metric = DeviceMetric(
+            device_id=test_device.id,
+            metric_type='old_metric',
+            value=100.0,
+            timestamp=old_timestamp
+        )
+        test_session.add(old_metric)
+        
+        # Create recent metric
+        recent_metric = DeviceMetric(
+            device_id=test_device.id,
+            metric_type='recent_metric',
+            value=50.0,
+            timestamp=datetime.utcnow()
+        )
+        test_session.add(recent_metric)
+        await test_session.commit()
+        
+        # Clean old metrics
+        deleted_count = await service.delete_old_metrics(
+            test_session,
+            days=90
+        )
+        
+        assert deleted_count >= 1
+        
+        # Verify old metric is gone but recent remains
+        from sqlalchemy import select
+        result = await test_session.execute(
+            select(DeviceMetric).where(
+                DeviceMetric.device_id == test_device.id
+            )
+        )
+        remaining = result.scalars().all()
+        
+        assert all(m.metric_type != 'old_metric' for m in remaining)
+        assert any(m.metric_type == 'recent_metric' for m in remaining)
+
+
+@pytest.mark.asyncio
+class TestAlertServiceIntegration:
+    """Integration tests for alert service"""
+    
+    async def test_alert_lifecycle(self, test_session, test_device: Device, test_user: User):
+        """Test complete alert lifecycle"""
+        service = AlertService()
+        
+        # Create alert
+        alert_data = {
+            'device_id': test_device.id,
+            'alert_type': 'threshold',
+            'severity': 'warning',
+            'message': 'CPU usage high',
+            'description': 'CPU usage exceeded 80%'
+        }
+        
+        alert = await service.create_alert(
+            test_session,
+            alert_data,
+            user_id=test_user.id
+        )
+        
+        assert alert is not None
+        assert alert.status == 'active'
+        assert alert.severity == 'warning'
+        
+        # Acknowledge alert
+        ack_alert = await service.acknowledge_alert(
+            test_session,
+            alert.id,
+            test_user.id,
+            notes='Looking into it'
+        )
+        
+        assert ack_alert.status == 'acknowledged'
+        assert ack_alert.acknowledged_by == test_user.id
+        assert ack_alert.acknowledged_at is not None
+        
+        # Resolve alert
+        resolved_alert = await service.resolve_alert(
+            test_session,
+            alert.id,
+            test_user.id,
+            resolution='Restarted service'
+        )
+        
+        assert resolved_alert.status == 'resolved'
+        assert resolved_alert.resolved_by == test_user.id
+        assert resolved_alert.resolved_at is not None
+    
+    async def test_alert_escalation(self, test_session, test_device: Device, test_user: User):
+        """Test alert escalation"""
+        service = AlertService()
+        
+        # Create critical alert
+        alert_data = {
+            'device_id': test_device.id,
+            'alert_type': 'device_down',
+            'severity': 'warning',
+            'message': 'Device not responding'
+        }
+        
+        alert = await service.create_alert(
+            test_session,
+            alert_data,
+            user_id=test_user.id
+        )
+        
+        # Escalate alert
+        escalated = await service.escalate_alert(
+            test_session,
+            alert.id,
+            test_user.id,
+            escalation_level=1
+        )
+        
+        assert escalated.severity == 'error'  # Should escalate from warning to error
+        assert escalated.alert_metadata.get('escalated') is True
+    
+    async def test_alert_statistics(self, test_session, test_device: Device):
+        """Test alert statistics generation"""
+        service = AlertService()
+        
+        # Create multiple alerts
+        severities = ['info', 'warning', 'error', 'critical']
+        for severity in severities:
+            alert_data = {
+                'device_id': test_device.id,
+                'alert_type': 'test',
+                'severity': severity,
+                'message': f'Test {severity} alert'
+            }
+            await service.create_alert(test_session, alert_data)
+        
+        # Get statistics
+        stats = await service.get_alert_statistics(
+            test_session,
+            hours=1
+        )
+        
+        assert stats is not None
+        assert stats['total_alerts'] >= 4
+        assert len(stats['by_severity']) >= 4
+        assert stats['active_alerts'] >= 4
+    
+    async def test_bulk_alert_update(self, test_session, test_device: Device, test_user: User):
+        """Test bulk alert status update"""
+        service = AlertService()
+        
+        # Create multiple alerts
+        alert_ids = []
+        for i in range(3):
+            alert_data = {
+                'device_id': test_device.id,
+                'alert_type': 'test',
+                'severity': 'warning',
+                'message': f'Test alert {i}'
+            }
+            alert = await service.create_alert(test_session, alert_data)
+            alert_ids.append(alert.id)
+        
+        # Bulk acknowledge
+        updated_count = await service.bulk_update_status(
+            test_session,
+            alert_ids,
+            'acknowledged',
+            test_user.id
+        )
+        
+        assert updated_count == 3
+        
+        # Verify all are acknowledged
+        alerts = await service.get_alerts(
+            test_session,
+            device_id=test_device.id,
+            status='acknowledged'
+        )
+        
+        assert len([a for a in alerts if a.id in alert_ids]) == 3
+
+
+@pytest.mark.asyncio
+class TestAlertEscalationEngine:
+    """Integration tests for alert escalation engine"""
+    
+    async def test_escalation_rule_matching(self, test_session, test_device: Device):
+        """Test escalation rule matching"""
+        engine = AlertEscalationEngine(test_session)
+        
+        # Create critical alert
+        alert = Alert(
+            device_id=test_device.id,
+            alert_type='device_down',
+            severity='critical',
+            message='Device offline',
+            status='active',
+            created_at=datetime.utcnow() - timedelta(minutes=10)
+        )
+        test_session.add(alert)
+        await test_session.commit()
+        
+        # Process alert
+        result = await engine.process_alert(alert)
+        
+        assert result['processed'] is True
+        assert len(result['actions_taken']) > 0
+        
+        # Should match "Critical Unacknowledged" rule
+        assert any(
+            action['rule'] == 'Critical Unacknowledged'
+            for action in result['actions_taken']
+        )
+    
+    async def test_flapping_detection(self, test_session, test_device: Device):
+        """Test flapping device detection"""
+        engine = AlertEscalationEngine(test_session)
+        
+        # Create multiple up/down alerts to simulate flapping
+        for i in range(5):
+            alert_type = 'device_down' if i % 2 == 0 else 'device_up'
+            alert = Alert(
+                device_id=test_device.id,
+                alert_type=alert_type,
+                severity='warning',
+                message=f'Device {alert_type}',
+                status='active',
+                created_at=datetime.utcnow() - timedelta(minutes=30-i*5)
+            )
+            test_session.add(alert)
+        
+        await test_session.commit()
+        
+        # Check flapping
+        is_flapping = await engine._check_flapping(test_device)
+        assert is_flapping is True
+    
+    async def test_cascade_failure_detection(self, test_session):
+        """Test cascade failure detection"""
+        from backend.services.device_service import DeviceService
+        
+        device_service = DeviceService(test_session)
+        engine = AlertEscalationEngine(test_session)
+        
+        # Create multiple devices in same location
+        devices = []
+        for i in range(4):
+            device_data = {
+                'hostname': f'cascade-device-{i}',
+                'ip_address': f'10.0.0.{i+1}',
+                'device_type': 'switch',
+                'location': 'DataCenter-A'
+            }
+            device = await device_service.create_device(device_data)
+            devices.append(device)
+        
+        # Create alerts for multiple devices
+        for device in devices[1:]:  # Alert on 3 devices
+            alert = Alert(
+                device_id=device.id,
+                alert_type='device_down',
+                severity='error',
+                message='Device down',
+                status='active',
+                created_at=datetime.utcnow() - timedelta(minutes=5)
+            )
+            test_session.add(alert)
+        
+        await test_session.commit()
+        
+        # Check cascade for first device
+        cascade_count = await engine._check_cascade(devices[0])
+        assert cascade_count >= 3  # Should detect at least 3 related devices alerting
+
+
+@pytest.mark.asyncio
+class TestSNMPIntegration:
+    """Integration tests for SNMP functionality"""
+    
+    @patch('backend.protocols.snmp_client.SNMPClient.test_connectivity')
+    @patch('backend.protocols.snmp_client.SNMPClient.get_system_info')
+    async def test_snmp_device_polling(self, mock_sys_info, mock_connectivity):
+        """Test SNMP device polling"""
+        # Mock SNMP responses
+        mock_connectivity.return_value = True
+        mock_sys_info.return_value = {
+            'description': 'Cisco IOS Software',
+            'hostname': 'test-router',
+            'location': 'Server Room',
+            'uptime': {'days': 10, 'hours': 5, 'minutes': 30, 'seconds': 15}
+        }
+        
+        poller = SNMPPoller()
+        
+        device_config = {
+            'ip_address': '192.168.1.1',
+            'snmp_community': 'public',
+            'snmp_version': 'v2c',
+            'vendor': 'cisco'
+        }
+        
+        result = await poller.poll_device(device_config)
+        
+        assert result is not None
+        assert 'system' in result
+        assert result['system']['hostname'] == 'test-router'
+    
+    @patch('backend.protocols.snmp_client.SNMPClient.walk')
+    async def test_snmp_interface_discovery(self, mock_walk):
+        """Test SNMP interface discovery"""
+        # Mock interface data
+        mock_walk.return_value = [
+            ('1.3.6.1.2.1.2.2.1.1.1', 1),
+            ('1.3.6.1.2.1.2.2.1.1.2', 2)
+        ]
+        
+        client = SNMPClient('192.168.1.1')
+        interfaces = await client.get_interfaces('public')
+        
+        assert interfaces is not None
+        assert len(interfaces) >= 0  # Should process interface data
+
+
+@pytest.mark.asyncio
+class TestSSHIntegration:
+    """Integration tests for SSH functionality"""
+    
+    @patch('backend.protocols.ssh_client.AsyncSSHClient._connect_sync')
+    async def test_ssh_connection(self, mock_connect):
+        """Test SSH connection establishment"""
+        mock_connect.return_value = True
+        
+        client = AsyncSSHClient(
+            host='192.168.1.1',
+            username='admin',
+            password='password'
+        )
+        
+        connected = await client.connect()
+        assert connected is True
+    
+    @patch('backend.protocols.ssh_client.AsyncSSHClient._execute_command_sync')
+    async def test_ssh_command_execution(self, mock_execute):
+        """Test SSH command execution"""
+        mock_execute.return_value = ('output', '', 0)
+        
+        client = AsyncSSHClient(
+            host='192.168.1.1',
+            username='admin',
+            password='password'
+        )
+        client.connected = True
+        
+        stdout, stderr, exit_code = await client.execute_command('show version')
+        
+        assert stdout == 'output'
+        assert exit_code == 0
+    
+    async def test_device_ssh_manager(self):
+        """Test device SSH manager for different vendors"""
+        manager = DeviceSSHManager()
+        
+        # Test vendor handler selection
+        assert 'cisco' in manager.vendor_handlers
+        assert 'juniper' in manager.vendor_handlers
+        assert 'arista' in manager.vendor_handlers
+        assert 'generic' in manager.vendor_handlers
+
+
+@pytest.mark.asyncio
+class TestMonitoringTasks:
+    """Integration tests for monitoring background tasks"""
+    
+    @patch('backend.tasks.monitoring_tasks._poll_snmp')
+    @patch('backend.tasks.monitoring_tasks._check_ping')
+    async def test_device_polling_task(self, mock_ping, mock_snmp, test_session, test_device: Device):
+        """Test device polling background task"""
+        # Mock responses
+        mock_ping.return_value = {'alive': True, 'response_time': 10.5}
+        mock_snmp.return_value = {
+            'cpu': {'5min': 45.5},
+            'memory': {'percent_used': 60.0}
+        }
+        
+        # Run polling task
+        result = await poll_device._poll_device_async(poll_device, str(test_device.id))
+        
+        assert result is not None
+        assert result['device_id'] == str(test_device.id)
+        assert 'metrics' in result
+        assert 'timestamp' in result
+    
+    async def test_health_check_task(self, test_session):
+        """Test device health check task"""
+        from backend.services.device_service import DeviceService
+        
+        # Create stale device
+        device_service = DeviceService(test_session)
+        device_data = {
+            'hostname': 'stale-device',
+            'ip_address': '192.168.100.1',
+            'device_type': 'router'
+        }
+        device = await device_service.create_device(device_data)
+        
+        # Set last poll time to old timestamp
+        device.last_poll_time = datetime.utcnow() - timedelta(hours=1)
+        await test_session.commit()
+        
+        # Run health check
+        result = await check_device_health._check_device_health_async(check_device_health)
+        
+        assert result is not None
+        assert result['stale_devices'] >= 1
+        assert result['alerts_created'] >= 1

@@ -1,0 +1,63 @@
+# FOSSA Configuration for CHM
+# This file configures FOSSA for security and license scanning
+
+version: 3
+
+# Project configuration
+project:
+  id: github.com/catherinevee/chm
+  name: Catalyst Health Monitor
+  team: Engineering
+  policy: default
+
+# Scanning configuration
+scan:
+  targets:
+    - type: python
+      path: .
+      options:
+        strategy: pip
+        requirements: chm_requirements.txt
+
+# Analysis configuration
+analysis:
+  modules:
+    - name: chm-backend
+      type: pip
+      target: .
+      path: backend
+    - name: chm-frontend
+      type: npm
+      target: frontend
+      path: frontend
+
+# Telemetry settings
+telemetry:
+  enabled: false
+
+# License scanning
+license:
+  ignore:
+    - MIT
+    - Apache-2.0
+    - BSD-3-Clause
+    - BSD-2-Clause
+    - ISC
+    
+# Security scanning
+security:
+  cvss_threshold: 7.0
+  allow_unresolved: false
+  
+# Paths to ignore
+paths:
+  exclude:
+    - tests/
+    - docs/
+    - "*.md"
+    - .git/
+    - __pycache__/
+    - "*.pyc"
+    - venv/
+    - .venv/
+    - node_modules/

@@ -1,0 +1,77 @@
+# Prometheus Configuration for CHM Production Monitoring
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: 'chm-production'
+    environment: 'production'
+
+rule_files:
+- "rules/*.yml"
+
+alerting:
+  alertmanagers:
+  - static_configs:
+    - targets:
+      - alertmanager:9093
+
+scrape_configs:
+# CHM Application Metrics
+- job_name: 'chm-app'
+  static_configs:
+  - targets: [ 'chm-app:8000' ]
+  metrics_path: '/metrics'
+  scrape_interval: 10s
+  scrape_timeout: 5s
+  honor_labels: true
+
+# PostgreSQL Database Metrics
+- job_name: 'postgres'
+  static_configs:
+  - targets: [ 'postgres:5432' ]
+  scrape_interval: 30s
+
+# Redis Cache Metrics
+- job_name: 'redis'
+  static_configs:
+  - targets: [ 'redis:6379' ]
+  scrape_interval: 30s
+
+# Nginx Metrics
+- job_name: 'nginx'
+  static_configs:
+  - targets: [ 'nginx:80' ]
+  metrics_path: '/nginx_status'
+  scrape_interval: 30s
+
+# Node Exporter (if deployed)
+- job_name: 'node-exporter'
+  static_configs:
+  - targets: [ 'node-exporter:9100' ]
+  scrape_interval: 30s
+
+# Prometheus Self-Monitoring
+- job_name: 'prometheus'
+  static_configs:
+  - targets: [ 'localhost:9090' ]
+  scrape_interval: 30s
+
+# Grafana Metrics
+- job_name: 'grafana'
+  static_configs:
+  - targets: [ 'grafana:3000' ]
+  scrape_interval: 30s
+
+# Elasticsearch Metrics
+- job_name: 'elasticsearch'
+  static_configs:
+  - targets: [ 'elasticsearch:9200' ]
+  metrics_path: '/_prometheus/metrics'
+  scrape_interval: 30s
+
+# Kibana Metrics
+- job_name: 'kibana'
+  static_configs:
+  - targets: [ 'kibana:5601' ]
+  metrics_path: '/api/status'
+  scrape_interval: 30s

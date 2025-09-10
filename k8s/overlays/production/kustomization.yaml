@@ -1,0 +1,143 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: chm
+
+bases:
+  - ../../
+
+configMapGenerator:
+  - name: chm-environment
+    behavior: merge
+    literals:
+      - ENVIRONMENT=production
+      - LOG_LEVEL=WARNING
+      - WORKERS=8
+      - MAX_CONNECTIONS=200
+      - CACHE_TTL=3600
+      - SESSION_TIMEOUT=1800
+
+secretGenerator:
+  - name: chm-credentials
+    behavior: replace
+    files:
+      - secrets/database-password
+      - secrets/jwt-secret
+      - secrets/snmp-community
+      - secrets/ssh-key
+
+replicas:
+  - name: chm-app
+    count: 3
+  - name: celery-worker
+    count: 3
+
+images:
+  - name: chm
+    newName: registry.example.com/chm/app
+    newTag: v2.0.0
+
+patches:
+  - target:
+      kind: Deployment
+      name: chm-app
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/memory
+        value: 2Gi
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/cpu
+        value: 2000m
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/memory
+        value: 1Gi
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/cpu
+        value: 1000m
+  
+  - target:
+      kind: StatefulSet
+      name: postgres
+    patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 3
+      - op: replace
+        path: /spec/volumeClaimTemplates/0/spec/resources/requests/storage
+        value: 100Gi
+      - op: add
+        path: /spec/template/spec/containers/0/env/-
+        value:
+          name: POSTGRES_REPLICATION_MODE
+          value: master
+      - op: add
+        path: /spec/template/spec/containers/0/env/-
+        value:
+          name: POSTGRES_REPLICATION_USER
+          value: replicator
+  
+  - target:
+      kind: Deployment
+      name: redis
+    patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 3
+      - op: add
+        path: /spec/template/spec/containers/0/args/-
+        value: --cluster-enabled
+      - op: add
+        path: /spec/template/spec/containers/0/args/-
+        value: "yes"
+  
+  - target:
+      kind: HorizontalPodAutoscaler
+      name: chm-hpa
+    patch: |-
+      - op: replace
+        path: /spec/minReplicas
+        value: 3
+      - op: replace
+        path: /spec/maxReplicas
+        value: 20
+      - op: replace
+        path: /spec/metrics/0/resource/target/averageUtilization
+        value: 60
+  
+  - target:
+      kind: PersistentVolumeClaim
+      name: chm-audit-logs-pvc
+    patch: |-
+      - op: replace
+        path: /spec/resources/requests/storage
+        value: 50Gi
+      - op: replace
+        path: /spec/storageClassName
+        value: fast-ssd
+  
+  - target:
+      kind: Ingress
+      name: chm-ingress
+    patch: |-
+      - op: replace
+        path: /spec/rules/0/host
+        value: api.chm.example.com
+      - op: replace
+        path: /spec/rules/1/host
+        value: chm.example.com
+      - op: replace
+        path: /spec/tls/0/hosts/0
+        value: api.chm.example.com
+      - op: replace
+        path: /spec/tls/0/hosts/1
+        value: chm.example.com
+      - op: add
+        path: /metadata/annotations/nginx.ingress.kubernetes.io~1rate-limit
+        value: "1000"
+      - op: add
+        path: /metadata/annotations/nginx.ingress.kubernetes.io~1limit-rps
+        value: "100"
+
+patchesStrategicMerge:
+  - monitoring-production.yaml
+  - network-policy-production.yaml

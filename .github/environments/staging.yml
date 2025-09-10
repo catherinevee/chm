@@ -1,0 +1,43 @@
+# Staging Environment Configuration
+
+name: staging
+
+settings:
+  debug: false
+  log_level: INFO
+  workers: 4
+  reload: false
+
+database:
+  host: staging-db.chm-monitor.com
+  port: 5432
+  name: chm_staging
+  ssl_mode: require
+  pool_size: 20
+
+redis:
+  host: staging-redis.chm-monitor.com
+  port: 6379
+  db: 0
+  password: ${REDIS_PASSWORD}
+
+features:
+  rate_limiting: true
+  rate_limit_requests: 100
+  rate_limit_period: 60
+  ssl_required: true
+  cors_origins:
+    - https://staging.chm-monitor.com
+    - https://staging-api.chm-monitor.com
+  
+monitoring:
+  metrics_enabled: true
+  tracing_enabled: true
+  profiling_enabled: false
+  apm_enabled: true
+
+notifications:
+  email_enabled: true
+  slack_enabled: true
+  sms_enabled: false
+  webhook_enabled: true

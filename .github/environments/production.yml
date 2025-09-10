@@ -1,0 +1,72 @@
+# Production Environment Configuration
+
+name: production
+
+settings:
+  debug: false
+  log_level: WARNING
+  workers: 8
+  reload: false
+  max_requests: 1000
+  max_requests_jitter: 50
+
+database:
+  host: prod-db-primary.chm-monitor.com
+  port: 5432
+  name: chm_production
+  ssl_mode: require
+  pool_size: 50
+  max_overflow: 10
+  pool_pre_ping: true
+  read_replicas:
+    - prod-db-replica1.chm-monitor.com
+    - prod-db-replica2.chm-monitor.com
+
+redis:
+  cluster: true
+  nodes:
+    - prod-redis-1.chm-monitor.com:6379
+    - prod-redis-2.chm-monitor.com:6379
+    - prod-redis-3.chm-monitor.com:6379
+  password: ${REDIS_PASSWORD}
+  ssl: true
+
+features:
+  rate_limiting: true
+  rate_limit_requests: 60
+  rate_limit_period: 60
+  ssl_required: true
+  cors_origins:
+    - https://chm-monitor.com
+    - https://api.chm-monitor.com
+    - https://app.chm-monitor.com
+  maintenance_mode: false
+  
+monitoring:
+  metrics_enabled: true
+  tracing_enabled: true
+  profiling_enabled: false
+  apm_enabled: true
+  error_tracking: true
+  uptime_monitoring: true
+
+notifications:
+  email_enabled: true
+  slack_enabled: true
+  sms_enabled: true
+  webhook_enabled: true
+  pagerduty_enabled: true
+
+security:
+  force_https: true
+  hsts_enabled: true
+  hsts_max_age: 31536000
+  content_security_policy: true
+  x_frame_options: DENY
+  x_content_type_options: nosniff
+
+backup:
+  enabled: true
+  schedule: "0 2 * * *"
+  retention_days: 30
+  backup_location: s3://chm-backups/production/

@@ -1,0 +1,37 @@
+# Development Environment Configuration
+
+name: development
+
+settings:
+  debug: true
+  log_level: DEBUG
+  workers: 2
+  reload: true
+
+database:
+  host: localhost
+  port: 5432
+  name: chm_dev
+  ssl_mode: disable
+
+redis:
+  host: localhost
+  port: 6379
+  db: 0
+
+features:
+  rate_limiting: false
+  ssl_required: false
+  cors_origins:
+    - http://localhost:3000
+    - http://localhost:8000
+  
+monitoring:
+  metrics_enabled: true
+  tracing_enabled: true
+  profiling_enabled: true
+
+notifications:
+  email_enabled: false
+  slack_enabled: true
+  sms_enabled: false

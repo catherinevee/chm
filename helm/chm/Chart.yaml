@@ -1,0 +1,38 @@
+apiVersion: v2
+name: chm
+description: Catalyst Health Monitor - Enterprise Network Monitoring System
+type: application
+version: 2.0.0
+appVersion: "2.0.0"
+keywords:
+  - monitoring
+  - network
+  - snmp
+  - ssh
+  - catalyst
+home: https://github.com/yourusername/chm
+sources:
+  - https://github.com/yourusername/chm
+maintainers:
+  - name: CHM Team
+    email: admin@chm.local
+icon: https://raw.githubusercontent.com/yourusername/chm/main/logo.png
+dependencies:
+  - name: postgresql
+    version: "12.1.9"
+    repository: https://charts.bitnami.com/bitnami
+    condition: postgresql.enabled
+  - name: redis
+    version: "17.3.14"
+    repository: https://charts.bitnami.com/bitnami
+    condition: redis.enabled
+annotations:
+  artifacthub.io/changes: |
+    - kind: added
+      description: Initial Helm chart release
+    - kind: added
+      description: Support for PostgreSQL and Redis subchart
+    - kind: added
+      description: Prometheus monitoring integration
+  artifacthub.io/containsSecurityUpdates: "false"
+  artifacthub.io/license: MIT

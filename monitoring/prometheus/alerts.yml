@@ -1,0 +1,247 @@
+groups:
+  - name: chm_application
+    interval: 30s
+    rules:
+      # Application Health
+      - alert: CHMApplicationDown
+        expr: up{job="chm-app"} == 0
+        for: 2m
+        labels:
+          severity: critical
+          service: chm
+        annotations:
+          summary: "CHM Application is down"
+          description: "CHM application has been down for more than 2 minutes."
+
+      - alert: CHMHighErrorRate
+        expr: rate(chm_api_requests_total{status=~"5.."}[5m]) > 0.05
+        for: 5m
+        labels:
+          severity: warning
+          service: chm
+        annotations:
+          summary: "High error rate in CHM API"
+          description: "Error rate is {{ $value | humanizePercentage }} for the last 5 minutes."
+
+      - alert: CHMHighLatency
+        expr: histogram_quantile(0.95, rate(chm_api_request_duration_seconds_bucket[5m])) > 2
+        for: 5m
+        labels:
+          severity: warning
+          service: chm
+        annotations:
+          summary: "High API latency"
+          description: "95th percentile latency is {{ $value }}s for the last 5 minutes."
+
+      # Device Monitoring
+      - alert: CHMHighDeviceFailureRate
+        expr: rate(chm_poll_failure_total[5m]) / rate(chm_poll_total[5m]) > 0.1
+        for: 5m
+        labels:
+          severity: warning
+          service: chm
+        annotations:
+          summary: "High device polling failure rate"
+          description: "{{ $value | humanizePercentage }} of device polls are failing."
+
+      - alert: CHMDevicesOffline
+        expr: chm_devices_offline > 10
+        for: 10m
+        labels:
+          severity: warning
+          service: chm
+        annotations:
+          summary: "Multiple devices offline"
+          description: "{{ $value }} devices are currently offline."
+
+      - alert: CHMCriticalDeviceDown
+        expr: chm_device_status{priority="critical"} == 0
+        for: 2m
+        labels:
+          severity: critical
+          service: chm
+        annotations:
+          summary: "Critical device is down"
+          description: "Critical device {{ $labels.device }} has been down for 2 minutes."
+
+  - name: infrastructure
+    interval: 30s
+    rules:
+      # Database Health
+      - alert: PostgreSQLDown
+        expr: up{job="postgres"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: postgres
+        annotations:
+          summary: "PostgreSQL is down"
+          description: "PostgreSQL database has been down for more than 1 minute."
+
+      - alert: PostgreSQLHighConnections
+        expr: pg_stat_database_numbackends{datname="chm_db"} > 80
+        for: 5m
+        labels:
+          severity: warning
+          service: postgres
+        annotations:
+          summary: "High number of PostgreSQL connections"
+          description: "{{ $value }} active connections to chm_db database."
+
+      - alert: PostgreSQLSlowQueries
+        expr: rate(pg_stat_database_blks_hit{datname="chm_db"}[5m]) < 0.9
+        for: 10m
+        labels:
+          severity: warning
+          service: postgres
+        annotations:
+          summary: "PostgreSQL cache hit ratio is low"
+          description: "Cache hit ratio is {{ $value | humanizePercentage }}."
+
+      # Redis Health
+      - alert: RedisDown
+        expr: up{job="redis"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: redis
+        annotations:
+          summary: "Redis is down"
+          description: "Redis has been down for more than 1 minute."
+
+      - alert: RedisHighMemoryUsage
+        expr: redis_memory_used_bytes / redis_memory_max_bytes > 0.9
+        for: 5m
+        labels:
+          severity: warning
+          service: redis
+        annotations:
+          summary: "Redis memory usage is high"
+          description: "Redis is using {{ $value | humanizePercentage }} of available memory."
+
+      - alert: RedisHighKeyEviction
+        expr: rate(redis_evicted_keys_total[5m]) > 100
+        for: 5m
+        labels:
+          severity: warning
+          service: redis
+        annotations:
+          summary: "High Redis key eviction rate"
+          description: "{{ $value }} keys per second are being evicted."
+
+  - name: system_resources
+    interval: 30s
+    rules:
+      # CPU Usage
+      - alert: HighCPUUsage
+        expr: (1 - avg(rate(node_cpu_seconds_total{mode="idle"}[5m]))) > 0.85
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU usage detected"
+          description: "CPU usage is {{ $value | humanizePercentage }} for the last 10 minutes."
+
+      # Memory Usage
+      - alert: HighMemoryUsage
+        expr: (1 - node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes) > 0.90
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High memory usage detected"
+          description: "Memory usage is {{ $value | humanizePercentage }}."
+
+      # Disk Usage
+      - alert: HighDiskUsage
+        expr: (1 - node_filesystem_avail_bytes{fstype!~"tmpfs|fuse.lxcfs|squashfs|vfat"} / node_filesystem_size_bytes) > 0.85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High disk usage detected"
+          description: "Disk usage on {{ $labels.mountpoint }} is {{ $value | humanizePercentage }}."
+
+      - alert: DiskWillFillIn24Hours
+        expr: predict_linear(node_filesystem_avail_bytes{fstype!~"tmpfs|fuse.lxcfs|squashfs|vfat"}[6h], 24*3600) < 0
+        for: 30m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Disk will fill in 24 hours"
+          description: "Filesystem {{ $labels.mountpoint }} will fill up within 24 hours."
+
+  - name: containers
+    interval: 30s
+    rules:
+      # Container Health
+      - alert: ContainerDown
+        expr: up{job="cadvisor"} == 0
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Container monitoring is down"
+          description: "cAdvisor has been down for more than 2 minutes."
+
+      - alert: ContainerHighCPU
+        expr: rate(container_cpu_usage_seconds_total{container!="POD",container!=""}[5m]) > 0.8
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Container CPU usage is high"
+          description: "Container {{ $labels.container }} CPU usage is {{ $value | humanizePercentage }}."
+
+      - alert: ContainerHighMemory
+        expr: container_memory_usage_bytes{container!="POD",container!=""} / container_spec_memory_limit_bytes > 0.9
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Container memory usage is high"
+          description: "Container {{ $labels.container }} memory usage is {{ $value | humanizePercentage }}."
+
+      - alert: ContainerRestarting
+        expr: rate(container_restart_count[5m]) > 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Container is restarting"
+          description: "Container {{ $labels.container }} has restarted {{ $value }} times in the last 5 minutes."
+
+  - name: business_metrics
+    interval: 1m
+    rules:
+      # Business KPIs
+      - alert: LowDeviceDiscoveryRate
+        expr: rate(chm_devices_discovered_total[1h]) < 1
+        for: 2h
+        labels:
+          severity: info
+          service: chm
+        annotations:
+          summary: "Low device discovery rate"
+          description: "Less than 1 device discovered per hour for the last 2 hours."
+
+      - alert: HighAlertVolume
+        expr: rate(chm_alerts_created_total[5m]) > 10
+        for: 10m
+        labels:
+          severity: warning
+          service: chm
+        annotations:
+          summary: "High alert volume"
+          description: "{{ $value }} alerts per second are being created."
+
+      - alert: AuditLogFailure
+        expr: rate(chm_audit_log_failures_total[5m]) > 0
+        for: 5m
+        labels:
+          severity: critical
+          service: chm
+          compliance: required
+        annotations:
+          summary: "Audit log failures detected"
+          description: "Audit logging is failing - compliance requirement violation."

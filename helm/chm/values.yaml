@@ -1,0 +1,270 @@
+# Default values for CHM Helm chart
+
+# Global settings
+global:
+  imageRegistry: ""
+  imagePullSecrets: []
+  storageClass: ""
+
+# Namespace configuration
+namespace:
+  create: true
+  name: chm
+
+# Image configuration
+image:
+  repository: chm
+  tag: "2.0.0"
+  pullPolicy: IfNotPresent
+
+# Application configuration
+app:
+  replicaCount: 3
+  
+  # Environment variables
+  env:
+    ENVIRONMENT: production
+    LOG_LEVEL: INFO
+    WORKERS: "4"
+    MAX_CONNECTIONS: "100"
+  
+  # Secret environment variables (will be created as Secret)
+  secretEnv:
+    DATABASE_URL: "postgresql://chm_user:chm_password@chm-postgresql:5432/chm_db"
+    SECRET_KEY: "change-this-secret-key-in-production"
+    SNMP_COMMUNITY: "public"
+    SSH_DEFAULT_PASSWORD: "admin"
+  
+  # Service configuration
+  service:
+    type: ClusterIP
+    port: 8000
+    metricsPort: 9090
+    annotations: {}
+  
+  # Resource limits
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 250m
+      memory: 256Mi
+  
+  # Probes
+  livenessProbe:
+    enabled: true
+    path: /api/v1/monitoring/liveness
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+  
+  readinessProbe:
+    enabled: true
+    path: /api/v1/monitoring/readiness
+    initialDelaySeconds: 10
+    periodSeconds: 5
+    timeoutSeconds: 3
+    failureThreshold: 3
+  
+  # Pod annotations
+  podAnnotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "8000"
+    prometheus.io/path: "/api/v1/monitoring/metrics"
+  
+  # Security context
+  podSecurityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    fsGroup: 1000
+  
+  securityContext:
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+        - ALL
+    readOnlyRootFilesystem: false
+    runAsNonRoot: true
+    runAsUser: 1000
+
+# Celery worker configuration
+celery:
+  worker:
+    enabled: true
+    replicaCount: 2
+    resources:
+      limits:
+        cpu: 500m
+        memory: 512Mi
+      requests:
+        cpu: 250m
+        memory: 256Mi
+    command: ["celery", "-A", "backend.tasks.celery_app", "worker", "--loglevel=info", "--concurrency=4"]
+  
+  beat:
+    enabled: true
+    resources:
+      limits:
+        cpu: 200m
+        memory: 256Mi
+      requests:
+        cpu: 100m
+        memory: 128Mi
+    command: ["celery", "-A", "backend.tasks.celery_app", "beat", "--loglevel=info"]
+
+# Ingress configuration
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "10m"
+  hosts:
+    - host: api.chm.local
+      paths:
+        - path: /
+          pathType: Prefix
+    - host: chm.local
+      paths:
+        - path: /api
+          pathType: Prefix
+        - path: /metrics
+          pathType: Exact
+  tls:
+    - secretName: chm-tls
+      hosts:
+        - api.chm.local
+        - chm.local
+
+# PostgreSQL configuration (Bitnami chart)
+postgresql:
+  enabled: true
+  auth:
+    username: chm_user
+    password: chm_password
+    database: chm_db
+  primary:
+    persistence:
+      enabled: true
+      size: 20Gi
+    resources:
+      limits:
+        cpu: 500m
+        memory: 512Mi
+      requests:
+        cpu: 250m
+        memory: 256Mi
+
+# Redis configuration (Bitnami chart)
+redis:
+  enabled: true
+  architecture: standalone
+  auth:
+    enabled: false
+  master:
+    persistence:
+      enabled: true
+      size: 8Gi
+    resources:
+      limits:
+        cpu: 200m
+        memory: 256Mi
+      requests:
+        cpu: 100m
+        memory: 128Mi
+
+# Horizontal Pod Autoscaler
+autoscaling:
+  enabled: true
+  minReplicas: 3
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: 80
+
+# Pod Disruption Budget
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 2
+
+# Network Policy
+networkPolicy:
+  enabled: true
+  policyTypes:
+    - Ingress
+    - Egress
+
+# Service Account
+serviceAccount:
+  create: true
+  automount: true
+  annotations: {}
+  name: ""
+
+# RBAC
+rbac:
+  create: true
+  rules:
+    - apiGroups: [""]
+      resources: ["pods", "services", "endpoints"]
+      verbs: ["get", "list", "watch"]
+    - apiGroups: ["apps"]
+      resources: ["deployments", "statefulsets"]
+      verbs: ["get", "list", "watch"]
+    - apiGroups: [""]
+      resources: ["configmaps"]
+      verbs: ["get", "list", "watch", "create", "update", "patch"]
+    - apiGroups: [""]
+      resources: ["secrets"]
+      verbs: ["get", "list"]
+
+# Monitoring
+monitoring:
+  enabled: true
+  serviceMonitor:
+    enabled: true
+    interval: 30s
+    scrapeTimeout: 10s
+  prometheusRule:
+    enabled: true
+    rules:
+      - alert: CHMHighDeviceFailureRate
+        expr: rate(chm_poll_failure_total[5m]) > 0.1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High device polling failure rate"
+          description: "Device polling failure rate is {{ $value }} failures per second"
+
+# Persistence
+persistence:
+  enabled: true
+  audit:
+    enabled: true
+    size: 10Gi
+    accessMode: ReadWriteOnce
+    storageClass: ""
+    mountPath: /app/logs/audit
+
+# Node selector
+nodeSelector: {}
+
+# Tolerations
+tolerations: []
+
+# Affinity
+affinity:
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          labelSelector:
+            matchExpressions:
+              - key: app
+                operator: In
+                values:
+                  - chm
+          topologyKey: kubernetes.io/hostname

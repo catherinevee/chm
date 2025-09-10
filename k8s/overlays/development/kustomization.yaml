@@ -1,0 +1,82 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: chm-dev
+
+bases:
+  - ../../
+
+namePrefix: dev-
+
+configMapGenerator:
+  - name: chm-environment
+    behavior: merge
+    literals:
+      - ENVIRONMENT=development
+      - LOG_LEVEL=DEBUG
+      - DEBUG=true
+      - WORKERS=2
+
+secretGenerator:
+  - name: chm-credentials
+    behavior: merge
+    literals:
+      - database-password=dev-password
+      - jwt-secret=dev-secret-key-not-for-production
+
+replicas:
+  - name: chm-app
+    count: 1
+  - name: celery-worker
+    count: 1
+
+patches:
+  - target:
+      kind: Deployment
+      name: chm-app
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/memory
+        value: 256Mi
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/cpu
+        value: 250m
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/memory
+        value: 128Mi
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/cpu
+        value: 100m
+  
+  - target:
+      kind: StatefulSet
+      name: postgres
+    patch: |-
+      - op: replace
+        path: /spec/volumeClaimTemplates/0/spec/resources/requests/storage
+        value: 5Gi
+  
+  - target:
+      kind: PersistentVolumeClaim
+      name: chm-audit-logs-pvc
+    patch: |-
+      - op: replace
+        path: /spec/resources/requests/storage
+        value: 2Gi
+  
+  - target:
+      kind: Ingress
+      name: chm-ingress
+    patch: |-
+      - op: replace
+        path: /spec/rules/0/host
+        value: api.chm-dev.local
+      - op: replace
+        path: /spec/rules/1/host
+        value: chm-dev.local
+      - op: replace
+        path: /spec/tls/0/hosts/0
+        value: api.chm-dev.local
+      - op: replace
+        path: /spec/tls/0/hosts/1
+        value: chm-dev.local

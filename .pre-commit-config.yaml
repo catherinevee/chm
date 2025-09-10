@@ -1,0 +1,198 @@
+repos:
+  # Python pre-commit hooks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-added-large-files
+      - id: check-merge-conflict
+      - id: check-case-conflict
+      - id: check-json
+      - id: check-toml
+      - id: check-ast
+      - id: check-docstring-first
+      - id: debug-statements
+      - id: requirements-txt-fixer
+      - id: fix-byte-order-marker
+
+  # Python code formatting
+  - repo: https://github.com/psf/black
+    rev: 23.7.0
+    hooks:
+      - id: black
+        language_version: python3
+        args: [--line-length=88]
+
+  # Python import sorting
+  - repo: https://github.com/pycqa/isort
+    rev: 5.12.0
+    hooks:
+      - id: isort
+        args: [--profile=black, --line-length=88]
+
+  # Python linting
+  - repo: https://github.com/pycqa/flake8
+    rev: 6.0.0
+    hooks:
+      - id: flake8
+        args: [--max-line-length=88, --extend-ignore=E203,W503]
+
+  # Python type checking
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.5.1
+    hooks:
+      - id: mypy
+        additional_dependencies: [types-all]
+        args: [--ignore-missing-imports]
+
+  # Python security
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.7.5
+    hooks:
+      - id: bandit
+        args: [-r, backend/, -f, json, -o, bandit-report.json]
+
+  # Frontend pre-commit hooks
+  - repo: https://github.com/pre-commit/mirrors-prettier
+    rev: v3.0.0
+    hooks:
+      - id: prettier
+        types_or: [javascript, jsx, ts, tsx, json, css, scss, html, md]
+        additional_dependencies:
+          - prettier@3.0.0
+
+  # Frontend linting
+  - repo: https://github.com/pre-commit/mirrors-eslint
+    rev: v8.45.0
+    hooks:
+      - id: eslint
+        files: \.(js|jsx|ts|tsx)$
+        types: [file]
+        additional_dependencies:
+          - 'eslint@8.45.0'
+          - '@typescript-eslint/eslint-plugin@6.0.0'
+          - '@typescript-eslint/parser@6.0.0'
+          - 'eslint-plugin-react@7.32.2'
+          - 'eslint-plugin-react-hooks@4.6.0'
+          - 'eslint-plugin-jsx-a11y@6.7.1'
+          - 'eslint-plugin-import@2.27.5'
+          - 'eslint-config-prettier@8.8.0'
+          - 'eslint-plugin-prettier@4.2.1'
+
+  # Git hooks
+  - repo: https://github.com/alessandrojcm/commitlint-pre-commit-hook
+    rev: v9.5.0
+    hooks:
+      - id: commitlint
+        stages: [commit-msg]
+        additional_dependencies: [@commitlint/config-conventional]
+
+  # Docker
+  - repo: https://github.com/hadolint/hadolint
+    rev: v2.12.0
+    hooks:
+      - id: hadolint-docker
+        args: [--ignore, DL3008, --ignore, DL3009]
+
+  # Terraform (if applicable)
+  - repo: https://github.com/antonbabenko/pre-commit-terraform
+    rev: v1.79.0
+    hooks:
+      - id: terraform_fmt
+      - id: terraform_docs
+      - id: terraform_tflint
+      - id: terraform_validate
+
+  # YAML/JSON validation
+  - repo: https://github.com/pre-commit/mirrors-yamllint
+    rev: v1.32.0
+    hooks:
+      - id: yamllint
+        args: [--strict]
+
+  # Markdown
+  - repo: https://github.com/igorshubovych/markdownlint-cli
+    rev: v0.35.0
+    hooks:
+      - id: markdownlint
+        args: [--fix]
+
+  # Shell scripts
+  - repo: https://github.com/koalaman/shellcheck-precommit
+    rev: v0.9.0
+    hooks:
+      - id: shellcheck
+        args: [--severity=warning]
+
+  # License headers
+  - repo: https://github.com/apache/skywalking-eyes
+    rev: 0.2.0
+    hooks:
+      - id: license-eye
+        args: [fix, dep]
+
+  # Dependencies
+  - repo: https://github.com/pre-commit/mirrors-pip-tools
+    rev: v7.3.0
+    hooks:
+      - id: pip-compile
+        args: [--upgrade]
+        files: ^requirements.*\.txt$
+
+  # Security updates
+  - repo: https://github.com/PyCQA/safety
+    rev: v2.3.0
+    hooks:
+      - id: safety
+        args: [check, --json, --output, safety-report.json]
+
+  # Performance
+  - repo: local
+    hooks:
+      - id: pytest-benchmark
+        name: Performance Benchmark
+        entry: pytest
+        language: system
+        pass_filenames: false
+        always_run: true
+        args: [tests/performance/, --benchmark-only, --benchmark-sort=mean]
+        stages: [manual]
+
+  # Documentation
+  - repo: local
+    hooks:
+      - id: docs-build
+        name: Build Documentation
+        entry: make
+        language: system
+        pass_filenames: false
+        always_run: true
+        args: [docs]
+        stages: [manual]
+        working_dir: docs/
+
+  # Database migrations
+  - repo: local
+    hooks:
+      - id: db-migrate-check
+        name: Check Database Migrations
+        entry: python
+        language: system
+        pass_filenames: false
+        always_run: true
+        args: [scripts/check_migrations.py]
+        stages: [manual]
+
+  # API documentation
+  - repo: local
+    hooks:
+      - id: api-docs-check
+        name: Check API Documentation
+        entry: python
+        language: system
+        pass_filenames: false
+        always_run: true
+        args: [scripts/check_api_docs.py]
+        stages: [manual]
