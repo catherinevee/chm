@@ -260,7 +260,7 @@ class AuthService:
                 raise AccountLockedException(f"Account locked for {self.lockout_duration} minutes")
             
             # Verify password
-            if not self.verify_password(password, user.password_hash):
+            if not self.verify_password(password, user.hashed_password):
                 await self._handle_failed_login(db, user.id, ip_address)
                 raise AuthenticationException("Invalid credentials")
             
@@ -970,7 +970,7 @@ class AuthService:
                 return None
             
             # Verify password
-            if not self.verify_password(password, user.password_hash):
+            if not self.verify_password(password, user.hashed_password):
                 return None
             
             # Check if email verified (optional - depends on requirements)

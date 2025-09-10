@@ -116,7 +116,7 @@ def create_app() -> FastAPI:
     @app.exception_handler(HTTPException)
     async def http_exception_handler(request, exc):
         """Global HTTP exception handler"""
-        return JSONResponse(status_code=exc.status_code, content={"error": exc.detail, "status_code": exc.status_code})
+        return JSONResponse(status_code=exc.status_code, content={"detail": exc.detail})
 
     # Custom OpenAPI schema
     def custom_openapi():
