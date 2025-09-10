@@ -18,7 +18,7 @@ Base = declarative_base()
 
 # Create async engine
 engine = create_async_engine(
-    settings.database_url,
+    settings.get_database_url(),
     echo=settings.debug,
     future=True,
     pool_size=settings.database_pool_size,
@@ -32,7 +32,7 @@ engine = create_async_engine(
         },
         "command_timeout": 60,
         "timeout": 30
-    } if "postgresql" in settings.database_url else {}
+    } if "postgresql" in settings.get_database_url() else {}
 )
 
 # Create async session factory
