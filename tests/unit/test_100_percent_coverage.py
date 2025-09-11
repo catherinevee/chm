@@ -53,18 +53,18 @@ def test_force_imports():
     import api.v1.discovery
     import api.v1.notifications
     import api.v1.monitoring
-    import models.user
-    import models.device
-    import models.metric
-    import models.alert
-    import models.alert_rule
-    import models.notification
-    import models.discovery_job
-    import models.device_credentials
-    import models.analytics
-    import models.network_topology
-    import models.security
-    import models.result_objects
+    import backend.models.user
+    import backend.models.device
+    import backend.models.metric
+    import backend.models.alert
+    import backend.models.alert_rule
+    import backend.models.notification
+    import backend.models.discovery_job
+    import backend.models.device_credentials
+    import backend.models.analytics
+    import backend.models.network_topology
+    import backend.models.security
+    import backend.models.result_objects
     
     assert True  # All imports successful
 
@@ -749,11 +749,11 @@ def test_run_all_coverage_tests():
 
 def test_all_model_methods():
     """Test all model methods for 100% coverage"""
-    from models.user import User, UserRole, UserStatus
-    from models.device import Device, DeviceType, DeviceStatus
-    from models.metric import Metric, MetricType
-    from models.alert import Alert, AlertType, AlertSeverity, AlertStatus
-    from models.notification import Notification, NotificationType, NotificationStatus
+    from backend.models.user import User, UserRole, UserStatus
+    from backend.models.device import Device, DeviceType, DeviceStatus
+    from backend.models.metric import Metric, MetricType
+    from backend.models.alert import Alert, AlertType, AlertSeverity, AlertStatus
+    from backend.models.notification import Notification, NotificationType, NotificationStatus
     
     # User model complete coverage
     user = User(username="test", email="test@example.com")

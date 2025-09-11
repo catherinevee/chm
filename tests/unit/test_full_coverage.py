@@ -222,7 +222,7 @@ class TestModelsComplete:
     @pytest.mark.asyncio
     async def test_user_model_complete(self):
         """Test all user model methods"""
-        from models.user import User, UserRole, UserStatus
+        from backend.models.user import User, UserRole, UserStatus
         
         user = User(
             username="testuser",
@@ -270,7 +270,7 @@ class TestModelsComplete:
     @pytest.mark.asyncio
     async def test_device_model_complete(self):
         """Test all device model methods"""
-        from models.device import Device, DeviceType, DeviceStatus
+        from backend.models.device import Device, DeviceType, DeviceStatus
         
         device = Device(
             name="Test Router",
@@ -310,7 +310,7 @@ class TestModelsComplete:
     @pytest.mark.asyncio
     async def test_metric_model_complete(self):
         """Test all metric model methods"""
-        from models.metric import Metric, MetricType
+        from backend.models.metric import Metric, MetricType
         
         metric = Metric(
             device_id=1,
@@ -353,7 +353,7 @@ class TestModelsComplete:
     @pytest.mark.asyncio
     async def test_alert_model_complete(self):
         """Test all alert model methods"""
-        from models.alert import Alert, AlertType, AlertSeverity, AlertStatus
+        from backend.models.alert import Alert, AlertType, AlertSeverity, AlertStatus
         
         alert = Alert(
             device_id=1,
@@ -401,7 +401,7 @@ class TestModelsComplete:
     @pytest.mark.asyncio
     async def test_notification_model_complete(self):
         """Test all notification model methods"""
-        from models.notification import (
+        from backend.models.notification import (
             Notification, NotificationType, NotificationStatus,
             NotificationPriority
         )
@@ -737,11 +737,11 @@ class TestRemainingCoverage:
     
     def test_model_edge_cases(self):
         """Test model edge cases"""
-        from models.user import User
-        from models.device import Device
-        from models.metric import Metric
-        from models.alert import Alert
-        from models.notification import Notification
+        from backend.models.user import User
+        from backend.models.device import Device
+        from backend.models.metric import Metric
+        from backend.models.alert import Alert
+        from backend.models.notification import Notification
         
         # Test models with minimal data
         user = User()
@@ -821,9 +821,9 @@ class TestFinalCoverage:
         import backend.services.validation_service
         import backend.services.websocket_service
         import core.auth_middleware
-        import models.alert_rule
-        import models.device_credentials
-        import models.discovery_job
+        import backend.models.alert_rule
+        import backend.models.device_credentials
+        import backend.models.discovery_job
         
         # All imports successful
         assert True

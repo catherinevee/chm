@@ -18,7 +18,7 @@ class TestUserModel:
     def test_user_model_import(self):
         """Test User model can be imported"""
         try:
-            from models.user import User, UserRole, UserStatus
+            from backend.models.user import User, UserRole, UserStatus
             assert User is not None
             assert UserRole is not None
             assert UserStatus is not None
@@ -28,7 +28,7 @@ class TestUserModel:
     def test_user_roles_enum(self):
         """Test UserRole enum values"""
         try:
-            from models.user import UserRole
+            from backend.models.user import UserRole
             assert hasattr(UserRole, 'ADMIN')
             assert hasattr(UserRole, 'OPERATOR')
             assert hasattr(UserRole, 'VIEWER')
@@ -42,7 +42,7 @@ class TestDeviceModel:
     def test_device_model_import(self):
         """Test Device model can be imported"""
         try:
-            from models.device import Device, DeviceType, DeviceStatus
+            from backend.models.device import Device, DeviceType, DeviceStatus
             assert Device is not None
             assert DeviceType is not None  
             assert DeviceStatus is not None
@@ -56,7 +56,7 @@ class TestMetricModel:
     def test_metric_model_import(self):
         """Test Metric model can be imported"""
         try:
-            from models.metric import Metric, MetricType
+            from backend.models.metric import Metric, MetricType
             assert Metric is not None
             assert MetricType is not None
         except ImportError:
@@ -69,7 +69,7 @@ class TestAlertModel:
     def test_alert_model_import(self):
         """Test Alert model can be imported"""
         try:
-            from models.alert import Alert, AlertSeverity, AlertStatus
+            from backend.models.alert import Alert, AlertSeverity, AlertStatus
             assert Alert is not None
             assert AlertSeverity is not None
             assert AlertStatus is not None

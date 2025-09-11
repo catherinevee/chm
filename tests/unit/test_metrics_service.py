@@ -10,8 +10,8 @@ from backend.services.metrics_service import MetricsService
 from backend.common.exceptions import (
     ValidationException, ResourceNotFoundException
 )
-from models.metric import Metric, MetricType
-from models.device import Device, DeviceType, DeviceStatus
+from backend.models.metric import Metric, MetricType
+from backend.models.device import Device, DeviceType, DeviceStatus
 
 
 class TestMetricsService:

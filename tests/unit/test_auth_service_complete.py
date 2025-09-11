@@ -25,7 +25,7 @@ from backend.common.exceptions import (
     UserNotFoundException,
     DuplicateUserException
 )
-from models.user import User, UserRole, UserStatus
+from backend.models.user import User, UserRole, UserStatus
 
 
 class TestAuthServiceInit:

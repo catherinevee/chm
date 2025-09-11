@@ -10,8 +10,8 @@ from backend.services.device_service import DeviceService
 from backend.common.exceptions import (
     ResourceNotFoundException, ValidationException, DuplicateResourceException
 )
-from models.device import Device, DeviceType, DeviceStatus
-from models.device_credentials import DeviceCredentials
+from backend.models.device import Device, DeviceType, DeviceStatus
+from backend.models.device_credentials import DeviceCredentials
 
 
 class TestDeviceService:

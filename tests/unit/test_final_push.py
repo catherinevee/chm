@@ -45,11 +45,11 @@ def test_all_imports_executed():
 
 def test_execute_all_class_methods():
     """Execute all class methods to maximize coverage"""
-    from models.user import User
-    from models.device import Device
-    from models.metric import Metric
-    from models.alert import Alert
-    from models.notification import Notification
+    from backend.models.user import User
+    from backend.models.device import Device
+    from backend.models.metric import Metric
+    from backend.models.alert import Alert
+    from backend.models.notification import Notification
     
     # Execute all model methods
     user = User()
@@ -72,11 +72,11 @@ def test_execute_all_class_methods():
 
 def test_execute_all_enum_values():
     """Execute all enum value accesses"""
-    from models.user import UserRole, UserStatus
-    from models.device import DeviceType, DeviceStatus
-    from models.metric import MetricType
-    from models.alert import AlertType, AlertSeverity, AlertStatus
-    from models.notification import NotificationType, NotificationStatus, NotificationPriority
+    from backend.models.user import UserRole, UserStatus
+    from backend.models.device import DeviceType, DeviceStatus
+    from backend.models.metric import MetricType
+    from backend.models.alert import AlertType, AlertSeverity, AlertStatus
+    from backend.models.notification import NotificationType, NotificationStatus, NotificationPriority
     from backend.common.result_objects import ResultStatus, HealthLevel
     
     # Access all enum values
@@ -323,9 +323,9 @@ def test_execute_middleware_setup():
 
 def test_execute_model_relationships():
     """Execute model relationship properties"""
-    from models.user import User
-    from models.device import Device
-    from models.metric import Metric
+    from backend.models.user import User
+    from backend.models.device import Device
+    from backend.models.metric import Metric
     
     # Access relationship properties
     user = User()

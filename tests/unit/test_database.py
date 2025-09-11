@@ -12,8 +12,8 @@ from core.database import (
 )
 from backend.database.base import Base
 from backend.database.models import *
-from models.user import User
-from models.device import Device
+from backend.models.user import User
+from backend.models.device import Device
 
 
 class TestDatabaseCore:

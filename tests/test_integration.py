@@ -47,9 +47,9 @@ class TestApplicationIntegration:
     def test_database_models_integration(self):
         """Test database models work together"""
         try:
-            from models.user import User, UserRole
-            from models.device import Device, DeviceType
-            from models.alert import Alert, AlertSeverity
+            from backend.models.user import User, UserRole
+            from backend.models.device import Device, DeviceType
+            from backend.models.alert import Alert, AlertSeverity
             
             # Test enum values
             assert UserRole.ADMIN is not None

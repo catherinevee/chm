@@ -14,9 +14,9 @@ from backend.services.auth_service import TokenData
 from backend.common.exceptions import (
     ResourceNotFoundException, ValidationException, DuplicateResourceException
 )
-from models.device import Device, DeviceType, DeviceStatus
-from models.device_credentials import DeviceCredentials
-from models.user import UserRole
+from backend.models.device import Device, DeviceType, DeviceStatus
+from backend.models.device_credentials import DeviceCredentials
+from backend.models.user import UserRole
 
 
 class TestDevicesAPI:

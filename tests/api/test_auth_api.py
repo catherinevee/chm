@@ -15,7 +15,7 @@ from backend.common.exceptions import (
     SessionExpiredException, AccountLockedException, MFARequiredException,
     DuplicateResourceException, ResourceNotFoundException
 )
-from models.user import User, UserRole, UserStatus
+from backend.models.user import User, UserRole, UserStatus
 
 
 class TestAuthAPI:

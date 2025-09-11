@@ -196,7 +196,7 @@ class TestMaximumCoverage:
     def test_models_100_percent(self):
         """Achieve 100% coverage for all models"""
         # Test user model
-        from models.user import User, UserRole, UserStatus
+        from backend.models.user import User, UserRole, UserStatus
         user = User(username='test', email='test@example.com')
         for role in UserRole:
             assert role.value is not None
@@ -221,7 +221,7 @@ class TestMaximumCoverage:
             pass
         
         # Test device model
-        from models.device import Device, DeviceType, DeviceStatus
+        from backend.models.device import Device, DeviceType, DeviceStatus
         device = Device(name='Test', ip_address='192.168.1.1')
         for dtype in DeviceType:
             assert dtype.value is not None
@@ -242,7 +242,7 @@ class TestMaximumCoverage:
             pass
         
         # Test metric model
-        from models.metric import Metric, MetricType
+        from backend.models.metric import Metric, MetricType
         metric = Metric(device_id=1, value=75.5)
         for mtype in MetricType:
             assert mtype.value is not None
@@ -259,7 +259,7 @@ class TestMaximumCoverage:
             pass
         
         # Test alert model
-        from models.alert import Alert, AlertType, AlertSeverity, AlertStatus
+        from backend.models.alert import Alert, AlertType, AlertSeverity, AlertStatus
         alert = Alert(device_id=1, message='Test')
         for atype in [AlertType, AlertSeverity, AlertStatus]:
             if hasattr(models.alert, atype.__name__):
@@ -280,7 +280,7 @@ class TestMaximumCoverage:
             pass
         
         # Test notification model
-        from models.notification import Notification, NotificationType, NotificationStatus
+        from backend.models.notification import Notification, NotificationType, NotificationStatus
         notif = Notification(user_id=1, title='Test', message='Test')
         for ntype in [NotificationType, NotificationStatus]:
             if hasattr(models.notification, ntype.__name__):

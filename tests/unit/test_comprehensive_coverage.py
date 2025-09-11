@@ -171,7 +171,7 @@ class TestModelMethods:
     
     def test_user_model_methods(self):
         """Test user model methods"""
-        from models.user import User, UserRole, UserStatus
+        from backend.models.user import User, UserRole, UserStatus
         
         # Test enum values
         assert UserRole.USER is not None
@@ -186,7 +186,7 @@ class TestModelMethods:
         
     def test_device_model_methods(self):
         """Test device model methods"""
-        from models.device import Device, DeviceType, DeviceStatus
+        from backend.models.device import Device, DeviceType, DeviceStatus
         
         # Test enum values
         assert DeviceType.ROUTER is not None
@@ -198,7 +198,7 @@ class TestModelMethods:
         
     def test_metric_model_methods(self):
         """Test metric model methods"""
-        from models.metric import Metric, MetricType
+        from backend.models.metric import Metric, MetricType
         
         # Test enum values
         assert MetricType.CPU_USAGE is not None
@@ -211,7 +211,7 @@ class TestModelMethods:
         
     def test_alert_model_methods(self):
         """Test alert model methods"""
-        from models.alert import Alert
+        from backend.models.alert import Alert
         
         # Test alert creation
         alert = Alert(device_id=1, message="Test alert")
@@ -220,7 +220,7 @@ class TestModelMethods:
         
     def test_notification_model_methods(self):
         """Test notification model methods"""
-        from models.notification import Notification
+        from backend.models.notification import Notification
         
         # Test notification creation
         notification = Notification(user_id=1, title="Test", message="Message")

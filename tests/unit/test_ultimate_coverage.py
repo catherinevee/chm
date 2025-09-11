@@ -439,15 +439,15 @@ class TestUltimateCoverage:
     
     def test_all_models_complete(self):
         """Test all model classes completely"""
-        from models.user import User, UserRole, UserStatus
-        from models.device import Device, DeviceType, DeviceStatus
-        from models.metric import Metric, MetricType
-        from models.alert import Alert, AlertSeverity, AlertStatus, AlertRule
-        from models.notification import (
+        from backend.models.user import User, UserRole, UserStatus
+        from backend.models.device import Device, DeviceType, DeviceStatus
+        from backend.models.metric import Metric, MetricType
+        from backend.models.alert import Alert, AlertSeverity, AlertStatus, AlertRule
+        from backend.models.notification import (
             Notification, NotificationType, NotificationStatus, NotificationPriority
         )
-        from models.discovery_job import DiscoveryJob, DiscoveryStatus, DiscoveryMethod
-        from models.device_credentials import DeviceCredentials, CredentialType
+        from backend.models.discovery_job import DiscoveryJob, DiscoveryStatus, DiscoveryMethod
+        from backend.models.device_credentials import DeviceCredentials, CredentialType
         
         # Test User model
         user = User()

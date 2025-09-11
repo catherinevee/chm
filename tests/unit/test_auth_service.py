@@ -13,7 +13,7 @@ from backend.common.exceptions import (
     SessionExpiredException, AccountLockedException, MFARequiredException,
     PermissionDeniedException, ResourceNotFoundException, DuplicateResourceException
 )
-from models.user import User, UserRole, UserStatus
+from backend.models.user import User, UserRole, UserStatus
 
 
 class TestAuthService:
