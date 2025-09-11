@@ -325,7 +325,7 @@ class TestAuthAPI:
         """Test getting current user without token"""
         response = test_client.get("/api/v1/auth/me")
         
-        assert response.status_code == 401
+        assert response.status_code == 403  # FastAPI HTTPBearer returns 403 for missing auth header
         data = response.json()
         assert "detail" in data
     
