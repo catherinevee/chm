@@ -272,15 +272,28 @@ class TestAuthAPI:
         assert "detail" in data
     
     @pytest.mark.asyncio
-    async def test_get_current_user_success(self, test_client: TestClient, test_session: AsyncSession, test_user: User):
+    async def test_get_current_user_success(self, test_client: TestClient):
         """Test getting current user profile"""
-        # First login to get token
+        # First register a user
+        register_data = {
+            "username": "testuser",
+            "email": "testuser@example.com",
+            "password": "TestPassword123!",
+            "full_name": "Test User",
+            "role": "operator"
+        }
+        
+        register_response = test_client.post("/api/v1/auth/register", json=register_data)
+        assert register_response.status_code == 200
+        
+        # Login to get token
         login_data = {
             "username": "testuser",
-            "password": "testpassword123"
+            "password": "TestPassword123!"
         }
         
         login_response = test_client.post("/api/v1/auth/login", json=login_data)
+        assert login_response.status_code == 200
         login_data = login_response.json()
         access_token = login_data["access_token"]
         
@@ -292,7 +305,7 @@ class TestAuthAPI:
         data = response.json()
         
         assert data["username"] == "testuser"
-        assert data["email"] == "test@example.com"
+        assert data["email"] == "testuser@example.com"
         assert data["full_name"] == "Test User"
         assert data["role"] == "operator"
         assert data["is_active"] is True
@@ -317,15 +330,27 @@ class TestAuthAPI:
         assert "detail" in data
     
     @pytest.mark.asyncio
-    async def test_update_current_user_success(self, test_client: TestClient, test_session: AsyncSession, test_user: User):
+    async def test_update_current_user_success(self, test_client: TestClient):
         """Test updating current user profile"""
-        # First login to get token
+        # First register a user
+        register_data = {
+            "username": "testuser",
+            "email": "testuser@example.com",
+            "password": "TestPassword123!",
+            "full_name": "Test User"
+        }
+        
+        register_response = test_client.post("/api/v1/auth/register", json=register_data)
+        assert register_response.status_code == 200
+        
+        # Login to get token
         login_data = {
             "username": "testuser",
-            "password": "testpassword123"
+            "password": "TestPassword123!"
         }
         
         login_response = test_client.post("/api/v1/auth/login", json=login_data)
+        assert login_response.status_code == 200
         login_data = login_response.json()
         access_token = login_data["access_token"]
         
@@ -345,15 +370,27 @@ class TestAuthAPI:
         assert data["phone"] == "+1234567890"
     
     @pytest.mark.asyncio
-    async def test_logout_success(self, test_client: TestClient, test_session: AsyncSession, test_user: User):
+    async def test_logout_success(self, test_client: TestClient):
         """Test successful user logout"""
-        # First login to get token
+        # First register a user
+        register_data = {
+            "username": "testuser",
+            "email": "testuser@example.com",
+            "password": "TestPassword123!",
+            "full_name": "Test User"
+        }
+        
+        register_response = test_client.post("/api/v1/auth/register", json=register_data)
+        assert register_response.status_code == 200
+        
+        # Login to get token
         login_data = {
             "username": "testuser",
-            "password": "testpassword123"
+            "password": "TestPassword123!"
         }
         
         login_response = test_client.post("/api/v1/auth/login", json=login_data)
+        assert login_response.status_code == 200
         login_data = login_response.json()
         access_token = login_data["access_token"]
         

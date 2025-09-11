@@ -37,8 +37,8 @@ class AuthMiddleware:
             token = credentials.credentials
             
             # Verify token
-            payload = self.auth_service.verify_token(token)
-            if not payload:
+            token_data = await self.auth_service.verify_token(token, db=db)
+            if not token_data:
                 logger.warning("Invalid or expired token")
                 raise HTTPException(
                     status_code=status.HTTP_401_UNAUTHORIZED,
@@ -46,8 +46,8 @@ class AuthMiddleware:
                     headers={"WWW-Authenticate": "Bearer"},
                 )
             
-            # Check token type
-            if payload.get("type") != "access":
+            # Check token type (already checked in verify_token)
+            if token_data.token_type != "access":
                 logger.warning("Invalid token type")
                 raise HTTPException(
                     status_code=status.HTTP_401_UNAUTHORIZED,
@@ -56,7 +56,7 @@ class AuthMiddleware:
                 )
             
             # Get user ID from token
-            user_id = payload.get("sub")
+            user_id = token_data.user_id
             if not user_id:
                 logger.warning("No user ID in token")
                 raise HTTPException(
