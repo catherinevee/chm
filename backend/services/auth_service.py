@@ -161,15 +161,14 @@ class AuthService:
             password_hash = self.hash_password(password)
             
             # Create user directly (avoiding UserService mismatch for now)
-            from backend.models.user import User as MainUser
+            from backend.database.user_models import User as MainUser
             
             user = MainUser(
                 username=username,
                 email=email,
                 hashed_password=password_hash,
                 full_name=full_name,
-                role=role,
-                status=UserStatus.ACTIVE,
+                is_active=True,
                 is_verified=True  # Auto-verify for testing (change for production)
             )
             

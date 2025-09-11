@@ -200,13 +200,62 @@ async def real_db_with_data(real_db_session):
 # ============================================================================
 
 @pytest.fixture(scope="function")
-def real_test_client(real_db_session):
+def real_test_client():
     """Create TestClient that executes real API endpoints"""
     from core.database import get_db
+    from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+    from sqlalchemy.pool import StaticPool
+    
+    # Create engine synchronously for this fixture
+    DATABASE_URL = "sqlite+aiosqlite:///:memory:"
+    
+    # For SQLite testing, replace UUID columns with String
+    import sys
+    from unittest.mock import MagicMock
+    from sqlalchemy import String
+    
+    # Create a mock UUID type that returns String for SQLite
+    class SQLiteUUID:
+        def __init__(self, as_uuid=True):
+            self.as_uuid = as_uuid
+        
+        def _compiler_dispatch(self, visitor, **kw):
+            # Return String type for SQLite
+            return String(36)._compiler_dispatch(visitor, **kw)
+        
+        def __repr__(self):
+            return "UUID()"
+    
+    # Monkey-patch the UUID import for SQLite testing
+    from sqlalchemy.dialects import postgresql
+    postgresql.UUID = SQLiteUUID
+    
+    engine = create_async_engine(
+        DATABASE_URL,
+        connect_args={"check_same_thread": False},
+        poolclass=StaticPool,
+        echo=False
+    )
+    
+    # Create a session factory for the test
+    async_session = async_sessionmaker(
+        engine,
+        class_=AsyncSession,
+        expire_on_commit=False
+    )
+    
+    # Create tables once
+    import asyncio
+    async def create_tables():
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+    
+    asyncio.run(create_tables())
     
     # Override database dependency with real test database
     async def override_get_db():
-        yield real_db_session
+        async with async_session() as session:
+            yield session
     
     app.dependency_overrides[get_db] = override_get_db
     
@@ -548,19 +597,19 @@ def performance_monitor():
 # CLEANUP FIXTURES
 # ============================================================================
 
-@pytest.fixture(autouse=True)
-async def cleanup_after_test():
-    """Automatic cleanup after each test"""
-    yield
-    
-    # Close any open database connections
-    from sqlalchemy.pool import QueuePool
-    QueuePool.dispose()
-    
-    # Clear any caches
-    from functools import lru_cache
-    lru_cache.cache_clear()
-    
-    # Reset any global state
-    import gc
-    gc.collect()
+# @pytest.fixture(autouse=True)
+# async def cleanup_after_test():
+#     """Automatic cleanup after each test"""
+#     yield
+#     
+#     # Close any open database connections
+#     from sqlalchemy.pool import QueuePool
+#     QueuePool.dispose()
+#     
+#     # Clear any caches
+#     from functools import lru_cache
+#     lru_cache.cache_clear()
+#     
+#     # Reset any global state
+#     import gc
+#     gc.collect()

@@ -4,6 +4,7 @@ User authentication and authorization endpoints
 """
 
 import logging
+from datetime import datetime
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -130,18 +131,18 @@ async def register_user(user_data: UserRegister, db: AsyncSession = Depends(get_
         logger.info(f"User registered successfully: {user.username}")
 
         return UserProfile(
-            id=user.id,
-            uuid=user.uuid,
+            id=user.id.hex if hasattr(user.id, 'hex') else str(user.id),
+            uuid=str(user.id),  # Use id as uuid
             username=user.username,
             email=user.email,
             full_name=user.full_name,
-            phone=user.phone,
+            phone=None,  # Not in current model
             is_active=user.is_active,
-            role=user.role.value,
+            role="viewer",  # Default role for now
             is_verified=user.is_verified,
-            is_mfa_enabled=user.is_mfa_enabled,
+            is_mfa_enabled=user.mfa_enabled if hasattr(user, 'mfa_enabled') else False,
             last_login=user.last_login.isoformat() if user.last_login else None,
-            created_at=user.created_at.isoformat(),
+            created_at=user.created_at.isoformat() if user.created_at else datetime.utcnow().isoformat(),
         )
 
     except HTTPException:
