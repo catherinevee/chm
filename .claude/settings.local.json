@@ -64,7 +64,8 @@
       "Bash(pip install:*)",
       "Bash(docker build:*)",
       "Bash(gh:*)",
-      "Bash(FILTER_BRANCH_SQUELCH_WARNING=1 git filter-branch --msg-filter 'sed \"\"/🤖 Generated with \\[Claude Code\\]/d\"\" | sed \"\"/Co-Authored-By: Claude <noreply@anthropic.com>/d\"\"' -- --all)"
+      "Bash(FILTER_BRANCH_SQUELCH_WARNING=1 git filter-branch --msg-filter 'sed \"\"/🤖 Generated with \\[Claude Code\\]/d\"\" | sed \"\"/Co-Authored-By: Claude <noreply@anthropic.com>/d\"\"' -- --all)",
+      "Bash(FILTER_BRANCH_SQUELCH_WARNING=1 git filter-branch -f --msg-filter 'sed \"\"/🤖 Generated with \\[Claude Code\\]/d\"\"' -- --all)"
     ],
     "deny": [],
     "ask": []
