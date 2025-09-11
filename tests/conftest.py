@@ -35,13 +35,8 @@ from fastapi.testclient import TestClient
 from httpx import AsyncClient
 import redis.asyncio as redis
 
-# Import application components
-from main import app
-from backend.database.base import Base
-from backend.database.user_models import User, Role, Permission
-from backend.database.models import Device, Alert, DeviceMetric
-from backend.services.auth_service import AuthService
-from backend.config import Settings
+# Delay imports of models until after fixtures are created
+# These will be imported inside the fixtures that need them
 
 
 # ============================================================================
@@ -87,6 +82,10 @@ async def real_db_session(real_engine):
 @pytest.fixture(scope="function")
 async def real_db_with_data(real_db_session):
     """Real database with test data"""
+    # Import models locally after patching
+    from backend.database.user_models import User, Role, Permission
+    from backend.database.models import Device, Alert, DeviceMetric
+    
     # Create test user
     user = User(
         username="testuser",
@@ -204,31 +203,10 @@ def real_test_client():
     """Create TestClient that executes real API endpoints"""
     from core.database import get_db
     from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+    
+    # Create engine for SQLite testing
     from sqlalchemy.pool import StaticPool
-    
-    # Create engine synchronously for this fixture
     DATABASE_URL = "sqlite+aiosqlite:///:memory:"
-    
-    # For SQLite testing, replace UUID columns with String
-    import sys
-    from unittest.mock import MagicMock
-    from sqlalchemy import String
-    
-    # Create a mock UUID type that returns String for SQLite
-    class SQLiteUUID:
-        def __init__(self, as_uuid=True):
-            self.as_uuid = as_uuid
-        
-        def _compiler_dispatch(self, visitor, **kw):
-            # Return String type for SQLite
-            return String(36)._compiler_dispatch(visitor, **kw)
-        
-        def __repr__(self):
-            return "UUID()"
-    
-    # Monkey-patch the UUID import for SQLite testing
-    from sqlalchemy.dialects import postgresql
-    postgresql.UUID = SQLiteUUID
     
     engine = create_async_engine(
         DATABASE_URL,
@@ -246,11 +224,16 @@ def real_test_client():
     
     # Create tables once
     import asyncio
+    from backend.database.base import Base
+    
     async def create_tables():
         async with engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
     
     asyncio.run(create_tables())
+    
+    # Import app after patching and table creation
+    from main import app
     
     # Override database dependency with real test database
     async def override_get_db():
@@ -336,6 +319,7 @@ def real_admin_headers(real_test_client, real_db_with_data):
 @pytest.fixture
 async def real_auth_service(real_db_session):
     """Create real AuthService that executes actual authentication logic"""
+    from backend.services.auth_service import AuthService
     service = AuthService()
     service.db = real_db_session
     

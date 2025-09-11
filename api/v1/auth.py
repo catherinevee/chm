@@ -48,7 +48,7 @@ class TokenResponse(BaseModel):
 
 
 class UserProfile(BaseModel):
-    id: int
+    id: str  # Changed to str to support UUIDs
     uuid: str
     username: str
     email: str
@@ -131,7 +131,7 @@ async def register_user(user_data: UserRegister, db: AsyncSession = Depends(get_
         logger.info(f"User registered successfully: {user.username}")
 
         return UserProfile(
-            id=user.id.hex if hasattr(user.id, 'hex') else str(user.id),
+            id=str(user.id),  # Convert UUID to string
             uuid=str(user.id),  # Use id as uuid
             username=user.username,
             email=user.email,
