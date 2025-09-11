@@ -8,7 +8,7 @@ from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.services.auth_service import auth_service
@@ -32,11 +32,11 @@ class UserLogin(BaseModel):
 
 
 class UserRegister(BaseModel):
-    username: str
-    email: EmailStr
-    password: str
-    full_name: Optional[str] = None
-    role: Optional[str] = "viewer"
+    username: str = Field(..., min_length=3, max_length=50, description="Username must be between 3 and 50 characters")
+    email: EmailStr = Field(..., max_length=255, description="Email address")
+    password: str = Field(..., min_length=8, max_length=255, description="Password must be at least 8 characters long")
+    full_name: Optional[str] = Field(None, max_length=100, description="Full name (optional)")
+    role: Optional[str] = Field("viewer", description="User role")
 
 
 class TokenResponse(BaseModel):
@@ -52,6 +52,7 @@ class UserProfile(BaseModel):
     username: str
     email: str
     full_name: Optional[str] = None
+    phone: Optional[str] = None
     is_active: bool
     role: str
     is_verified: bool
@@ -61,14 +62,14 @@ class UserProfile(BaseModel):
 
 
 class UserUpdate(BaseModel):
-    full_name: Optional[str] = None
-    email: Optional[EmailStr] = None
-    phone: Optional[str] = None
+    full_name: Optional[str] = Field(None, max_length=100, description="Full name (optional)")
+    email: Optional[EmailStr] = Field(None, max_length=255, description="Email address")
+    phone: Optional[str] = Field(None, max_length=20, description="Phone number (optional)")
 
 
 class PasswordChange(BaseModel):
-    old_password: str
-    new_password: str
+    old_password: str = Field(..., min_length=1, description="Current password")
+    new_password: str = Field(..., min_length=8, max_length=255, description="New password must be at least 8 characters long")
 
 
 class PasswordReset(BaseModel):
@@ -134,6 +135,7 @@ async def register_user(user_data: UserRegister, db: AsyncSession = Depends(get_
             username=user.username,
             email=user.email,
             full_name=user.full_name,
+            phone=user.phone,
             is_active=user.is_active,
             role=user.role.value,
             is_verified=user.is_verified,
@@ -247,9 +249,11 @@ async def get_current_user_profile(current_user: User = Depends(get_current_user
 
     return UserProfile(
         id=current_user.id,
+        uuid=current_user.uuid,
         username=current_user.username,
         email=current_user.email,
         full_name=current_user.full_name,
+        phone=current_user.phone,
         is_active=current_user.is_active,
         role=current_user.role.value,
         is_verified=current_user.is_verified,
@@ -289,9 +293,11 @@ async def update_current_user(
 
         return UserProfile(
             id=current_user.id,
+            uuid=current_user.uuid,
             username=current_user.username,
             email=current_user.email,
             full_name=current_user.full_name,
+            phone=current_user.phone,
             is_active=current_user.is_active,
             role=current_user.role.value,
             is_verified=current_user.is_verified,

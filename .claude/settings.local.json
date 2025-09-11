@@ -62,7 +62,8 @@
       "Bash(black:*)",
       "Bash(ln:*)",
       "Bash(pip install:*)",
-      "Bash(docker build:*)"
+      "Bash(docker build:*)",
+      "Bash(gh:*)"
     ],
     "deny": [],
     "ask": []
