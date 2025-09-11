@@ -187,7 +187,8 @@ class EmailService:
             True if email sent successfully
         """
         try:
-            verification_url = f"{settings.frontend_url}/verify-email?token={verification_token}"
+            frontend_url = getattr(settings, 'frontend_url', 'http://localhost:3000')
+            verification_url = f"{frontend_url}/verify-email?token={verification_token}"
             
             template_data = {
                 'user_name': user.full_name or user.username,
@@ -247,7 +248,8 @@ class EmailService:
             True if email sent successfully
         """
         try:
-            reset_url = f"{settings.frontend_url}/reset-password?token={reset_token}"
+            frontend_url = getattr(settings, 'frontend_url', 'http://localhost:3000')
+            reset_url = f"{frontend_url}/reset-password?token={reset_token}"
             
             template_data = {
                 'user_name': user.full_name or user.username,
@@ -309,7 +311,7 @@ class EmailService:
                 'user_name': user.full_name or user.username,
                 'username': user.username,
                 'role': user.role,
-                'login_url': f"{settings.frontend_url}/login"
+                'login_url': f"{getattr(settings, 'frontend_url', 'http://localhost:3000')}/login"
             }
             
             subject = "Welcome to CHM"
@@ -354,7 +356,7 @@ class EmailService:
                 'device_name': alert_data.get('device_name', 'N/A'),
                 'alert_time': alert_data.get('timestamp', datetime.utcnow()).isoformat(),
                 'alert_description': alert_data.get('description', 'No description'),
-                'dashboard_url': f"{settings.frontend_url}/alerts/{alert_data.get('id', '')}"
+                'dashboard_url': f"{getattr(settings, 'frontend_url', 'http://localhost:3000')}/alerts/{alert_data.get('id', '')}"
             }
             
             subject = f"CHM Alert: {template_data['alert_title']}"
