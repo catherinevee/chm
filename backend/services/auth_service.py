@@ -879,11 +879,18 @@ class AuthService:
                 leeway=10,  # 10 seconds tolerance for timing issues
                 options={"verify_iat": False}  # Disable issued-at verification for now
             )
-            return TokenData.from_dict(payload)
+            logger.debug(f"Decoded JWT payload: {payload}")
+            token_data = TokenData.from_dict(payload)
+            logger.debug(f"Successfully decoded token: {token_data.token_type if token_data else 'None'}")
+            return token_data
         except jwt.ExpiredSignatureError:
-            raise SessionExpiredException("Token has expired")
+            logger.warning("Token has expired")
+            return None  # Return None instead of raising exception for consistency
         except jwt.InvalidTokenError as e:
             logger.warning(f"Invalid token: {e}")
+            return None
+        except Exception as e:
+            logger.error(f"Token decoding error: {e}")
             return None
     
     async def verify_token(
