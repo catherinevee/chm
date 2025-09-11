@@ -26,7 +26,7 @@ from backend.services.audit_service import audit_service, AuditEvent, EventCateg
 from backend.services.monitoring_engine import monitoring_engine
 from backend.services.alerting_system import alerting_system
 from backend.services.reporting_analytics import reporting_analytics, ReportType, TimeRange
-from models.user import User
+from backend.models.user import User
 
 
 

@@ -12,7 +12,7 @@ import logging
 from .database import get_db
 from .config import get_settings
 from backend.services.auth_service import auth_service
-from models.user import User
+from backend.models.user import User
 
 logger = logging.getLogger(__name__)
 settings = get_settings()

@@ -270,39 +270,39 @@ jobs:
 
     - name: Run Black
       run: |
-        black --check api/ backend/ core/ models/ tests/ --diff || echo "Black formatting issues found"
+        black --check api/ backend/ core/ tests/ --diff || echo "Black formatting issues found"
 
     - name: Run isort
       run: |
-        isort --check-only api/ backend/ core/ models/ services/ tests/ --diff || echo "Import sorting issues found"
+        isort --check-only api/ backend/ core/ tests/ --diff || echo "Import sorting issues found"
 
     - name: Run Flake8
       run: |
-        flake8 api/ backend/ core/ models/ services/ tests/ --max-line-length=120 --extend-ignore=E203,W503 \
+        flake8 api/ backend/ core/ tests/ --max-line-length=120 --extend-ignore=E203,W503 \
           --format=html --htmldir=flake8-report || echo "Flake8 linting issues found"
-        flake8 api/ backend/ core/ models/ services/ tests/ --max-line-length=120 --extend-ignore=E203,W503 \
+        flake8 api/ backend/ core/ tests/ --max-line-length=120 --extend-ignore=E203,W503 \
           --statistics --count || echo "Flake8 statistics completed"
 
     - name: Run pylint
       continue-on-error: true
       run: |
-        pylint api/ backend/ core/ models/ services/ --output-format=json > pylint-report.json || true
-        pylint api/ backend/ core/ models/ services/ --fail-under=7.0 || echo "Pylint issues found"
+        pylint api/ backend/ core/ --output-format=json > pylint-report.json || true
+        pylint api/ backend/ core/ --fail-under=7.0 || echo "Pylint issues found"
 
     - name: Run mypy
       continue-on-error: true
       run: |
-        mypy api/ backend/ core/ models/ services/ --ignore-missing-imports --html-report mypy-report || echo "MyPy type checking issues found"
+        mypy api/ backend/ core/ --ignore-missing-imports --html-report mypy-report || echo "MyPy type checking issues found"
 
     - name: Run Bandit security linting
       run: |
-        bandit -r api/ backend/ core/ models/ services/ -f json -o bandit-report.json || true
-        bandit -r api/ backend/ core/ models/ services/ -ll || echo "Bandit security issues found"
+        bandit -r api/ backend/ core/ -f json -o bandit-report.json || true
+        bandit -r api/ backend/ core/ -ll || echo "Bandit security issues found"
 
     - name: Run complexity analysis
       run: |
-        radon cc api/ backend/ core/ models/ services/ -s -j > complexity-report.json || echo "Complexity analysis completed"
-        radon mi api/ backend/ core/ models/ services/ -s || echo "Maintainability analysis completed"
+        radon cc api/ backend/ core/ -s -j > complexity-report.json || echo "Complexity analysis completed"
+        radon mi api/ backend/ core/ -s || echo "Maintainability analysis completed"
 
     - name: Upload quality reports
       uses: actions/upload-artifact@v4

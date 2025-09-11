@@ -23,7 +23,7 @@ from backend.common.exceptions import (
     InvalidTokenException
 )
 from backend.database.base import AsyncSession
-from models.user import User
+from backend.models.user import User
 # MFA models not yet implemented
 class MFADevice:
     pass

@@ -80,7 +80,7 @@ async def create_initial_data():
         if table_exists:
             # Now check for existing users in a fresh session
             async with async_session() as session:
-                from models.user import User
+                from backend.models.user import User
                 from sqlalchemy import select
                 
                 result = await session.execute(select(User))

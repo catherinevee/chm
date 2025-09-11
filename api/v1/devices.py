@@ -15,8 +15,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from backend.services.device_service import DeviceService
 from backend.services.discovery_service import DiscoveryService
 from core.database import get_db
-from models.device import Device as DeviceModel
-from models.device import DeviceProtocol, DeviceStatus, DeviceType
+from backend.models.device import Device as DeviceModel
+from backend.models.device import DeviceProtocol, DeviceStatus, DeviceType
 
 logger = logging.getLogger(__name__)
 

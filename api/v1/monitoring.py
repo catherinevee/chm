@@ -17,11 +17,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from backend.services.prometheus_metrics import prometheus_metrics
 from backend.services.websocket_service import websocket_manager
 from core.database import get_db
-from models.alert import Alert as AlertModel
-from models.alert import AlertSeverity, AlertStatus
-from models.device import Device as DeviceModel
-from models.device import DeviceStatus
-from models.metric import Metric as MetricModel
+from backend.models.alert import Alert as AlertModel
+from backend.models.alert import AlertSeverity, AlertStatus
+from backend.models.device import Device as DeviceModel
+from backend.models.device import DeviceStatus
+from backend.models.metric import Metric as MetricModel
 
 # Redis service not yet implemented
 redis_cache = None

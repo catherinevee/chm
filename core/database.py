@@ -77,8 +77,8 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
 async def init_db():
     """Initialize database tables"""
     # Import all models to register them with metadata
-    from models.user import User
-    from models.device import Device
+    from backend.models.user import User
+    from backend.models.device import Device
     
     async with engine.begin() as conn:
         # Create all tables

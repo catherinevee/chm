@@ -23,8 +23,8 @@ from backend.common.exceptions import (
     ValidationException
 )
 from backend.database.base import AsyncSession
-from models.user import User
-from models.notification import Notification, NotificationType, NotificationStatus
+from backend.models.user import User
+from backend.models.notification import Notification, NotificationType, NotificationStatus
 
 logger = logging.getLogger(__name__)
 

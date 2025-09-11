@@ -14,9 +14,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.auth_middleware import get_current_user
 from core.database import get_db
-from models.notification import Notification as NotificationModel
-from models.notification import NotificationStatus, NotificationType
-from models.user import User
+from backend.models.notification import Notification as NotificationModel
+from backend.models.notification import NotificationStatus, NotificationType
+from backend.models.user import User
 
 logger = logging.getLogger(__name__)
 

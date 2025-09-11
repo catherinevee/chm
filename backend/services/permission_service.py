@@ -22,7 +22,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_, or_, update, func
 from pydantic import BaseModel, Field
 
-from models.user import User
+from backend.models.user import User
 # Permission and UserPermission models not yet implemented
 class Permission:
     pass

@@ -23,7 +23,7 @@ from sqlalchemy import select, and_, or_, update, delete, func
 from sqlalchemy.orm import selectinload, joinedload
 from pydantic import BaseModel, Field, validator
 
-from models.user import User, UserRole
+from backend.models.user import User, UserRole
 # These models are not yet implemented - using placeholders
 class Role:
     pass

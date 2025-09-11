@@ -15,9 +15,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.services.discovery_service import DiscoveryService
 from core.database import get_db
-from models.device import Device as DeviceModel
-from models.discovery_job import DiscoveryJob as DiscoveryJobModel
-from models.discovery_job import DiscoveryStatus, DiscoveryType
+from backend.models.device import Device as DeviceModel
+from backend.models.discovery_job import DiscoveryJob as DiscoveryJobModel
+from backend.models.discovery_job import DiscoveryStatus, DiscoveryType
 
 logger = logging.getLogger(__name__)
 

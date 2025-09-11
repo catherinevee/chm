@@ -29,9 +29,9 @@ from backend.common.exceptions import (
     DuplicateUserException
 )
 from core.database import AsyncSession, get_db
-from models.user import User, UserRole, UserStatus
+from backend.models.user import User, UserRole, UserStatus
 # Audit log model doesn't exist yet - comment out for now
-# from models.audit_log import AuditLog, AuditAction
+# from backend.models.audit_log import AuditLog, AuditAction
 from sqlalchemy import select, update, and_, or_
 from sqlalchemy.exc import IntegrityError
 
@@ -161,7 +161,7 @@ class AuthService:
             password_hash = self.hash_password(password)
             
             # Create user directly (avoiding UserService mismatch for now)
-            from models.user import User as MainUser
+            from backend.models.user import User as MainUser
             
             user = MainUser(
                 username=username,
@@ -364,7 +364,7 @@ class AuthService:
                 raise AuthenticationException("Invalid MFA token")
             
             # Get user directly
-            from models.user import User as MainUser
+            from backend.models.user import User as MainUser
             query = select(MainUser).where(MainUser.id == user_id)
             result = await db.execute(query)
             user = result.scalar_one_or_none()
@@ -516,7 +516,7 @@ class AuthService:
                 logger.debug(f"Session management failed during refresh, proceeding anyway: {e}")
             
             # Get user directly
-            from models.user import User as MainUser
+            from backend.models.user import User as MainUser
             query = select(MainUser).where(MainUser.id == token_data.user_id)
             result = await db.execute(query)
             user = result.scalar_one_or_none()
@@ -753,7 +753,7 @@ class AuthService:
             self._validate_password(new_password)
             
             # Update password directly
-            from models.user import User as MainUser
+            from backend.models.user import User as MainUser
             new_password_hash = self.hash_password(new_password)
             query = update(MainUser).where(MainUser.id == user_id).values(
                 hashed_password=new_password_hash,
@@ -807,7 +807,7 @@ class AuthService:
         """
         try:
             # Get user directly
-            from models.user import User as MainUser
+            from backend.models.user import User as MainUser
             query = select(MainUser).where(MainUser.id == user_id)
             result = await db.execute(query)
             user = result.scalar_one_or_none()
@@ -1243,7 +1243,7 @@ class AuthService:
         }
         
         # Get user directly
-        from models.user import User as MainUser
+        from backend.models.user import User as MainUser
         query = select(MainUser).where(MainUser.id == user_id)
         result = await db.execute(query)
         user = result.scalar_one_or_none()

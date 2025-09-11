@@ -14,7 +14,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from backend.services.auth_service import auth_service
 from core.auth_middleware import get_current_active_user, get_current_user
 from core.database import get_db
-from models.user import User, UserRole
+from backend.models.user import User, UserRole
 
 logger = logging.getLogger(__name__)
 

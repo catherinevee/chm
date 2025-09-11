@@ -20,7 +20,7 @@ class AuditAction:
     pass
 class AuditSeverity:
     pass
-from models.user import User
+from backend.models.user import User
 from sqlalchemy import select, and_, or_, desc, func
 from sqlalchemy.exc import IntegrityError
 

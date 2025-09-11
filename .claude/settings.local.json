@@ -68,7 +68,13 @@
       "Bash(FILTER_BRANCH_SQUELCH_WARNING=1 git filter-branch -f --msg-filter 'sed \"\"/🤖 Generated with \\[Claude Code\\]/d\"\"' -- --all)",
       "Bash(git log:*)",
       "Bash(git pull:*)",
-      "Bash(git stash:*)"
+      "Bash(git stash:*)",
+      "Bash(while read dir)",
+      "Bash(then echo \"Empty or non-Python: $dir\")",
+      "Bash(fi)",
+      "Bash(done)",
+      "WebFetch(domain:app.codecov.io)",
+      "Bash(git show:*)"
     ],
     "deny": [],
     "ask": []

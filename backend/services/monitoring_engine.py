@@ -27,9 +27,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_, or_, update
 from pydantic import BaseModel, Field, validator
 
-from models.device import Device
-from models.alert import Alert
-from models.metric import Metric as DeviceMetric
+from backend.models.device import Device
+from backend.models.alert import Alert
+from backend.models.metric import Metric as DeviceMetric
 # MonitoringProfile not yet implemented
 class MonitoringProfile:
     pass

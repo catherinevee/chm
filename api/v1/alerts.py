@@ -15,9 +15,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from backend.services.alert_service import AlertService
 from backend.services.notification_service import NotificationService
 from core.database import get_db
-from models.alert import Alert as AlertModel
-from models.alert import AlertCategory, AlertSeverity, AlertStatus
-from models.device import Device as DeviceModel
+from backend.models.alert import Alert as AlertModel
+from backend.models.alert import AlertCategory, AlertSeverity, AlertStatus
+from backend.models.device import Device as DeviceModel
 
 logger = logging.getLogger(__name__)
 
