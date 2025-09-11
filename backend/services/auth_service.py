@@ -488,7 +488,11 @@ class AuthService:
         try:
             # Decode refresh token
             token_data = self.decode_token(refresh_token)
-            if not token_data or token_data.token_type != 'refresh':
+            if not token_data:
+                logger.warning("Failed to decode refresh token - token is None")
+                raise InvalidTokenException("Invalid refresh token")
+            if token_data.token_type != 'refresh':
+                logger.warning(f"Invalid token type: {token_data.token_type}, expected 'refresh'")
                 raise InvalidTokenException("Invalid refresh token")
             
             # Check if token expired
@@ -496,6 +500,7 @@ class AuthService:
                 raise SessionExpiredException("Refresh token expired")
             
             # Get session (with fallback for testing scenarios)
+            session = None
             try:
                 session = await self.session_manager.get_session(token_data.session_id)
                 if session:
@@ -536,7 +541,7 @@ class AuthService:
                     'role': user.role,
                     'permissions': permissions
                 },
-                session_id=session.session_id
+                session_id=session.session_id if session else token_data.session_id
             )
             
         except (InvalidTokenException, SessionExpiredException):
