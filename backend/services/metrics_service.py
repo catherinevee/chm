@@ -11,7 +11,7 @@ from sqlalchemy.orm import selectinload
 
 from backend.database.models import DeviceMetric, Device, Alert
 from backend.database.base import get_session
-from backend.services.validation_service import ValidationService
+# from backend.services.validation_service import ValidationService
 from backend.common.exceptions import AppException
 import logging
 

@@ -12,7 +12,9 @@ from sqlalchemy.orm import selectinload
 from backend.database.models import Notification
 from backend.database.user_models import User
 from backend.common.exceptions import AppException
-from backend.api.websocket_manager import ws_manager as websocket_manager
+# from backend.api.websocket_manager import ws_manager as websocket_manager
+from backend.services.websocket_manager import WebSocketManager
+websocket_manager = WebSocketManager()
 import logging
 import json
 
