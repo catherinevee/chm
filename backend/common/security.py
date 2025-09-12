@@ -260,11 +260,8 @@ def verify_token(token: str):
             data=payload,
             fallback_data=FallbackData(
                 data={},
-                health_status=HealthStatus(
-                    level=HealthLevel.UNKNOWN,
-                    message="Token verification failed, using empty payload",
-                    details="JWT decode error occurred"
-                )
+                source="security",
+                metadata={"message": "Token verification failed, using empty payload", "error": "JWT decode error occurred"}
             )
         )
     except JWTError:

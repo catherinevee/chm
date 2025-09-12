@@ -147,13 +147,13 @@ class TestRealAuthenticationFlow:
         is_valid = auth_service.verify_password("TestPassword123!", hashed)
         assert is_valid is True
         
-        # Execute JWT creation
-        token = auth_service.create_access_token({"user_id": 1, "username": "test"})
+        # Execute JWT creation (using private method for testing)
+        token = auth_service._generate_access_token({"user_id": 1, "username": "test"})
         assert len(token) > 20
         assert token.count('.') == 2
         
         # Execute JWT verification
-        payload = auth_service.verify_token(token)
+        payload = auth_service._verify_token(token)
         assert payload is not None
         assert payload.get("user_id") == 1
         
@@ -395,13 +395,20 @@ class TestRealModelExecution:
         assert metric.value == 50.0
         
         # Alert model
+        from backend.models.alert import AlertSeverity, AlertCategory, AlertSource
+        from datetime import datetime
+        
         alert = Alert(
             device_id=1,
-            alert_type="threshold",
-            severity="warning",
-            message="Test alert"
+            title="Test Alert",
+            message="Test alert message",
+            severity=AlertSeverity.MEDIUM,
+            category=AlertCategory.SYSTEM,
+            source=AlertSource.MANUAL,
+            first_occurrence=datetime.now(),
+            last_occurrence=datetime.now()
         )
-        assert alert.message == "Test alert"
+        assert alert.message == "Test alert message"
 
 
 class TestRealExceptionHandling:
