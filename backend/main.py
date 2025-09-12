@@ -1,113 +1,34 @@
 """
-CHM - Cloud Health Monitor
-Main application entry point
+DEPRECATED - This file has been consolidated into /main.py
+
+For backwards compatibility only. Will be removed in future versions.
 """
-import asyncio
-from contextlib import asynccontextmanager
-from typing import AsyncGenerator
 
-import uvicorn
-from config import settings
-from database.connection import close_db, init_db
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-from security.audit import audit_logger
+import warnings
+import sys
+import os
 
-from api.routers import alerts, auth, devices, discovery, maintenance, metrics, monitoring, reports, sla
-from backend.services.background_tasks import start_background_tasks, stop_background_tasks
-from backend.services.cache_service import cache_service
-from backend.services.connection_pool import connection_pool
-from backend.services.websocket_manager import websocket_manager
-
-
-@asynccontextmanager
-async def lifespan(app: FastAPI) -> AsyncGenerator:
-    """Application lifespan manager"""
-    try:
-        # Initialize database
-        await init_db()
-        
-        # Initialize cache
-        await cache_service.initialize()
-        
-        # Initialize connection pool
-        await connection_pool.initialize()
-        
-        # Start background tasks
-        await start_background_tasks()
-        
-        # Initialize audit logger
-        await audit_logger.initialize()
-        
-        print("CHM Application started successfully")
-        
-        yield
-        
-    finally:
-        # Cleanup on shutdown
-        await stop_background_tasks()
-        await connection_pool.cleanup()
-        await cache_service.cleanup()
-        await close_db()
-        await audit_logger.cleanup()
-        print("CHM Application shutdown complete")
-
-app = FastAPI(
-    title="CHM - Cloud Health Monitor",
-    description="Enterprise Network Monitoring and Management System",
-    version="1.0.0",
-    lifespan=lifespan
+warnings.warn(
+    "backend/main.py is deprecated. Use /main.py instead.",
+    DeprecationWarning,
+    stacklevel=2
 )
 
-# CORS configuration
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=settings.ALLOWED_ORIGINS,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+# Add parent directory to path to import from root
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-# Include routers
-app.include_router(auth.router, prefix="/api/auth", tags=["Authentication"])
-app.include_router(devices.router, prefix="/api/devices", tags=["Devices"])
-app.include_router(metrics.router, prefix="/api/metrics", tags=["Metrics"])
-app.include_router(alerts.router, prefix="/api/alerts", tags=["Alerts"])
-app.include_router(discovery.router, prefix="/api/discovery", tags=["Discovery"])
-app.include_router(monitoring.router, prefix="/api/monitoring", tags=["Monitoring"])
-app.include_router(reports.router, prefix="/api/reports", tags=["Reports"])
-app.include_router(sla.router, prefix="/api/sla", tags=["SLA"])
-app.include_router(maintenance.router, prefix="/api/maintenance", tags=["Maintenance"])
+# Import everything from the main entry point
+from main import *
 
-# WebSocket endpoint
-app.mount("/ws", websocket_manager.app)
-
-# Health check endpoint
-@app.get("/health")
-async def health_check():
-    """Health check endpoint for monitoring"""
-    return {
-        "status": "healthy",
-        "database": await check_database_health(),
-        "cache": await cache_service.health_check(),
-        "monitoring": await connection_pool.health_check()
-    }
-
-async def check_database_health():
-    """Check database connectivity"""
-    try:
-        from database.connection import get_db
-        async with get_db() as db:
-            result = await db.execute("SELECT 1")
-            return "healthy" if result else "unhealthy"
-    except Exception:
-        return "unhealthy"
-
+# Inform about the deprecation when run directly
 if __name__ == "__main__":
-    uvicorn.run(
-        "main:app",
-        host=settings.HOST,
-        port=settings.PORT,
-        reload=settings.DEBUG,
-        log_level=settings.LOG_LEVEL
-    )
+    print("="*60)
+    print("WARNING: backend/main.py is deprecated!")
+    print("Please use 'python main.py' from the project root instead.")
+    print("="*60)
+    print()
+    
+    # Still run the app for compatibility
+    import uvicorn
+    from main import app
+    uvicorn.run(app, host="0.0.0.0", port=8000)

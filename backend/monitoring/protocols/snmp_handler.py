@@ -491,8 +491,8 @@ class SNMPHandler:
                 if not error_indication and not error_status:
                     for var_bind in var_binds:
                         metrics[name] = int(var_bind[1])
-            except:
-                pass
+            except Exception as e:
+                logger.debug(f"Failed to get Arista metrics: {e}")
         
         # Fallback to standard OIDs if Arista-specific fail
         if not metrics:
@@ -554,8 +554,8 @@ class SNMPHandler:
             for var_bind in var_binds:
                 try:
                     cpu_loads.append(int(var_bind[1]))
-                except:
-                    pass
+                except Exception as e:
+                    logger.debug(f"Failed to parse CPU load value: {e}")
         
         if cpu_loads:
             return sum(cpu_loads) / len(cpu_loads)
@@ -651,7 +651,8 @@ class SNMPHandler:
             # Try to get sysName
             info = await self.get_device_info(ip_address, community, version, port, timeout=3, retries=1)
             return bool(info)
-        except:
+        except Exception as e:
+            logger.debug(f"Exception, returning: {e}")
             return False
     
     def __del__(self):

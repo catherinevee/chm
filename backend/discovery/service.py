@@ -620,8 +620,9 @@ class NetworkDiscoveryService:
                 writer.close()
                 await writer.wait_closed()
                 return port
-            except:
+            except Exception as e:
                 # Port check failed - return a sentinel value instead of None
+                logger.debug(f"Port {port} check failed on {ip}: {e}")
                 return -1  # Use -1 to indicate port check failure
         
         tasks = [check_port(port) for port in self.common_ports]
@@ -1053,8 +1054,8 @@ class NetworkDiscoveryService:
                         try:
                             hostname = socket.gethostbyaddr(str(ip_addr))[0]
                             device.hostname = hostname
-                        except:
-                            pass
+                        except Exception as e:
+                            logger.debug(f"Could not resolve hostname for {ip_addr}: {e}")
                         
                         # Try to determine device type from MAC OUI
                         device.vendor = self._get_vendor_from_mac(arp_entry['mac'])
@@ -1088,8 +1089,8 @@ class NetworkDiscoveryService:
                     try:
                         hostname = socket.gethostbyaddr(ip)[0]
                         device.hostname = hostname
-                    except:
-                        pass
+                    except Exception as e:
+                        logger.debug(f"Could not resolve hostname for {ip}: {e}")
                     
                     # Try basic port scan to determine device type
                     open_ports = await self._scan_ports(ip)
@@ -1256,7 +1257,8 @@ class NetworkDiscoveryService:
             )
             await proc.wait()
             return proc.returncode == 0
-        except:
+        except Exception as e:
+            logger.debug(f"Ping failed for {ip}: {e}")
             return False
     
     async def _get_cdp_neighbors(self, ip: str, snmp_info: Dict) -> List[Dict]:
@@ -1348,7 +1350,8 @@ class NetworkDiscoveryService:
                                     'ip': ip_part,
                                     'mac': mac_part
                                 })
-                            except:
+                            except Exception as e:
+                                logger.debug(f"Failed to parse ARP entry: {e}")
                                 continue
         
         except Exception as e:

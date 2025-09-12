@@ -283,8 +283,15 @@ async def delete_device(device_id: int, db: AsyncSession = Depends(get_db)):
         if not device:
             raise HTTPException(status_code=404, detail="Device not found")
         
-        # TODO: Stop monitoring for this device
-        # This would integrate with the monitoring service to stop polling
+        # Stop monitoring for this device
+        try:
+            from backend.services.device_polling import DevicePollingService
+            polling_service = DevicePollingService()
+            await polling_service.stop_monitoring(device_id)
+            logger.info(f"Stopped monitoring for device {device_id}")
+        except Exception as e:
+            logger.warning(f"Failed to stop monitoring for device {device_id}: {e}")
+            # Continue with deletion even if monitoring stop fails
         
         # Delete the device
         await db.delete(device)

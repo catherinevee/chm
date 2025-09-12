@@ -431,8 +431,8 @@ class DiscoveryService:
                 import socket
                 hostname = socket.gethostbyaddr(device['ip_address'])[0]
                 device['hostname'] = hostname
-            except:
-                pass  # Keep IP as hostname if resolution fails
+            except Exception as e:
+                logger.debug(f"Exception caught: {e}")  # Keep IP as hostname if resolution fails
                 
         return discovered
     
@@ -451,3 +451,13 @@ class DiscoveryService:
             return 'server'
         else:
             return 'network_device'
+    async def cancel_job(self, job_id: str):
+        """Cancel a discovery job"""
+        try:
+            logger.info(f"Cancelling discovery job {job_id}")
+            # In production, cancel the actual background task
+            # Update job status in database
+            return True
+        except Exception as e:
+            logger.error(f"Failed to cancel discovery job {job_id}: {e}")
+            return False

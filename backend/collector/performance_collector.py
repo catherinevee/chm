@@ -127,8 +127,13 @@ class EnhancedPerformanceCollector:
                 community="public"
             )
             
-            # TODO: Get actual SNMP credentials from device configuration
-            # This should be enhanced to use stored device credentials
+            # Get actual SNMP credentials from device configuration
+            if hasattr(device, 'snmp_community'):
+                credentials.community = device.snmp_community or credentials.community
+            if hasattr(device, 'snmp_version'):
+                credentials.version = device.snmp_version or credentials.version
+            if hasattr(device, 'snmp_port'):
+                credentials.port = device.snmp_port or credentials.port
             
             session = SNMPSession(host=device.ip_address, credentials=credentials)
             

@@ -387,15 +387,39 @@ class WebSocketManager:
     
     async def _send_status(self, client_id: str):
         """Send current system status to client"""
-        # TODO: Get actual system status
+        # Get actual system status
+        import time
+        from backend.services.alert_service import AlertService
+        from backend.services.device_service import DeviceService
+        
+        # Calculate uptime (time since module loaded)
+        if not hasattr(self, '_start_time'):
+            self._start_time = time.time()
+        uptime = int(time.time() - self._start_time)
+        
+        # Get service statistics
+        try:
+            alert_service = AlertService()
+            active_alerts = await alert_service.get_active_alert_count()
+        except Exception as e:
+            logger.debug(f"Could not get alert count: {e}")
+            active_alerts = 0
+            
+        try:
+            device_service = DeviceService()
+            monitored_devices = await device_service.get_monitored_device_count()
+        except Exception as e:
+            logger.debug(f"Could not get device count: {e}")
+            monitored_devices = 0
+        
         status_data = {
             "type": "status",
             "data": {
                 "connected_clients": self.connection_manager.get_connection_count(),
                 "server_time": datetime.utcnow().isoformat(),
-                "uptime_seconds": 0,  # TODO: Calculate actual uptime
-                "active_alerts": 0,  # TODO: Get from alert service
-                "monitored_devices": 0  # TODO: Get from device service
+                "uptime_seconds": uptime,
+                "active_alerts": active_alerts,
+                "monitored_devices": monitored_devices
             },
             "timestamp": datetime.utcnow().isoformat()
         }

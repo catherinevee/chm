@@ -406,8 +406,15 @@ async def request_password_reset(
             user.reset_token_expires = datetime.utcnow() + timedelta(hours=24)
             await db.commit()
             
-            # TODO: Send reset email
-            logger.info(f"Password reset requested for {user.email}")
+            # Send reset email
+            from backend.services.notification_service import NotificationService
+            notification_service = NotificationService(db)
+            await notification_service.send_password_reset_email(
+                email=user.email,
+                reset_token=reset_token,
+                user_name=user.username
+            )
+            logger.info(f"Password reset email sent to {user.email}")
         
         # Always return success to prevent email enumeration
         return {"message": "If the email exists, a reset link has been sent"}

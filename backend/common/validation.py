@@ -569,7 +569,7 @@ class InputValidator:
             try:
                 return datetime.fromisoformat(value.replace('Z', '+00:00'))
             except ValueError:
-                pass
+                logger.debug(f"Failed to parse datetime using ISO format: {value}")
             
             # Try other common formats
             formats = [

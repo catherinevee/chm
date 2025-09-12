@@ -774,7 +774,9 @@ class SNMPService:
             def run_dispatcher():
                 try:
                     snmp_engine.transportDispatcher.runDispatcher()
-                except:
+                except Exception as e:
+
+                    logger.debug(f"Exception: {e}")
                     snmp_engine.transportDispatcher.closeDispatcher()
                     raise
             

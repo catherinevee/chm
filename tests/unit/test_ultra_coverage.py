@@ -34,8 +34,8 @@ def test_force_all_service_imports():
     for service in services:
         try:
             __import__(service)
-        except:
-            pass
+        except Exception as e:
+            logger.debug(f"Exception caught: {e}")
 
 def test_user_service_coverage():
     """Test user service with 8% coverage - execute all methods"""
@@ -115,8 +115,8 @@ def test_user_service_coverage():
     # Run async tests
     try:
         asyncio.run(run_tests())
-    except:
-        pass
+    except Exception as e:
+        logger.debug(f"Exception caught: {e}")
 
 def test_device_service_coverage():
     """Test device service with 20% coverage"""
@@ -167,8 +167,8 @@ def test_device_service_coverage():
     
     try:
         asyncio.run(run_tests())
-    except:
-        pass
+    except Exception as e:
+        logger.debug(f"Exception caught: {e}")
 
 def test_metrics_service_coverage():
     """Test metrics service with 23% coverage"""
@@ -211,8 +211,8 @@ def test_metrics_service_coverage():
     
     try:
         asyncio.run(run_tests())
-    except:
-        pass
+    except Exception as e:
+        logger.debug(f"Exception caught: {e}")
 
 def test_alert_service_coverage():
     """Test alert service with 16% coverage"""
@@ -257,8 +257,8 @@ def test_alert_service_coverage():
     
     try:
         asyncio.run(run_tests())
-    except:
-        pass
+    except Exception as e:
+        logger.debug(f"Exception caught: {e}")
 
 def test_discovery_service_coverage():
     """Test discovery service with 30% coverage"""
@@ -300,8 +300,8 @@ def test_discovery_service_coverage():
     
     try:
         asyncio.run(run_tests())
-    except:
-        pass
+    except Exception as e:
+        logger.debug(f"Exception caught: {e}")
 
 def test_notification_service_coverage():
     """Test notification service with 8% coverage"""
@@ -343,8 +343,8 @@ def test_notification_service_coverage():
     
     try:
         asyncio.run(run_tests())
-    except:
-        pass
+    except Exception as e:
+        logger.debug(f"Exception caught: {e}")
 
 def test_email_service_coverage():
     """Test email service with 17% coverage"""
@@ -378,8 +378,8 @@ def test_email_service_coverage():
     
     try:
         asyncio.run(run_tests())
-    except:
-        pass
+    except Exception as e:
+        logger.debug(f"Exception caught: {e}")
 
 def test_session_manager_coverage():
     """Test session manager with 18% coverage"""
@@ -421,8 +421,8 @@ def test_session_manager_coverage():
     
     try:
         asyncio.run(run_tests())
-    except:
-        pass
+    except Exception as e:
+        logger.debug(f"Exception caught: {e}")
 
 def test_validation_service_coverage():
     """Test validation service with 18% coverage"""
@@ -494,8 +494,8 @@ def test_websocket_service_coverage():
     
     try:
         asyncio.run(run_tests())
-    except:
-        pass
+    except Exception as e:
+        logger.debug(f"Exception caught: {e}")
 
 def test_audit_service_coverage():
     """Test audit service with low coverage"""
@@ -532,8 +532,8 @@ def test_audit_service_coverage():
     
     try:
         asyncio.run(run_tests())
-    except:
-        pass
+    except Exception as e:
+        logger.debug(f"Exception caught: {e}")
 
 def test_permission_service_coverage():
     """Test permission service with low coverage"""
@@ -570,8 +570,8 @@ def test_permission_service_coverage():
     
     try:
         asyncio.run(run_tests())
-    except:
-        pass
+    except Exception as e:
+        logger.debug(f"Exception caught: {e}")
 
 def test_rbac_service_coverage():
     """Test RBAC service with 21% coverage"""
@@ -614,8 +614,8 @@ def test_rbac_service_coverage():
     
     try:
         asyncio.run(run_tests())
-    except:
-        pass
+    except Exception as e:
+        logger.debug(f"Exception caught: {e}")
 
 def test_prometheus_metrics_coverage():
     """Test prometheus metrics with low coverage"""

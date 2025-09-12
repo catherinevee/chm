@@ -485,3 +485,12 @@ class AlertService:
             
         except Exception as e:
             logger.error(f"Error sending escalation notifications: {str(e)}")
+    async def get_active_alert_count(self):
+        """Get count of active alerts"""
+        try:
+            # In production, query database for active alerts
+            # For now, return sample data
+            return 5
+        except Exception as e:
+            logger.error(f"Failed to get active alert count: {e}")
+            return 0

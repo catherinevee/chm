@@ -92,8 +92,8 @@ class RESTClient:
                 if response.status == 200:
                     logger.info("Basic authentication successful")
                     return True
-        except:
-            pass
+        except Exception as e:
+            logger.error(f"Basic authentication failed: {e}")
         return False
     
     async def _auth_token(self) -> bool:
@@ -114,8 +114,8 @@ class RESTClient:
                     if self.auth_token:
                         logger.info("Token authentication successful")
                         return True
-        except:
-            pass
+        except Exception as e:
+            logger.error(f"Basic authentication failed: {e}")
         return False
     
     async def _auth_cookie(self) -> bool:
@@ -135,8 +135,8 @@ class RESTClient:
                     if 'session' in response.cookies or 'auth' in response.cookies:
                         logger.info("Cookie authentication successful")
                         return True
-        except:
-            pass
+        except Exception as e:
+            logger.error(f"Basic authentication failed: {e}")
         return False
     
     def _get_headers(self) -> Dict[str, str]:

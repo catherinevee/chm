@@ -223,7 +223,8 @@ class NetworkDiscoveryEngine:
                 timeout
             )
             return response is not None
-        except:
+        except Exception as e:
+            logger.debug(f"Exception, returning: {e}")
             return False
     
     async def _arp_scan(self, network: ipaddress.IPv4Network) -> List[str]:
@@ -345,7 +346,8 @@ class NetworkDiscoveryEngine:
             
             return response is not None
             
-        except:
+        except Exception as e:
+            logger.debug(f"Exception, returning: {e}")
             return False
     
     async def _identify_devices(self,
@@ -564,7 +566,8 @@ class NetworkDiscoveryEngine:
                             device_info[f'{protocol}_enabled'] = True
                             break
                             
-                except:
+                except Exception as e:
+                    logger.debug(f"Exception in loop: {e}")
                     continue
             
             return device_info if device_info else None
@@ -658,7 +661,8 @@ class NetworkDiscoveryEngine:
             writer.close()
             await writer.wait_closed()
             return True
-        except:
+        except Exception as e:
+            logger.debug(f"Exception, returning: {e}")
             return False
     
     async def _detailed_discovery(self,
@@ -783,7 +787,9 @@ class NetworkDiscoveryEngine:
             try:
                 config = await manager.get_configuration(ssh_params)
                 has_config = bool(config)
-            except:
+            except Exception as e:
+
+                logger.debug(f"Exception: {e}")
                 has_config = False
             
             return {

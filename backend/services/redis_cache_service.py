@@ -686,7 +686,9 @@ class RedisCacheService:
             # Try to unpickle
             try:
                 return pickle.loads(value)
-            except:
+            except Exception as e:
+
+                logger.debug(f"Exception: {e}")
                 # Return raw bytes
                 return value
     

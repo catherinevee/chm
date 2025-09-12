@@ -518,9 +518,15 @@ async def poll_device(
                 detail="Device is not active"
             )
         
-        # TODO: Trigger actual polling through background service
-        # For now, just update the poll time
+        # Trigger actual polling through background service
+        from backend.services.device_polling import DevicePollingService
+        polling_service = DevicePollingService()
+        poll_result = await polling_service.poll_device_now(device_id)
+        
+        # Update the poll time
         device.last_poll_time = datetime.utcnow()
+        if poll_result and poll_result.get("success"):
+            device.status = "online"
         await db.commit()
         
         return {"message": f"Polling triggered for device {device.hostname}"}

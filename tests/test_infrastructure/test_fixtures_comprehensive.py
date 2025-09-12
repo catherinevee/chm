@@ -157,8 +157,8 @@ class TestInfrastructureManager:
         for temp_file in self.temp_files:
             try:
                 temp_file.unlink()
-            except:
-                pass
+            except Exception as e:
+                logger.debug(f"Exception caught: {e}")
         self.temp_files.clear()
         self.mock_services.clear()
 

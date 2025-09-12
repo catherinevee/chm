@@ -6,9 +6,10 @@ from sqlalchemy import Column, Integer, String, DateTime, Boolean, Text, JSON, F
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
-from sqlalchemy.dialects.postgresql import UUID
 from datetime import datetime
-import uuid
+
+# Import our unified UUID type
+from backend.database.uuid_type import UUID, generate_uuid
 
 from backend.database.base import Base
 
@@ -30,7 +31,7 @@ class User(Base):
     """User account for authentication"""
     __tablename__ = "users"
     
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id = Column(UUID(as_uuid=True), primary_key=True, default=generate_uuid)
     username = Column(String(100), unique=True, nullable=False, index=True)
     email = Column(String(255), unique=True, nullable=False, index=True)
     hashed_password = Column(String(255), nullable=False)
@@ -64,7 +65,7 @@ class Role(Base):
     """User roles for RBAC"""
     __tablename__ = "roles"
     
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id = Column(UUID(as_uuid=True), primary_key=True, default=generate_uuid)
     name = Column(String(100), unique=True, nullable=False)
     description = Column(Text)
     is_system = Column(Boolean, default=False)  # System roles cannot be deleted
@@ -79,7 +80,7 @@ class Permission(Base):
     """Granular permissions for RBAC"""
     __tablename__ = "permissions"
     
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id = Column(UUID(as_uuid=True), primary_key=True, default=generate_uuid)
     resource = Column(String(100), nullable=False)  # e.g., 'devices', 'alerts', 'users'
     action = Column(String(50), nullable=False)  # e.g., 'read', 'write', 'delete'
     description = Column(Text)
@@ -96,7 +97,7 @@ class UserSession(Base):
     """User sessions for JWT token management"""
     __tablename__ = "user_sessions"
     
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id = Column(UUID(as_uuid=True), primary_key=True, default=generate_uuid)
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
     token_jti = Column(String(255), unique=True, nullable=False)  # JWT ID for token invalidation
     refresh_token = Column(String(500), unique=True)
@@ -119,7 +120,7 @@ class AuditLog(Base):
     """Audit trail for user actions"""
     __tablename__ = "audit_logs"
     
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id = Column(UUID(as_uuid=True), primary_key=True, default=generate_uuid)
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"))
     action = Column(String(100), nullable=False)
     resource_type = Column(String(100))

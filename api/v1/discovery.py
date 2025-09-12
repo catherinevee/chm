@@ -199,9 +199,14 @@ async def cancel_discovery_job(job_id: int, db: AsyncSession = Depends(get_db)):
             raise HTTPException(status_code=400, detail=f"Cannot cancel job with status {job.status.value}")
 
         # Cancel the discovery task if it's running
-        # TODO: Implement discovery job cancellation
-        # discovery_service = DiscoveryService(db)
-        # await discovery_service.cancel_job(job_id)
+        try:
+            from backend.services.discovery_service import DiscoveryService
+            discovery_service = DiscoveryService(db)
+            await discovery_service.cancel_job(job_id)
+            logger.info(f"Cancelled discovery job {job_id}")
+        except Exception as e:
+            logger.warning(f"Failed to cancel discovery job {job_id}: {e}")
+            # Continue with status update even if cancellation fails
 
         # Update job status
         job.status = DiscoveryStatus.CANCELLED

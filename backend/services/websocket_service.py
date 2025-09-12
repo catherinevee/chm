@@ -279,8 +279,8 @@ class WebSocketService:
             # Close WebSocket
             try:
                 await client.websocket.close()
-            except:
-                pass
+            except Exception as e:
+                logger.debug(f"Exception caught: {e}")
             
             # Remove client
             del self.clients[client_id]

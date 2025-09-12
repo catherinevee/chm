@@ -527,7 +527,8 @@ class SNMPClient:
         elif isinstance(value, OctetString):
             try:
                 return value.prettyPrint()
-            except:
+            except Exception as e:
+                logger.debug(f"Exception, returning: {e}")
                 return str(value)
         elif isinstance(value, ObjectName):
             return str(value)

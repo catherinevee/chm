@@ -1388,10 +1388,10 @@ class AuthService:
         action: str,  # Changed from AuditAction
         details: Dict[str, Any]
     ):
-        """Log audit event - placeholder for now"""
-        # TODO: Implement when AuditLog model is available
-        pass
-        # Commented out until AuditLog model is available:
+        """Log audit event"""
+        # Log to standard logger until AuditLog model is available
+        logger.info(f"AUDIT: User {user_id} performed {action} on {resource_id or 'N/A'} - {details or 'No details'}")
+        # Future implementation with AuditLog model:
         # try:
         #     audit_log = AuditLog(
         #         user_id=user_id,

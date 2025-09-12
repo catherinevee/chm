@@ -16,24 +16,40 @@ logger = logging.getLogger(__name__)
 # Create base class for models
 Base = declarative_base()
 
-# Create async engine
-engine = create_async_engine(
-    settings.get_database_url(),
-    echo=settings.debug,
-    future=True,
-    pool_size=settings.database_pool_size,
-    max_overflow=settings.database_max_overflow,
-    pool_pre_ping=True,
-    pool_recycle=3600,  # Recycle connections after 1 hour
-    connect_args={
-        "server_settings": {
-            "application_name": settings.app_name,
-            "jit": "off"
-        },
-        "command_timeout": 60,
-        "timeout": 30
-    } if "postgresql" in settings.get_database_url() else {}
-)
+# Create async engine with appropriate settings for each database type
+database_url = settings.get_database_url()
+is_postgresql = "postgresql" in database_url
+is_sqlite = "sqlite" in database_url
+
+# Build engine arguments based on database type
+engine_args = {
+    "echo": settings.debug,
+    "future": True,
+}
+
+if is_postgresql:
+    # PostgreSQL-specific settings
+    engine_args.update({
+        "pool_size": settings.database_pool_size,
+        "max_overflow": settings.database_max_overflow,
+        "pool_pre_ping": True,
+        "pool_recycle": 3600,  # Recycle connections after 1 hour
+        "connect_args": {
+            "server_settings": {
+                "application_name": settings.app_name,
+                "jit": "off"
+            },
+            "command_timeout": 60,
+            "timeout": 30
+        }
+    })
+elif is_sqlite:
+    # SQLite-specific settings
+    engine_args.update({
+        "connect_args": {"check_same_thread": False}
+    })
+
+engine = create_async_engine(database_url, **engine_args)
 
 # Create async session factory
 async_session_maker = async_sessionmaker(

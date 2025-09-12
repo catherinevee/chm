@@ -435,8 +435,9 @@ class ICMPHandler:
                     try:
                         hostname = socket.gethostbyaddr(result.host)[0]
                         device_info['hostname'] = hostname
-                    except:
-                        pass  # Keep IP as hostname if resolution fails
+                    except Exception as e:
+                        logger.debug(f"Could not resolve hostname for {result.host}: {e}")
+                        # Keep IP as hostname if resolution fails
                     
                     discovered_devices.append(device_info)
             

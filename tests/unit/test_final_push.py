@@ -65,8 +65,8 @@ def test_execute_all_class_methods():
         if hasattr(obj, 'to_dict'):
             try:
                 obj.to_dict()
-            except:
-                pass
+            except Exception as e:
+                logger.debug(f"Exception caught: {e}")
         if hasattr(obj, '__dict__'):
             obj.__dict__
 
@@ -91,8 +91,8 @@ def test_execute_all_enum_values():
             for value in enum_class:
                 assert value.value is not None
                 assert value.name is not None
-        except:
-            pass
+        except Exception as e:
+            logger.debug(f"Exception caught: {e}")
 
 def test_execute_all_exception_paths():
     """Execute all exception creation and methods"""
@@ -139,8 +139,8 @@ def test_execute_all_config_validators():
             try:
                 from backend.config import Settings
                 settings = Settings()
-            except:
-                pass
+            except Exception as e:
+                logger.debug(f"Exception caught: {e}")
     
     # Test core config validators
     envs = [
@@ -153,8 +153,8 @@ def test_execute_all_config_validators():
             try:
                 from core.config import Settings
                 settings = Settings()
-            except:
-                pass
+            except Exception as e:
+                logger.debug(f"Exception caught: {e}")
 
 def test_execute_all_utility_functions():
     """Execute all utility functions"""
@@ -202,8 +202,8 @@ def test_execute_all_utility_functions():
                     else:
                         # Try to call with no arguments
                         func()
-                except:
-                    pass
+                except Exception as e:
+                    logger.debug(f"Exception caught: {e}")
 
 def test_execute_all_result_object_methods():
     """Execute all result object methods"""
@@ -256,15 +256,15 @@ def test_execute_database_functions():
             asyncio.run(init_db())
             asyncio.run(check_db_connection())
             asyncio.run(db_health_check())
-        except:
-            pass
+        except Exception as e:
+            logger.debug(f"Exception caught: {e}")
         
         # Test get_db generator
         try:
             gen = get_db()
             asyncio.run(gen.__anext__())
-        except:
-            pass
+        except Exception as e:
+            logger.debug(f"Exception caught: {e}")
 
 def test_execute_main_app_functions():
     """Execute main application functions"""
@@ -283,8 +283,8 @@ def test_execute_main_app_functions():
                 try:
                     asyncio.run(main.startup_event())
                     asyncio.run(main.shutdown_event())
-                except:
-                    pass
+                except Exception as e:
+                    logger.debug(f"Exception caught: {e}")
 
 def test_execute_api_router_setup():
     """Execute API router setup"""
@@ -318,8 +318,8 @@ def test_execute_middleware_setup():
         
         asyncio.run(sm.dispatch(request, call_next))
         asyncio.run(lm.dispatch(request, call_next))
-    except:
-        pass
+    except Exception as e:
+        logger.debug(f"Exception caught: {e}")
 
 def test_execute_model_relationships():
     """Execute model relationship properties"""
@@ -332,21 +332,21 @@ def test_execute_model_relationships():
     if hasattr(user, 'devices'):
         try:
             user.devices
-        except:
-            pass
+        except Exception as e:
+            logger.debug(f"Exception caught: {e}")
     
     device = Device()
     if hasattr(device, 'metrics'):
         try:
             device.metrics
-        except:
-            pass
+        except Exception as e:
+            logger.debug(f"Exception caught: {e}")
     
     if hasattr(device, 'alerts'):
         try:
             device.alerts
-        except:
-            pass
+        except Exception as e:
+            logger.debug(f"Exception caught: {e}")
 
 def test_execute_service_initialization():
     """Execute service initialization"""

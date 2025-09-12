@@ -871,13 +871,19 @@ class SecureSSHConnection:
                     # Load the key
                     try:
                         private_key = RSAKey.from_private_key_file(temp_key_path, password=passphrase)
-                    except:
+                    except Exception as e:
+
+                        logger.debug(f"Exception: {e}")
                         try:
                             private_key = DSSKey.from_private_key_file(temp_key_path, password=passphrase)
-                        except:
+                        except Exception as e:
+
+                            logger.debug(f"Exception: {e}")
                             try:
                                 private_key = ECDSAKey.from_private_key_file(temp_key_path, password=passphrase)
-                            except:
+                            except Exception as e:
+
+                                logger.debug(f"Exception: {e}")
                                 private_key = Ed25519Key.from_private_key_file(temp_key_path, password=passphrase)
                                 
                 finally:

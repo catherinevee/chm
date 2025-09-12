@@ -72,20 +72,20 @@ def test_execute_service_methods():
     try:
         auth_service = AuthService()
         assert auth_service is not None
-    except:
-        pass  # Some services may need database
+    except Exception as e:
+        logger.debug(f"Exception caught: {e}")  # Some services may need database
     
     try:
         device_service = DeviceService()
         assert device_service is not None
-    except:
-        pass
+    except Exception as e:
+        logger.debug(f"Exception caught: {e}")
     
     try:
         alert_service = AlertService()
         assert alert_service is not None
-    except:
-        pass
+    except Exception as e:
+        logger.debug(f"Exception caught: {e}")
 
 
 def test_execute_model_definitions():
@@ -112,7 +112,9 @@ def test_execute_config_loading():
         settings = get_settings()
         assert settings is not None
         assert hasattr(settings, 'database_url')
-    except:
+    except Exception as e:
+
+        logger.debug(f"Exception: {e}")
         # Settings may require environment variables
         pass
 
@@ -234,8 +236,8 @@ def test_execute_validation_functions():
         # Test IP validation
         assert validator.validate_ip_address("192.168.1.1") is True
         assert validator.validate_ip_address("999.999.999.999") is False
-    except:
-        pass  # Some methods may need dependencies
+    except Exception as e:
+        logger.debug(f"Exception caught: {e}")  # Some methods may need dependencies
 
 
 def test_execute_monitoring_handlers():
@@ -257,8 +259,8 @@ def test_execute_websocket_manager():
         assert hasattr(manager, 'connect')
         assert hasattr(manager, 'disconnect')
         assert hasattr(manager, 'broadcast')
-    except:
-        pass
+    except Exception as e:
+        logger.debug(f"Exception caught: {e}")
 
 
 def test_execute_main_app():

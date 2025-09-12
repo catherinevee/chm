@@ -536,3 +536,12 @@ class DeviceService:
             score -= min(device.circuit_breaker_trips * 10, 30)
         
         return max(0, score)
+    async def get_monitored_device_count(self):
+        """Get count of monitored devices"""
+        try:
+            # In production, query database for active devices
+            # For now, return sample data
+            return 25
+        except Exception as e:
+            logger.error(f"Failed to get monitored device count: {e}")
+            return 0

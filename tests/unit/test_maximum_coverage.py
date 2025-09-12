@@ -42,8 +42,8 @@ class TestMaximumCoverage:
         for module in modules:
             try:
                 __import__(module)
-            except:
-                pass  # Continue even if import fails
+            except Exception as e:
+                logger.debug(f"Exception caught: {e}")  # Continue even if import fails
     
     def test_backend_common_security_100_percent(self):
         """Achieve 100% coverage for backend.common.security"""
@@ -100,8 +100,8 @@ class TestMaximumCoverage:
                 try:
                     result = func(*args)
                     assert isinstance(result, expected_type)
-                except:
-                    pass  # Continue on error
+                except Exception as e:
+                    logger.debug(f"Exception caught: {e}")  # Continue on error
     
     def test_backend_common_result_objects_100_percent(self):
         """Achieve 100% coverage for backend.common.result_objects"""
@@ -149,8 +149,8 @@ class TestMaximumCoverage:
                     for attr in ['success', 'data', 'errors', 'to_dict']:
                         if hasattr(instance, attr):
                             getattr(instance, attr)
-                except:
-                    pass
+                except Exception as e:
+                    logger.debug(f"Exception caught: {e}")
     
     def test_backend_common_exceptions_100_percent(self):
         """Achieve 100% coverage for backend.common.exceptions"""
@@ -190,8 +190,8 @@ class TestMaximumCoverage:
                         context={'request_id': '123'}
                     )
                     exc2.to_dict()
-                except:
-                    pass
+                except Exception as e:
+                    logger.debug(f"Exception caught: {e}")
     
     def test_models_100_percent(self):
         """Achieve 100% coverage for all models"""
@@ -217,8 +217,8 @@ class TestMaximumCoverage:
             user.is_password_expired()
             user.to_dict()
             str(user)
-        except:
-            pass
+        except Exception as e:
+            logger.debug(f"Exception caught: {e}")
         
         # Test device model
         from backend.models.device import Device, DeviceType, DeviceStatus
@@ -238,8 +238,8 @@ class TestMaximumCoverage:
             device.get_uptime()
             device.to_dict()
             str(device)
-        except:
-            pass
+        except Exception as e:
+            logger.debug(f"Exception caught: {e}")
         
         # Test metric model
         from backend.models.metric import Metric, MetricType
@@ -255,8 +255,8 @@ class TestMaximumCoverage:
             Metric.calculate_average([metric])
             Metric.calculate_min([metric])
             Metric.calculate_max([metric])
-        except:
-            pass
+        except Exception as e:
+            logger.debug(f"Exception caught: {e}")
         
         # Test alert model
         from backend.models.alert import Alert, AlertType, AlertSeverity, AlertStatus
@@ -276,8 +276,8 @@ class TestMaximumCoverage:
             alert.suppress(30)
             alert.get_duration()
             alert.to_dict()
-        except:
-            pass
+        except Exception as e:
+            logger.debug(f"Exception caught: {e}")
         
         # Test notification model
         from backend.models.notification import Notification, NotificationType, NotificationStatus
@@ -296,8 +296,8 @@ class TestMaximumCoverage:
             notif.can_retry()
             notif.mark_read()
             notif.to_dict()
-        except:
-            pass
+        except Exception as e:
+            logger.debug(f"Exception caught: {e}")
     
     @pytest.mark.asyncio
     async def test_services_100_percent(self):
@@ -325,8 +325,8 @@ class TestMaximumCoverage:
                         auth.create_refresh_token(Mock())
                         await auth.verify_token('token')
                         await auth.authenticate_user(mock_db, 'test', 'pass')
-                    except:
-                        pass
+                    except Exception as e:
+                        logger.debug(f"Exception caught: {e}")
         
         # Test device service
         with patch('backend.services.device_service.database'):
@@ -341,8 +341,8 @@ class TestMaximumCoverage:
                 await device_service.update_device(mock_db, 1, {'name': 'Updated'})
                 await device_service.delete_device(mock_db, 1)
                 await device_service.list_devices(mock_db)
-            except:
-                pass
+            except Exception as e:
+                logger.debug(f"Exception caught: {e}")
     
     @pytest.mark.asyncio
     async def test_api_endpoints_100_percent(self):
@@ -388,8 +388,8 @@ class TestMaximumCoverage:
                 
                 # Just check we got a response
                 assert response.status_code is not None
-            except:
-                pass
+            except Exception as e:
+                logger.debug(f"Exception caught: {e}")
     
     def test_config_100_percent(self):
         """Achieve 100% coverage for configuration modules"""
@@ -413,8 +413,8 @@ class TestMaximumCoverage:
                     settings.encryption_key
                     settings.cors_origins
                     settings.discovery_default_ports
-                except:
-                    pass
+                except Exception as e:
+                    logger.debug(f"Exception caught: {e}")
         
         # Test core config
         from core.config import Settings as CoreSettings
@@ -431,8 +431,8 @@ class TestMaximumCoverage:
                     settings = CoreSettings()
                     settings.allowed_hosts
                     settings.trusted_hosts
-                except:
-                    pass
+                except Exception as e:
+                    logger.debug(f"Exception caught: {e}")
     
     @pytest.mark.asyncio
     async def test_database_100_percent(self):
@@ -454,8 +454,8 @@ class TestMaximumCoverage:
                 async for db in get_db():
                     assert db is not None
                     break
-            except:
-                pass
+            except Exception as e:
+                logger.debug(f"Exception caught: {e}")
     
     @pytest.mark.asyncio
     async def test_middleware_100_percent(self):
@@ -490,8 +490,8 @@ class TestMaximumCoverage:
                 if hasattr(core.middleware, mw_class.__name__):
                     mw = mw_class(app)
                     await mw.dispatch(request, call_next)
-            except:
-                pass
+            except Exception as e:
+                logger.debug(f"Exception caught: {e}")
     
     def test_monitoring_100_percent(self):
         """Achieve 100% coverage for monitoring modules"""
@@ -506,8 +506,8 @@ class TestMaximumCoverage:
                 handler.get('192.168.1.1', '1.3.6.1', 'public')
                 handler.walk('192.168.1.1', '1.3.6.1', 'public')
                 handler.set('192.168.1.1', '1.3.6.1', 'value', 'private')
-            except:
-                pass
+            except Exception as e:
+                logger.debug(f"Exception caught: {e}")
         
         # Test SSH handler
         from backend.monitoring.ssh_handler import SSHHandler
@@ -522,8 +522,8 @@ class TestMaximumCoverage:
                 handler.connect('192.168.1.1', 'admin', 'password')
                 handler.execute_command('show version')
                 handler.disconnect()
-            except:
-                pass
+            except Exception as e:
+                logger.debug(f"Exception caught: {e}")
     
     def test_main_application_100_percent(self):
         """Achieve 100% coverage for main application"""
@@ -540,8 +540,8 @@ class TestMaximumCoverage:
                 try:
                     asyncio.run(main.startup_event())
                     asyncio.run(main.shutdown_event())
-                except:
-                    pass
+                except Exception as e:
+                    logger.debug(f"Exception caught: {e}")
     
     def test_websocket_100_percent(self):
         """Achieve 100% coverage for websocket modules"""
@@ -557,8 +557,8 @@ class TestMaximumCoverage:
             asyncio.run(manager.disconnect(mock_ws))
             asyncio.run(manager.send_personal_message('test', mock_ws))
             asyncio.run(manager.broadcast('test'))
-        except:
-            pass
+        except Exception as e:
+            logger.debug(f"Exception caught: {e}")
         
         # Test WebSocket service
         service = WebSocketService()
@@ -567,8 +567,8 @@ class TestMaximumCoverage:
             asyncio.run(service.handle_connection(mock_ws))
             asyncio.run(service.handle_message(mock_ws, '{"type": "test"}'))
             asyncio.run(service.handle_disconnect(mock_ws))
-        except:
-            pass
+        except Exception as e:
+            logger.debug(f"Exception caught: {e}")
     
     def test_validation_service_100_percent(self):
         """Achieve 100% coverage for validation service"""
@@ -598,8 +598,8 @@ class TestMaximumCoverage:
             service.validate_regex_pattern('^test.*')
             service.validate_sql_query('SELECT * FROM users')
             service.validate_json_schema({'type': 'object'})
-        except:
-            pass
+        except Exception as e:
+            logger.debug(f"Exception caught: {e}")
     
     def test_prometheus_metrics_100_percent(self):
         """Achieve 100% coverage for prometheus metrics"""
@@ -613,5 +613,5 @@ class TestMaximumCoverage:
             metrics.set_gauge('test_gauge', 10)
             metrics.observe_summary('test_summary', 2.5)
             metrics.get_metrics()
-        except:
-            pass
+        except Exception as e:
+            logger.debug(f"Exception caught: {e}")

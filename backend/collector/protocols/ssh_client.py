@@ -138,8 +138,8 @@ class SSHClient:
                         parts = line.split(';')
                         current_usage = parts[0].split(':')[1].strip().replace('%', '')
                         return float(current_usage)
-                    except:
-                        pass
+                    except Exception as e:
+                        logger.debug(f"Failed to parse value: {e}")
         # Return fallback CPU usage data when parsing fails
         fallback_data = FallbackData(
             data=0.0,  # Default CPU usage
@@ -181,8 +181,8 @@ class SSHClient:
                         memory_info['free'] = int(parts[3])
                         memory_info['usage_percent'] = (memory_info['used'] / memory_info['total']) * 100
                         return memory_info
-                    except:
-                        pass
+                    except Exception as e:
+                        logger.debug(f"Failed to parse value: {e}")
         # Return fallback memory data when parsing fails
         fallback_data = FallbackData(
             data={
@@ -224,8 +224,8 @@ class SSHClient:
                         # Extract temperature value
                         temp_str = line.split('Temperature:')[1].split('Celsius')[0].strip()
                         return float(temp_str)
-                    except:
-                        pass
+                    except Exception as e:
+                        logger.debug(f"Failed to parse value: {e}")
         # Return fallback temperature data when parsing fails
         fallback_data = FallbackData(
             data=25.0,  # Default room temperature
@@ -268,15 +268,15 @@ class SSHClient:
                         # Parse input rate
                         input_parts = line.split('input rate')[1].split(',')[0].strip()
                         current_interface['input_rate'] = input_parts
-                    except:
-                        pass
+                    except Exception as e:
+                        logger.debug(f"Failed to parse value: {e}")
                 elif 'output rate' in line and current_interface:
                     try:
                         # Parse output rate
                         output_parts = line.split('output rate')[1].split(',')[0].strip()
                         current_interface['output_rate'] = output_parts
-                    except:
-                        pass
+                    except Exception as e:
+                        logger.debug(f"Failed to parse value: {e}")
             
             if current_interface:
                 interfaces.append(current_interface)

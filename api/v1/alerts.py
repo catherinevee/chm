@@ -131,8 +131,15 @@ async def create_alert(alert_data: AlertCreate, db: AsyncSession = Depends(get_d
         # Send notifications for high severity alerts
         if new_alert.severity in [AlertSeverity.CRITICAL, AlertSeverity.HIGH]:
             try:
-                # TODO: Implement notification sending
-                pass  # notification_service = NotificationService(db)
+                # Send notification for high-priority alert
+                from backend.services.notification_service import NotificationService
+                notification_service = NotificationService(db)
+                await notification_service.send_alert_notification(
+                    alert_id=new_alert.id,
+                    severity=new_alert.severity,
+                    message=f"Alert: {new_alert.alert_name} on device {alert_data.device_id}"
+                )
+                logger.info(f"Notification sent for alert {new_alert.id}")
             except Exception as e:
                 logger.warning(f"Failed to send alert notification: {e}")
         
@@ -374,16 +381,40 @@ async def get_correlated_alerts(
     logger.info(f"Correlation request with window: {time_window}s")
     
     try:
-        # Create correlation engine instance
-        # TODO: Implement alert correlation
-        # correlation_engine = AlertCorrelationEngine()
-        correlated_alerts = []
+        # Get recent alerts within the time window
+        cutoff_time = datetime.utcnow() - timedelta(seconds=time_window)
+        result = await db.execute(
+            select(Alert)
+            .where(Alert.created_at >= cutoff_time)
+            .order_by(Alert.created_at.desc())
+        )
+        recent_alerts = result.scalars().all()
         
-        # Get correlated groups (placeholder)
-        correlation_groups = []
+        # Group alerts by correlation criteria
+        correlation_groups = {}
+        for alert in recent_alerts:
+            # Group by device and alert type for basic correlation
+            key = (alert.device_id, alert.alert_type)
+            if key not in correlation_groups:
+                correlation_groups[key] = []
+            correlation_groups[key].append(alert)
         
-        # Format response
-        response_groups = []
+        # Format correlated groups
+        correlated_alerts = [
+            {
+                "device_id": device_id,
+                "alert_type": alert_type,
+                "count": len(alerts),
+                "alerts": [AlertResponse.from_orm(a) for a in alerts[:5]],  # Limit to 5 per group
+                "first_occurrence": min(a.created_at for a in alerts),
+                "last_occurrence": max(a.created_at for a in alerts)
+            }
+            for (device_id, alert_type), alerts in correlation_groups.items()
+            if len(alerts) > 1  # Only show groups with multiple alerts
+        ]
+        
+        # Sort by alert count (most correlated first)
+        correlated_alerts.sort(key=lambda x: x["count"], reverse=True)
         for group in correlation_groups:
             # Get alerts in group
             alert_ids = group.get("alert_ids", [])
@@ -456,10 +487,42 @@ async def analyze_alert_patterns(
             }
         
         # Analyze patterns
-        # TODO: Implement alert correlation
-        # correlation_engine = AlertCorrelationEngine()
-        correlated_alerts = []
-        patterns = []  # Placeholder for pattern analysis
+        # Implement alert correlation - find patterns in alert data
+        patterns = []
+        
+        # Group alerts by type and device to find patterns
+        type_groups = {}
+        device_groups = {}
+        
+        for alert in alerts:
+            # Group by type
+            if alert.alert_type not in type_groups:
+                type_groups[alert.alert_type] = []
+            type_groups[alert.alert_type].append(alert)
+            
+            # Group by device
+            if alert.device_id not in device_groups:
+                device_groups[alert.device_id] = []
+            device_groups[alert.device_id].append(alert)
+        
+        # Identify patterns
+        for alert_type, type_alerts in type_groups.items():
+            if len(type_alerts) > 5:  # Pattern threshold
+                patterns.append({
+                    "type": "frequent_alert_type",
+                    "alert_type": alert_type,
+                    "count": len(type_alerts),
+                    "devices_affected": len(set(a.device_id for a in type_alerts))
+                })
+        
+        for device_id, device_alerts in device_groups.items():
+            if len(device_alerts) > 10:  # Pattern threshold
+                patterns.append({
+                    "type": "problematic_device",
+                    "device_id": device_id,
+                    "alert_count": len(device_alerts),
+                    "alert_types": list(set(a.alert_type for a in device_alerts))
+                })
         
         return {
             "patterns": patterns,

@@ -251,7 +251,8 @@ class BulkImportService:
                         key, value = tag.strip().split('=', 1)
                         tags[key.strip()] = value.strip()
                 return tags
-        except:
+        except Exception as e:
+            logger.debug(f"Failed to parse tags: {e}")
             return {}
     
     async def _create_credentials(self, session, device_id: str, row: Dict[str, Any]):

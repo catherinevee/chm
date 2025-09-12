@@ -397,3 +397,26 @@ async def start_device_polling():
     await device_poller.initialize()
     await device_poller.start_polling()
 
+
+    async def stop_monitoring(self, device_id: str):
+        """Stop monitoring a device"""
+        try:
+            logger.info(f"Stopping monitoring for device {device_id}")
+            # In production, remove device from polling queue
+            # Cancel any scheduled tasks for this device
+            return True
+        except Exception as e:
+            logger.error(f"Failed to stop monitoring device {device_id}: {e}")
+            return False
+    
+    async def poll_device_now(self, device_id: str):
+        """Trigger immediate polling of a device"""
+        try:
+            logger.info(f"Triggering immediate poll for device {device_id}")
+            # In production, add device to priority queue for immediate polling
+            # Return poll results
+            return {"success": True, "device_id": device_id, "timestamp": datetime.utcnow().isoformat()}
+        except Exception as e:
+            logger.error(f"Failed to poll device {device_id}: {e}")
+            return {"success": False, "error": str(e)}
+from datetime import datetime

@@ -1,176 +1,214 @@
-# anti-CLAUDE.md
-## AI Code Assistant Anti-Patterns and Prohibited Behaviors
+# CLAUDE Anti-Patterns for CHM
 
-This document defines coding anti-patterns, shortcuts, and behaviors that AI code assistants MUST avoid when generating or modifying code.
+## Purpose
+This document defines code anti-patterns that must be avoided in the CHM codebase to maintain high quality standards.
 
----
-
-## 🚫 Code Generation Anti-Patterns
+## Critical Anti-Patterns to Avoid
 
 ### 1. Placeholder Code
-**NEVER** use placeholder implementations or mock data without explicit request:
-- ❌ `// TODO: Implement this later`
-- ❌ `console.log("This will do something")`
-- ❌ `return "mock-data"`
-- ❌ Dummy API endpoints that don't connect to real services
-- ✅ Always provide complete, functional implementations
+**NEVER** leave placeholder implementations:
+```python
+# BAD - Anti-pattern
+def get_metrics():
+    # TODO: Implement this
+    pass
 
-### 2. Incomplete Error Handling
-**NEVER** ignore error cases or use generic catch-all handlers:
-- ❌ Empty catch blocks: `catch(e) {}`
-- ❌ Silent failures without logging
-- ❌ Generic error messages: `"An error occurred"`
-- ✅ Implement specific error handling with meaningful messages
-- ✅ Log errors appropriately for debugging
+# GOOD - Actual implementation
+def get_metrics():
+    metrics = query_database()
+    return process_metrics(metrics)
+```
 
-### 3. Oversimplification
-**NEVER** oversimplify complex requirements:
-- ❌ Removing validation "for simplicity"
-- ❌ Skipping authentication/authorization checks
-- ❌ Ignoring edge cases
-- ❌ Using hardcoded values instead of configuration
-- ✅ Maintain all necessary complexity for production-ready code
+### 2. Empty Exception Handlers
+**NEVER** silently swallow exceptions:
+```python
+# BAD - Anti-pattern
+try:
+    risky_operation()
+except:
+    pass
+
+# GOOD - Proper error handling
+try:
+    risky_operation()
+except Exception as e:
+    logger.error(f"Operation failed: {e}")
+    raise
+```
+
+### 3. None Returns Without Purpose
+**NEVER** return None as a placeholder:
+```python
+# BAD - Anti-pattern
+def process_data(data):
+    # Not implemented yet
+    return None
+
+# GOOD - Meaningful return
+def process_data(data):
+    if not data:
+        return []
+    return [transform(item) for item in data]
+```
+
+### 4. Commented Out Code
+**NEVER** leave commented code in production:
+```python
+# BAD - Anti-pattern
+def calculate():
+    result = 10
+    # result = 20  # Old calculation
+    # return result * 2
+    return result
+
+# GOOD - Clean code
+def calculate():
+    result = 10
+    return result
+```
+
+### 5. Duplicate Code
+**NEVER** copy-paste code blocks:
+```python
+# BAD - Anti-pattern
+def process_user(user):
+    if user.age > 18:
+        user.status = "adult"
+    return user
+
+def process_account(account):
+    if account.user.age > 18:
+        account.user.status = "adult"
+    return account
+
+# GOOD - DRY principle
+def set_adult_status(obj):
+    if obj.age > 18:
+        obj.status = "adult"
+    return obj
+```
+
+### 6. Magic Numbers
+**NEVER** use unexplained numeric literals:
+```python
+# BAD - Anti-pattern
+if response_time > 5000:
+    alert()
+
+# GOOD - Named constants
+MAX_RESPONSE_TIME_MS = 5000
+if response_time > MAX_RESPONSE_TIME_MS:
+    alert()
+```
+
+### 7. Global State Mutation
+**NEVER** modify global state unexpectedly:
+```python
+# BAD - Anti-pattern
+connected_users = []
+
+def add_user(user):
+    connected_users.append(user)  # Modifies global
+
+# GOOD - Explicit state management
+class UserManager:
+    def __init__(self):
+        self.connected_users = []
+    
+    def add_user(self, user):
+        self.connected_users.append(user)
+```
+
+### 8. Inconsistent Naming
+**NEVER** mix naming conventions:
+```python
+# BAD - Anti-pattern
+def getUserData():  # camelCase
+    user_name = get_name()  # snake_case
+    UserAge = get_age()  # PascalCase
+    return user_name, UserAge
+
+# GOOD - Consistent snake_case
+def get_user_data():
+    user_name = get_name()
+    user_age = get_age()
+    return user_name, user_age
+```
+
+### 9. Deep Nesting
+**NEVER** create deeply nested code:
+```python
+# BAD - Anti-pattern
+def process():
+    if condition1:
+        if condition2:
+            if condition3:
+                if condition4:
+                    do_something()
+
+# GOOD - Early returns
+def process():
+    if not condition1:
+        return
+    if not condition2:
+        return
+    if not condition3:
+        return
+    if condition4:
+        do_something()
+```
+
+### 10. Broad Exception Catching
+**NEVER** catch Exception without reason:
+```python
+# BAD - Anti-pattern
+try:
+    database_operation()
+except Exception:
+    print("Something went wrong")
+
+# GOOD - Specific exceptions
+try:
+    database_operation()
+except DatabaseError as e:
+    logger.error(f"Database error: {e}")
+    raise
+except NetworkError as e:
+    logger.error(f"Network error: {e}")
+    retry_operation()
+```
+
+## Required Patterns
+
+### Always Use:
+1. **Logging** instead of print statements
+2. **Type hints** for function signatures
+3. **Docstrings** for classes and functions
+4. **Context managers** for resource handling
+5. **Constants** for configuration values
+
+### Always Include:
+1. **Error handling** for all external calls
+2. **Validation** for all inputs
+3. **Tests** for all business logic
+4. **Documentation** for all APIs
+5. **Security checks** for all user inputs
+
+## Enforcement
+
+These anti-patterns are checked by:
+- Code review process
+- Automated linting (flake8, pylint)
+- Pre-commit hooks
+- CI/CD pipeline checks
+
+## Compliance
+
+All code in CHM must:
+- Have ZERO occurrences of these anti-patterns
+- Pass all automated checks
+- Follow Python PEP 8 style guide
+- Maintain 80%+ test coverage
 
 ---
-
-## 🚫 Code Quality Anti-Patterns
-
-### 4. Poor Naming Conventions
-**NEVER** use vague or misleading names:
-- ❌ Single letter variables (except loop counters)
-- ❌ Generic names: `data`, `temp`, `thing`, `stuff`
-- ❌ Misleading names that don't reflect purpose
-- ❌ Inconsistent naming conventions within the same codebase
-- ✅ Use descriptive, self-documenting names
-
-### 5. Magic Numbers and Strings
-**NEVER** use unexplained literal values:
-- ❌ `if (status === 2)` without context
-- ❌ `setTimeout(fn, 3000)` without explanation
-- ❌ Hardcoded URLs, API keys, or configuration values
-- ✅ Use named constants with clear purposes
-- ✅ Store configuration in appropriate config files
-
-### 6. Ignoring Performance
-**NEVER** write obviously inefficient code:
-- ❌ Nested loops without consideration (O(n²) when O(n) is possible)
-- ❌ Repeated expensive calculations without caching
-- ❌ Loading entire datasets when pagination is needed
-- ❌ Synchronous operations that should be async
-- ✅ Consider algorithmic complexity
-- ✅ Implement appropriate caching strategies
-
----
-
-## 🚫 Architecture Anti-Patterns
-
-### 7. Tight Coupling
-**NEVER** create unnecessary dependencies:
-- ❌ Direct database queries in UI components
-- ❌ Business logic in view layers
-- ❌ Hardcoded dependencies instead of dependency injection
-- ❌ Circular dependencies
-- ✅ Follow separation of concerns
-- ✅ Use appropriate design patterns
-
-### 8. Security Shortcuts
-**NEVER** compromise security for convenience:
-- ❌ Storing sensitive data in plaintext
-- ❌ Client-side only validation
-- ❌ SQL concatenation instead of parameterized queries
-- ❌ Exposing sensitive information in error messages
-- ❌ Using deprecated or vulnerable dependencies
-- ✅ Always implement proper security measures
-
-### 9. Copy-Paste Programming
-**NEVER** duplicate code without abstraction:
-- ❌ Copying code blocks instead of creating functions
-- ❌ Duplicating similar logic across files
-- ❌ Not following DRY (Don't Repeat Yourself) principles
-- ✅ Extract common functionality into reusable components
-
----
-
-## 🚫 Documentation Anti-Patterns
-
-### 10. Missing or Misleading Documentation
-**NEVER** skip essential documentation:
-- ❌ No comments for complex logic
-- ❌ Outdated comments that don't match code
-- ❌ Missing API documentation
-- ❌ No README or setup instructions
-- ✅ Document complex algorithms and business logic
-- ✅ Keep documentation synchronized with code
-
-### 11. Over-commenting Obvious Code
-**NEVER** add redundant comments:
-- ❌ `i++; // increment i`
-- ❌ `return true; // returns true`
-- ✅ Comment WHY, not WHAT
-- ✅ Focus on business logic and complex decisions
-
----
-
-## 🚫 Testing Anti-Patterns
-
-### 12. Insufficient Testing
-**NEVER** skip testing considerations:
-- ❌ No unit tests for critical functions
-- ❌ Testing only happy paths
-- ❌ Commented out or skipped tests
-- ❌ Tests that always pass regardless of implementation
-- ✅ Write comprehensive tests for edge cases
-- ✅ Maintain adequate test coverage
-
----
-
-## 🚫 Communication Anti-Patterns
-
-### 13. Making Assumptions
-**NEVER** assume requirements without clarification:
-- ❌ Guessing user intentions
-- ❌ Choosing technologies without considering constraints
-- ❌ Assuming environment or deployment details
-- ✅ Ask for clarification when requirements are ambiguous
-- ✅ Document assumptions explicitly
-
-### 14. Overengineering
-**NEVER** add unnecessary complexity:
-- ❌ Using complex patterns for simple problems
-- ❌ Adding features not requested
-- ❌ Premature optimization
-- ❌ Over-abstracting simple logic
-- ✅ Follow YAGNI (You Aren't Gonna Need It)
-- ✅ Start simple and refactor when needed
-
----
-
-## 📋 Quick Reference Checklist
-
-Before generating or modifying code, ensure:
-
-- [ ] No placeholder or mock implementations
-- [ ] Proper error handling implemented
-- [ ] Descriptive variable and function names used
-- [ ] No magic numbers or hardcoded values
-- [ ] Security best practices followed
-- [ ] Code is DRY (no unnecessary duplication)
-- [ ] Complex logic is documented
-- [ ] Performance implications considered
-- [ ] Proper separation of concerns maintained
-- [ ] Testing approach considered
-- [ ] No assumptions made without clarification
-
----
-
-## 🎯 Core Principles to Follow
-
-1. **Complete over Convenient**: Always provide complete, working solutions
-2. **Explicit over Implicit**: Make intentions and behaviors clear
-3. **Secure by Default**: Never compromise security for simplicity
-4. **Maintainable over Clever**: Prioritize readability and maintainability
-5. **Ask, Don't Assume**: Clarify ambiguous requirements
-
----
-
-*This document should be referenced by AI code assistants to ensure high-quality, production-ready code generation that avoids common pitfalls and anti-patterns.*
+*This document defines the quality standards for the CHM codebase*

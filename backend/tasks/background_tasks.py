@@ -388,15 +388,15 @@ async def monitor_device_health():
                         'description': str(e)
                     }
                 )
-        except:
-            pass  # Avoid recursive errors
+        except Exception as e:
+            logger.debug(f"Exception caught: {e}")  # Avoid recursive errors
     
     finally:
         if session:
             try:
                 await session.__aexit__(None, None, None)
-            except:
-                pass
+            except Exception as e:
+                logger.debug(f"Exception caught: {e}")
 
 
 async def _monitor_single_device(
@@ -602,7 +602,9 @@ async def _monitor_single_device(
                         'description': str(e)
                     }
                 )
-            except:
+            except Exception as e:
+
+                logger.debug(f"Exception: {e}")
                 # Avoid recursive errors
                 pass
 

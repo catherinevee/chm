@@ -475,7 +475,9 @@ class MemoryMonitor:
                         "vms_mb": memory_info.vms / 1024 / 1024
                     })
                     time.sleep(interval)
-                except:
+                except Exception as e:
+
+                    logger.debug(f"Exception: {e}")
                     break
         
         self.monitor_thread = threading.Thread(target=monitor)

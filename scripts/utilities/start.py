@@ -214,8 +214,8 @@ async def main():
     finally:
         try:
             await db.disconnect()
-        except:
-            pass
+        except Exception as e:
+            logger.debug(f"Error disconnecting database: {e}")
 
 if __name__ == "__main__":
     success = asyncio.run(main())

@@ -54,7 +54,9 @@ class SSHHandler:
                         timeout=2
                     )
                     return self.connections[conn_key]
-                except:
+                except Exception as e:
+
+                    logger.debug(f"Exception: {e}")
                     # Connection is dead, remove it
                     del self.connections[conn_key]
             
@@ -482,5 +484,5 @@ class SSHHandler:
                 loop = asyncio.get_event_loop()
                 if not loop.is_closed():
                     loop.create_task(self.disconnect_all())
-            except:
-                pass
+            except Exception as e:
+                logger.debug(f"Exception caught: {e}")

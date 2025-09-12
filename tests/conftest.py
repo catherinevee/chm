@@ -4,6 +4,7 @@ This replaces mock-based testing with real execution
 """
 
 import pytest
+import pytest_asyncio
 import asyncio
 import os
 import sys
@@ -15,6 +16,9 @@ import tempfile
 # Add project root to path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
+
+# Apply UUID patching BEFORE any model imports
+import patch_uuid
 
 # Set test environment
 os.environ.update({
@@ -35,15 +39,15 @@ from fastapi.testclient import TestClient
 from httpx import AsyncClient
 import redis.asyncio as redis
 
-# Delay imports of models until after fixtures are created
-# These will be imported inside the fixtures that need them
+# Import Base here after environment setup but before fixtures
+from backend.database.base import Base
 
 
 # ============================================================================
 # REAL DATABASE FIXTURES
 # ============================================================================
 
-@pytest.fixture(scope="function")
+@pytest_asyncio.fixture(scope="function")
 async def real_engine():
     """Create real async SQLite engine for testing"""
     DATABASE_URL = "sqlite+aiosqlite:///:memory:"
@@ -65,7 +69,7 @@ async def real_engine():
     await engine.dispose()
 
 
-@pytest.fixture(scope="function")
+@pytest_asyncio.fixture(scope="function")
 async def real_db_session(real_engine):
     """Create real database session that executes actual queries"""
     async_session = async_sessionmaker(
@@ -79,7 +83,7 @@ async def real_db_session(real_engine):
         await session.rollback()
 
 
-@pytest.fixture(scope="function")
+@pytest_asyncio.fixture(scope="function")
 async def real_db_with_data(real_db_session):
     """Real database with test data"""
     # Import models locally after patching
@@ -224,7 +228,6 @@ def real_test_client():
     
     # Create tables once
     import asyncio
-    from backend.database.base import Base
     
     async def create_tables():
         async with engine.begin() as conn:
@@ -257,7 +260,7 @@ def real_test_client():
     app.dependency_overrides.clear()
 
 
-@pytest.fixture(scope="function")
+@pytest_asyncio.fixture(scope="function")
 async def async_test_client(real_db_session):
     """Async test client for async endpoint testing"""
     from core.database import get_db
@@ -316,7 +319,7 @@ def real_admin_headers(real_test_client, real_db_with_data):
 # REAL SERVICE FIXTURES
 # ============================================================================
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def real_auth_service(real_db_session):
     """Create real AuthService that executes actual authentication logic"""
     from backend.services.auth_service import AuthService
@@ -331,7 +334,7 @@ async def real_auth_service(real_db_session):
     return service
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def real_device_service(real_db_session):
     """Create real DeviceService that executes actual device operations"""
     from backend.services.device_service import DeviceService
@@ -355,7 +358,7 @@ async def real_device_service(real_db_session):
     return service
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def real_alert_service(real_db_session):
     """Create real AlertService that executes actual alert logic"""
     from backend.services.alert_service import AlertService
@@ -371,7 +374,7 @@ async def real_alert_service(real_db_session):
     return service
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def real_metrics_service(real_db_session):
     """Create real MetricsService that executes actual metrics operations"""
     from backend.services.metrics_service import MetricsService
@@ -391,7 +394,7 @@ async def real_metrics_service(real_db_session):
 # REAL REDIS FIXTURES (Optional - can use real Redis for testing)
 # ============================================================================
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def real_redis_client():
     """Create real Redis client for testing caching"""
     try:
@@ -409,7 +412,9 @@ async def real_redis_client():
         # Cleanup
         await client.flushdb()
         await client.close()
-    except:
+    except Exception as e:
+
+        logger.debug(f"Exception: {e}")
         # If Redis not available, provide mock
         from unittest.mock import AsyncMock
         mock_redis = AsyncMock()

@@ -18,8 +18,9 @@ from sqlalchemy.exc import IntegrityError
 # Import all application modules
 from main import app
 from backend.database.base import Base, get_session as get_db, init_db
-from backend.database.models import Device, Alert, DeviceMetric, NetworkInterface
-from backend.database.user_models import User, Role, Permission, UserSession, AuditLog
+# Models will be imported inside test methods after patch_uuid is applied
+# from backend.database.models import Device, Alert, DeviceMetric, NetworkInterface
+# from backend.database.user_models import User, Role, Permission, UserSession, AuditLog
 from backend.services.auth_service import AuthService
 from backend.services.device_service import DeviceService
 from backend.services.alert_service import AlertService
@@ -559,7 +560,7 @@ class TestAuthServiceExecution:
         
         # Hash password
         password = "TestP@ssw0rd123"
-        hashed = service.get_password_hash(password)
+        hashed = service.hash_password(password)
         assert hashed != password
         assert hashed.startswith("$2b$")
         
@@ -578,29 +579,32 @@ class TestAuthServiceExecution:
         service = real_auth_service
         
         # Successful registration
-        user = await service.register_user(
+        user = await service.register(
             username="newuser456",
             email="new456@example.com",
             password="SecureP@ss123",
-            full_name="New User"
+            full_name="New User",
+            db=service.db
         )
         assert user.id is not None
         assert user.username == "newuser456"
         
         # Duplicate username - error path
         with pytest.raises(ConflictException):
-            await service.register_user(
+            await service.register(
                 username="newuser456",  # Duplicate
                 email="another@example.com",
-                password="SecureP@ss123"
+                password="SecureP@ss123",
+                db=service.db
             )
         
         # Invalid email - error path
         with pytest.raises(ValidationException):
-            await service.register_user(
+            await service.register(
                 username="invalid_email_user",
                 email="not-an-email",
-                password="SecureP@ss123"
+                password="SecureP@ss123",
+                db=service.db
             )
     
     @pytest.mark.asyncio
@@ -609,60 +613,59 @@ class TestAuthServiceExecution:
         service = real_auth_service
         
         # Successful authentication
-        user = await service.authenticate_user("testuser", "secret")
+        user = await service.authenticate_user(service.db, "testuser", "secret")
         assert user is not None
         assert user.username == "testuser"
         
         # Wrong password
-        user = await service.authenticate_user("testuser", "wrongpassword")
+        user = await service.authenticate_user(service.db, "testuser", "wrongpassword")
         assert user is None
         
         # Non-existent user
-        user = await service.authenticate_user("nonexistent", "anypassword")
+        user = await service.authenticate_user(service.db, "nonexistent", "anypassword")
         assert user is None
         
         # Inactive user - create one first
         inactive_user = User(
             username="inactive",
             email="inactive@example.com",
-            hashed_password=service.get_password_hash("password"),
+            hashed_password=service.hash_password("password"),
             is_active=False
         )
         service.db.add(inactive_user)
         await service.db.commit()
         
-        user = await service.authenticate_user("inactive", "password")
+        user = await service.authenticate_user(service.db, "inactive", "password")
         assert user is None
     
     @pytest.mark.asyncio
-    async def test_auth_service_token_operations(self, real_auth_service):
+    async def test_auth_service_token_operations(self, real_auth_service, real_db_with_data):
         """Execute token creation and verification"""
         service = real_auth_service
         
-        # Create access token
-        token_data = {"sub": "user123", "scopes": ["read", "write"]}
-        access_token = service.create_access_token(token_data)
-        assert access_token is not None
+        # Create tokens for a user
+        user = real_db_with_data["users"][0]
+        tokens = service.create_tokens(user)
+        assert "access_token" in tokens
+        assert "refresh_token" in tokens
+        assert tokens["access_token"] is not None
+        assert tokens["refresh_token"] is not None
         
         # Verify valid token
-        payload = service.verify_token(access_token)
-        assert payload["sub"] == "user123"
-        
-        # Create refresh token
-        refresh_token = service.create_refresh_token(token_data)
-        assert refresh_token != access_token
-        
-        # Test expired token
-        expired_token = service.create_access_token(
-            token_data,
-            expires_delta=timedelta(seconds=-1)
+        payload = await service.verify_token(
+            token=tokens["access_token"],
+            token_type="access",
+            db=service.db
         )
-        with pytest.raises(Exception):  # Token expired
-            service.verify_token(expired_token)
+        assert payload is not None
         
         # Test invalid token
-        with pytest.raises(Exception):
-            service.verify_token("invalid.token.here")
+        invalid_result = await service.verify_token(
+            token="invalid.token.here",
+            token_type="access",
+            db=service.db
+        )
+        assert invalid_result is None
 
 
 class TestDeviceServiceExecution:

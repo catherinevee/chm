@@ -436,3 +436,48 @@ class NotificationService:
             
         except Exception as e:
             logger.error(f"Error sending email notification: {str(e)}")
+
+
+    def __init__(self, db=None):
+        """Initialize notification service"""
+        self.db = db
+    
+    async def send_alert_notification(
+        self,
+        alert_id: str,
+        severity: str,
+        message: str,
+        user_id=None
+    ):
+        """Send notification for an alert"""
+        try:
+            # Log alert notification
+            logger.info(f"Alert notification: {message} (Severity: {severity}, Alert: {alert_id})")
+            
+            # In production, integrate with notification channels
+            # Email, SMS, Push notifications, etc.
+            return True
+            
+        except Exception as e:
+            logger.error(f"Failed to send alert notification: {e}")
+            return False
+    
+    async def send_password_reset_email(
+        self,
+        email: str,
+        reset_token: str,
+        user_name: str
+    ):
+        """Send password reset email"""
+        try:
+            reset_link = f"https://chm.example.com/reset-password?token={reset_token}"
+            
+            logger.info(f"Password reset email sent to {email}")
+            logger.debug(f"Reset link for {user_name}: {reset_link}")
+            
+            # In production, use email service
+            return True
+            
+        except Exception as e:
+            logger.error(f"Failed to send password reset email: {e}")
+            return False

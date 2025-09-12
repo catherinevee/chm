@@ -136,7 +136,9 @@ class AsyncSSHClient:
             try:
                 with open(key_data, 'r') as f:
                     key_string = f.read()
-            except:
+            except Exception as e:
+
+                logger.debug(f"Exception: {e}")
                 # Assume it's already a key string
                 key_string = key_data
             
@@ -146,19 +148,25 @@ class AsyncSSHClient:
             # Try RSA
             try:
                 return RSAKey.from_private_key(key_file)
-            except:
+            except Exception as e:
+
+                logger.debug(f"Exception: {e}")
                 key_file.seek(0)
             
             # Try Ed25519
             try:
                 return Ed25519Key.from_private_key(key_file)
-            except:
+            except Exception as e:
+
+                logger.debug(f"Exception: {e}")
                 key_file.seek(0)
             
             # Try ECDSA
             try:
                 return ECDSAKey.from_private_key(key_file)
-            except:
+            except Exception as e:
+
+                logger.debug(f"Exception: {e}")
                 raise ValueError("Unable to load private key")
                 
         except Exception as e:
@@ -358,8 +366,8 @@ class InteractiveShell:
                 # Check for common prompts
                 if re.search(r'[>#$]\s*$', buffer):
                     break
-            except:
-                pass
+            except Exception as e:
+                logger.debug(f"Exception caught: {e}")
         
         return buffer
     
@@ -435,8 +443,8 @@ class InteractiveShell:
                 # Check for prompt
                 if self.prompt_pattern and re.search(self.prompt_pattern, output):
                     break
-            except:
-                pass
+            except Exception as e:
+                logger.debug(f"Exception caught: {e}")
         
         # Remove command echo and prompt
         lines = output.split('\n')
@@ -720,7 +728,9 @@ class JuniperSSHHandler(BaseSSHHandler):
                 'version': version_data.get('version', ''),
                 'serial': version_data.get('serial-number', ''),
             }
-        except:
+        except Exception as e:
+
+            logger.debug(f"Exception: {e}")
             # Fallback to text parsing
             stdout, _, _ = await client.execute_command("show version")
             info = self._parse_juniper_version(stdout)
@@ -803,7 +813,9 @@ class AristaSSHHandler(BaseSSHHandler):
                 'serial': version_data.get('serialNumber', ''),
                 'uptime': version_data.get('uptime', 0)
             }
-        except:
+        except Exception as e:
+
+            logger.debug(f"Exception: {e}")
             info = {'vendor': 'Arista'}
         
         return info
@@ -837,7 +849,8 @@ class AristaSSHHandler(BaseSSHHandler):
                 interfaces.append(interface)
             
             return interfaces
-        except:
+        except Exception as e:
+            logger.debug(f"Exception, returning: {e}")
             return []
 
 
@@ -860,8 +873,8 @@ class GenericSSHHandler(BaseSSHHandler):
                 stdout, _, exit_code = await client.execute_command(command)
                 if exit_code == 0 and stdout:
                     info[key] = stdout.strip()
-            except:
-                pass
+            except Exception as e:
+                logger.debug(f"Exception caught: {e}")
         
         return info
     
@@ -891,8 +904,8 @@ class GenericSSHHandler(BaseSSHHandler):
                         'mac': item.get('address')
                     }
                     interfaces.append(interface)
-            except:
-                pass
+            except Exception as e:
+                logger.debug(f"Exception caught: {e}")
         
         # Fallback to ifconfig
         if not interfaces:

@@ -176,8 +176,8 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
                 minute_key = f"rate_limit:{client_id}:minute:{int(time.time() // 60)}"
                 count = await cache_service.get(minute_key, 0)
                 return max(0, self.calls_per_minute - int(count))
-            except:
-                pass
+            except Exception as e:
+                logger.warning(f"Failed to get rate limit from cache for {client_id}: {e}")
         
         # Fall back to memory
         now = datetime.now()

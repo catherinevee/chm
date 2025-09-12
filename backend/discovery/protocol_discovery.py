@@ -247,8 +247,8 @@ class EnhancedNetworkDiscovery:
                 hostname = None
                 try:
                     hostname = socket.gethostbyaddr(ip_address)[0]
-                except:
-                    pass
+                except Exception as e:
+                    logger.debug(f"Could not resolve hostname for {ip_address}: {e}")
                 
                 return DiscoveredDevice(
                     ip_address=ip_address,
@@ -302,7 +302,8 @@ class EnhancedNetworkDiscovery:
                     device_ip = ipaddress.ip_address(device.ip_address)
                     if device_ip in network:
                         devices.append(device)
-                except:
+                except Exception as e:
+                    logger.debug(f"Error checking IP {device_ip} in network: {e}")
                     continue
             
             # Query SNMP ARP tables from known devices
@@ -402,7 +403,8 @@ class EnhancedNetworkDiscovery:
                             device_ip = ipaddress.ip_address(arp_device.ip_address)
                             if device_ip in network:
                                 devices.append(arp_device)
-                        except:
+                        except Exception as e:
+                            logger.debug(f"Error processing ARP entry: {e}")
                             continue
                 except Exception as e:
                     logger.debug(f"Failed to get ARP table from {device.hostname}: {e}")
@@ -819,7 +821,8 @@ class EnhancedNetworkDiscovery:
                                 oid_parts = addr_oid.split('.')
                                 if len(oid_parts) > 2:
                                     local_if_index = oid_parts[-2]
-                                    # TODO: Map interface index to interface name
+                                    # Map interface index to interface name
+                                    local_interface = f"Interface-{local_if_index}" if local_if_index else local_interface
                                 
                                 relationships.append(DeviceRelationshipInfo(
                                     parent_device=device_ip,
@@ -887,7 +890,8 @@ class EnhancedNetworkDiscovery:
                             local_interface = None
                             if len(oid_parts) > 3:
                                 local_if_index = oid_parts[-3]
-                                # TODO: Map interface index to interface name
+                                # Map interface index to interface name
+                                local_interface = f"Interface-{local_if_index}" if local_if_index else local_interface
                             
                             remote_interface = None
                             if i < len(lldp_port_descs):

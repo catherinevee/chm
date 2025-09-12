@@ -8,9 +8,10 @@ from typing import TYPE_CHECKING, List, Optional
 from sqlalchemy import Column, Integer, String, DateTime, Boolean, Float, Text, JSON, ForeignKey, Index
 from sqlalchemy.orm import relationship, Mapped
 from sqlalchemy.sql import func
-from sqlalchemy.dialects.postgresql import UUID
 from datetime import datetime
-import uuid
+
+# Import our unified UUID type
+from backend.database.uuid_type import UUID, generate_uuid
 
 from backend.database.base import Base
 
@@ -21,7 +22,7 @@ class Device(Base):
     """Device inventory and configuration"""
     __tablename__ = "devices"
     
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id = Column(UUID(as_uuid=True), primary_key=True, default=generate_uuid)
     hostname = Column(String(255), nullable=False, index=True)
     ip_address = Column(String(45), nullable=False, index=True)
     device_type = Column(String(50), nullable=False, index=True)
@@ -82,7 +83,7 @@ class NetworkInterface(Base):
     """Network interfaces for devices"""
     __tablename__ = "network_interfaces"
     
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id = Column(UUID(as_uuid=True), primary_key=True, default=generate_uuid)
     device_id = Column(UUID(as_uuid=True), ForeignKey("devices.id"), nullable=False)
     name = Column(String(100), nullable=False)
     interface_type = Column(String(50))
@@ -103,7 +104,7 @@ class Alert(Base):
     """System alerts and notifications"""
     __tablename__ = "alerts"
     
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id = Column(UUID(as_uuid=True), primary_key=True, default=generate_uuid)
     device_id = Column(UUID(as_uuid=True), ForeignKey("devices.id"), nullable=False)
     alert_type = Column(String(100), nullable=False)
     severity = Column(String(20), nullable=False, index=True)
@@ -132,7 +133,7 @@ class Notification(Base):
     """System notifications"""
     __tablename__ = "notifications"
     
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id = Column(UUID(as_uuid=True), primary_key=True, default=generate_uuid)
     notification_type = Column(String(100), nullable=False)
     title = Column(String(255), nullable=False)
     message = Column(Text, nullable=False)
@@ -148,7 +149,7 @@ class DeviceMetric(Base):
     """Device performance metrics"""
     __tablename__ = "device_metrics"
     
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id = Column(UUID(as_uuid=True), primary_key=True, default=generate_uuid)
     device_id = Column(UUID(as_uuid=True), ForeignKey("devices.id"), nullable=False)
     metric_type = Column(String(50), nullable=False)
     value = Column(Float, nullable=False)
@@ -168,7 +169,7 @@ class TopologyNode(Base):
     """Network topology nodes"""
     __tablename__ = "topology_nodes"
     
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id = Column(UUID(as_uuid=True), primary_key=True, default=generate_uuid)
     device_id = Column(UUID(as_uuid=True), ForeignKey("devices.id"))
     label = Column(String(255))  # Node display label
     node_type = Column(String(50), nullable=False)
@@ -183,7 +184,7 @@ class TopologyEdge(Base):
     """Network topology connections"""
     __tablename__ = "topology_edges"
     
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id = Column(UUID(as_uuid=True), primary_key=True, default=generate_uuid)
     source_node_id = Column(UUID(as_uuid=True), ForeignKey("topology_nodes.id"), nullable=False)
     target_node_id = Column(UUID(as_uuid=True), ForeignKey("topology_nodes.id"), nullable=False)
     edge_type = Column(String(50), default="connection")
@@ -201,7 +202,7 @@ class SLAMetric(Base):
     """SLA metrics and compliance tracking"""
     __tablename__ = "sla_metrics"
     
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id = Column(UUID(as_uuid=True), primary_key=True, default=generate_uuid)
     device_id = Column(UUID(as_uuid=True), ForeignKey("devices.id"))
     metric_name = Column(String(100), nullable=False)
     target_value = Column(Float, nullable=False)
@@ -221,7 +222,7 @@ class CircuitBreakerState(Base):
     """Persistent circuit breaker state tracking"""
     __tablename__ = "circuit_breaker_states"
     
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id = Column(UUID(as_uuid=True), primary_key=True, default=generate_uuid)
     identifier = Column(String(255), nullable=False, unique=True, index=True)  # Function/service identifier
     state = Column(String(20), nullable=False, default="closed")  # closed, open, half_open
     failure_count = Column(Integer, default=0)
@@ -249,7 +250,7 @@ class SystemHealthMetric(Base):
     """System-wide health and performance metrics"""
     __tablename__ = "system_health_metrics"
     
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id = Column(UUID(as_uuid=True), primary_key=True, default=generate_uuid)
     metric_category = Column(String(50), nullable=False, index=True)  # circuit_breaker, resource_usage, etc.
     metric_name = Column(String(100), nullable=False)
     metric_value = Column(Float)
@@ -269,7 +270,7 @@ class DiscoveryJob(Base):
     """Network discovery job tracking"""
     __tablename__ = "discovery_jobs"
     
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id = Column(UUID(as_uuid=True), primary_key=True, default=generate_uuid)
     name = Column(String(255), nullable=False)
     ip_range = Column(String(100), nullable=False)
     protocol = Column(String(50), default="snmp")

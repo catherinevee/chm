@@ -30,7 +30,8 @@ class SQLiteUUID(TypeDecorator):
             if not isinstance(value, uuid_lib.UUID):
                 try:
                     return uuid_lib.UUID(value)
-                except:
+                except Exception as e:
+                    logger.debug(f"Exception, returning: {e}")
                     return value
             return value
 

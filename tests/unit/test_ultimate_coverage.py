@@ -59,8 +59,8 @@ class TestUltimateCoverage:
         for module in modules:
             try:
                 __import__(module)
-            except:
-                pass
+            except Exception as e:
+                logger.debug(f"Exception caught: {e}")
     
     def test_main_app_complete(self):
         """Test main.py application completely"""
@@ -165,8 +165,8 @@ class TestUltimateCoverage:
             mock_session.return_value = AsyncMock()
             try:
                 asyncio.run(gen.__anext__())
-            except:
-                pass
+            except Exception as e:
+                logger.debug(f"Exception caught: {e}")
         
         # Test database functions with mocks
         with patch('core.database.engine') as mock_engine:
@@ -660,8 +660,8 @@ class TestUltimateCoverage:
             assert validation_service
             assert websocket_service
             assert prometheus_metrics
-        except:
-            pass
+        except Exception as e:
+            logger.debug(f"Exception caught: {e}")
     
     def test_execute_all(self):
         """Execute all tests"""
