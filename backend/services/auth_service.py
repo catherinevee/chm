@@ -35,10 +35,10 @@ from backend.models.user import User, UserRole, UserStatus
 from sqlalchemy import select, update, and_, or_
 from sqlalchemy.exc import IntegrityError
 
-# Import services
-from backend.services.user_service import UserService
-from backend.services.email_service import EmailService
-from backend.services.session_manager import SessionManager, SessionData
+# Import services - commented out as they were deleted
+# from backend.services.user_service import UserService
+# from backend.services.email_service import EmailService
+# from backend.services.session_manager import SessionManager, SessionData
 
 logger = logging.getLogger(__name__)
 
@@ -125,8 +125,8 @@ class AuthService:
         self.mfa_issuer = settings.mfa_issuer or "CHM"
         
         # Services
-        self.email_service = EmailService()
-        self.session_manager = SessionManager()
+        # self.email_service = EmailService()
+        # self.session_manager = SessionManager()
         
         logger.info("AuthService initialized")
     
@@ -951,7 +951,7 @@ class AuthService:
     def _generate_access_token(
         self,
         user: User,
-        session: Optional[SessionData],
+        session: Optional[Dict[str, Any]],
         permissions: List[str]
     ) -> str:
         """Generate access token"""
@@ -961,7 +961,7 @@ class AuthService:
             username=user.username,
             role=user.role,
             permissions=permissions,
-            session_id=session.session_id if session else "",
+            session_id=session.get('session_id', '') if session else "",
             token_type='access',
             issued_at=now,
             expires_at=now + timedelta(minutes=self.access_token_expire)
@@ -971,7 +971,7 @@ class AuthService:
     def _generate_refresh_token(
         self,
         user: User,
-        session: Optional[SessionData]
+        session: Optional[Dict[str, Any]]
     ) -> str:
         """Generate refresh token"""
         now = datetime.utcnow()
@@ -980,7 +980,7 @@ class AuthService:
             username=user.username,
             role=user.role,
             permissions=[],
-            session_id=session.session_id if session else "",
+            session_id=session.get('session_id', '') if session else "",
             token_type='refresh',
             issued_at=now,
             expires_at=now + timedelta(days=self.refresh_token_expire)

@@ -13,9 +13,7 @@ from fastapi.responses import JSONResponse
 from fastapi.openapi.utils import get_openapi
 
 from core.config import get_settings
-from api.v1.router import api_router
 from core.middleware import RequestLoggingMiddleware
-from backend.services.prometheus_metrics import MetricsMiddleware
 
 logger = logging.getLogger(__name__)
 
@@ -37,7 +35,7 @@ def create_app() -> FastAPI:
     """Create and configure the FastAPI application"""
 
     app = FastAPI(
-        title="CHM - Catalyst Health Monitor",
+        title="CHM API",
         description="Enterprise-grade network monitoring and management system",
         version="2.0.0",
         docs_url="/docs" if settings.debug else None,
@@ -59,11 +57,14 @@ def create_app() -> FastAPI:
 
     # Add custom middleware
     app.add_middleware(RequestLoggingMiddleware)
-    app.add_middleware(MetricsMiddleware)
     app.add_middleware(AuditMiddleware)
 
-    # Include API routes
-    app.include_router(api_router, prefix="/api/v1")
+    # Include API routes individually
+    from api.v1 import auth, devices, metrics, alerts
+    app.include_router(auth.router, prefix="/api/v1/auth", tags=["auth"])
+    app.include_router(devices.router, prefix="/api/v1/devices", tags=["devices"])
+    app.include_router(metrics.router, prefix="/api/v1/metrics", tags=["metrics"])
+    app.include_router(alerts.router, prefix="/api/v1/alerts", tags=["alerts"])
 
     # Startup and shutdown events
     @app.on_event("startup")

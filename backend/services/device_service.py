@@ -11,7 +11,7 @@ import logging
 import uuid
 
 from backend.database.models import Device, DeviceMetric, NetworkInterface, Alert
-from backend.services.validation_service import ValidationService, ValidationError
+# from backend.services.validation_service import ValidationService, ValidationError
 from backend.common.security import SecureCredentialStore, credential_encryption
 from backend.common.exceptions import (
     DeviceNotFoundException,
