@@ -4,7 +4,8 @@
       "Read(//c/tmp/**)",
       "Bash(xargs:*)",
       "Bash(curl:*)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(docker pull:*)"
     ],
     "deny": [],
     "ask": []

@@ -1,7 +1,9 @@
 # Catalyst Health Monitor (CHM)
 
 [![CI/CD Pipeline](https://github.com/catherinevee/chm/actions/workflows/main-ci.yml/badge.svg)](https://github.com/catherinevee/chm/actions/workflows/main-ci.yml)
+[![CD Pipeline](https://github.com/catherinevee/chm/actions/workflows/cd-optimized.yml/badge.svg)](https://github.com/catherinevee/chm/actions/workflows/cd-optimized.yml)
 [![Security Scan](https://github.com/catherinevee/chm/actions/workflows/security.yml/badge.svg)](https://github.com/catherinevee/chm/actions/workflows/security.yml)
+[![Docker Hub](https://img.shields.io/docker/v/catherinevee/chm?label=docker&color=blue)](https://hub.docker.com/r/catherinevee/chm)
 [![Test Coverage](https://img.shields.io/badge/coverage-85%25-brightgreen)](https://codecov.io/gh/catherinevee/chm)
 [![Code Quality](https://img.shields.io/badge/code%20quality-A-brightgreen)](https://github.com/catherinevee/chm)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
@@ -336,7 +338,23 @@ curl -X GET "http://localhost:8000/api/v1/devices" \
 
 ## Docker Deployment
 
-### Quick Start with Docker Compose
+### Quick Start with Docker Hub
+
+```bash
+# Pull the latest image from Docker Hub
+docker pull catherinevee/chm:latest
+
+# Run with basic settings
+docker run -d \
+  --name chm-app \
+  -p 8000:8000 \
+  catherinevee/chm:latest
+
+# View logs
+docker logs -f chm-app
+```
+
+### Docker Compose Deployment
 
 ```bash
 # Clone and start all services
@@ -354,7 +372,10 @@ docker-compose down
 ### Production Deployment
 
 ```bash
-# Build production image
+# Option 1: Use pre-built image from Docker Hub
+docker pull catherinevee/chm:latest
+
+# Option 2: Build your own image
 docker build -t chm:latest .
 
 # Run with production settings
@@ -364,7 +385,7 @@ docker run -d \
   -e DATABASE_URL=postgresql://user:pass@db:5432/chm \
   -e REDIS_URL=redis://redis:6379/0 \
   -e SECRET_KEY=your-secret-key \
-  chm:latest
+  catherinevee/chm:latest
 ```
 
 ### Docker Compose Services
