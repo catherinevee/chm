@@ -2,27 +2,27 @@
   "badges": {
     "build": {
       "name": "Build Status",
-      "url": "https://github.com/None/chm/actions/workflows/ci-cd.yml/badge.svg",
+      "url": "https://github.com/username/chm/actions/workflows/ci-cd.yml/badge.svg",
       "alt": "Build Status",
-      "link": "https://github.com/None/chm/actions/workflows/ci-cd.yml"
+      "link": "https://github.com/username/chm/actions/workflows/ci-cd.yml"
     },
     "coverage": {
-      "name": "Code Coverage",
-      "url": "https://codecov.io/gh/None/chm/branch/main/graph/badge.svg",
-      "alt": "Code Coverage",
-      "link": "https://codecov.io/gh/None/chm"
+      "name": "Test Coverage",
+      "url": "https://img.shields.io/badge/Coverage-Backend%2090%25%2B%20%2B%20Frontend%2085%25%2B-green.svg",
+      "alt": "Coverage Backend 90%+ + Frontend 85%+",
+      "link": "#test-coverage"
     },
     "quality": {
       "name": "Code Quality",
-      "url": "https://api.codacy.com/project/badge/Grade/your-project-id",
+      "url": "https://api.codacy.com/project/badge/Grade/[]",
       "alt": "Code Quality",
-      "link": "https://app.codacy.com/gh/None/chm"
+      "link": "https://app.codacy.com/gh/username/chm"
     },
     "security": {
-      "name": "Security Scan",
-      "url": "https://snyk.io/test/github/None/chm/badge.svg",
-      "alt": "Security Scan",
-      "link": "https://snyk.io/test/github/None/chm"
+      "name": "Security",
+      "url": "https://img.shields.io/badge/Security-Bandit%20%2B%20Safety%20%2B%20Snyk%20%2B%20Trivy-green.svg",
+      "alt": "Security Bandit + Safety + Snyk + Trivy",
+      "link": "#security-scanning"
     },
     "license": {
       "name": "License: MIT",
@@ -52,7 +52,7 @@
       "name": "Docker",
       "url": "https://img.shields.io/badge/Docker-Ready-blue.svg",
       "alt": "Docker Ready",
-      "link": "https://hub.docker.com/r/None/chm"
+      "link": "https://hub.docker.com/r/username/chm"
     },
     "kubernetes": {
       "name": "Kubernetes",
@@ -216,23 +216,11 @@
       "alt": "Testing Unit + Integration + E2E + Performance",
       "link": "#testing"
     },
-    "coverage": {
-      "name": "Test Coverage",
-      "url": "https://img.shields.io/badge/Coverage-Backend%2090%25%2B%20%2B%20Frontend%2085%25%2B-green.svg",
-      "alt": "Coverage Backend 90%+ + Frontend 85%+",
-      "link": "#test-coverage"
-    },
     "linting": {
       "name": "Code Quality",
       "url": "https://img.shields.io/badge/Quality-Black%20%2B%20Flake8%20%2B%20MyPy%20%2B%20ESLint-blue.svg",
       "alt": "Quality Black + Flake8 + MyPy + ESLint",
       "link": "#code-quality"
-    },
-    "security": {
-      "name": "Security",
-      "url": "https://img.shields.io/badge/Security-Bandit%20%2B%20Safety%20%2B%20Snyk%20%2B%20Trivy-green.svg",
-      "alt": "Security Bandit + Safety + Snyk + Trivy",
-      "link": "#security-scanning"
     },
     "documentation": {
       "name": "Documentation",
@@ -266,23 +254,127 @@
     }
   },
   "badge_groups": {
-    "status": ["build", "coverage", "quality", "security", "license"],
-    "technology": ["python", "node", "postgresql", "fastapi", "react", "typescript"],
-    "features": ["snmp", "ssh", "rest", "websocket", "jwt", "rbac", "mfa", "encryption", "audit"],
-    "capabilities": ["sla", "topology", "discovery", "metrics", "alerts", "performance", "scalability"],
-    "performance": ["uptime", "response", "vendors", "protocols"],
-    "deployment": ["docker", "kubernetes", "deployment", "monitoring"],
-    "quality": ["testing", "coverage", "linting", "security", "documentation"],
-    "community": ["contributing", "community", "roadmap", "enterprise"]
+    "status": [
+      "build",
+      "coverage",
+      "quality",
+      "security",
+      "license"
+    ],
+    "technology": [
+      "python",
+      "node",
+      "postgresql",
+      "fastapi",
+      "react",
+      "typescript"
+    ],
+    "features": [
+      "snmp",
+      "ssh",
+      "rest",
+      "websocket",
+      "jwt",
+      "rbac",
+      "mfa",
+      "encryption",
+      "audit"
+    ],
+    "capabilities": [
+      "sla",
+      "topology",
+      "discovery",
+      "metrics",
+      "alerts",
+      "performance",
+      "scalability"
+    ],
+    "performance": [
+      "uptime",
+      "response",
+      "vendors",
+      "protocols"
+    ],
+    "deployment": [
+      "docker",
+      "kubernetes",
+      "deployment",
+      "monitoring"
+    ],
+    "quality": [
+      "testing",
+      "coverage",
+      "linting",
+      "security",
+      "documentation"
+    ],
+    "community": [
+      "contributing",
+      "community",
+      "roadmap",
+      "enterprise"
+    ]
   },
   "readme_sections": {
-    "header": ["build", "coverage", "quality", "security", "license"],
-    "technology_stack": ["python", "node", "postgresql", "fastapi", "react", "typescript"],
-    "features": ["snmp", "ssh", "rest", "websocket", "jwt", "rbac", "mfa", "encryption", "audit"],
-    "capabilities": ["sla", "topology", "discovery", "metrics", "alerts", "performance", "scalability"],
-    "performance": ["uptime", "response", "vendors", "protocols"],
-    "deployment": ["docker", "kubernetes", "deployment", "monitoring"],
-    "quality": ["testing", "coverage", "linting", "security", "documentation"],
-    "community": ["contributing", "community", "roadmap", "enterprise"]
+    "header": [
+      "build",
+      "coverage",
+      "quality",
+      "security",
+      "license"
+    ],
+    "technology_stack": [
+      "python",
+      "node",
+      "postgresql",
+      "fastapi",
+      "react",
+      "typescript"
+    ],
+    "features": [
+      "snmp",
+      "ssh",
+      "rest",
+      "websocket",
+      "jwt",
+      "rbac",
+      "mfa",
+      "encryption",
+      "audit"
+    ],
+    "capabilities": [
+      "sla",
+      "topology",
+      "discovery",
+      "metrics",
+      "alerts",
+      "performance",
+      "scalability"
+    ],
+    "performance": [
+      "uptime",
+      "response",
+      "vendors",
+      "protocols"
+    ],
+    "deployment": [
+      "docker",
+      "kubernetes",
+      "deployment",
+      "monitoring"
+    ],
+    "quality": [
+      "testing",
+      "coverage",
+      "linting",
+      "security",
+      "documentation"
+    ],
+    "community": [
+      "contributing",
+      "community",
+      "roadmap",
+      "enterprise"
+    ]
   }
 }
