@@ -1,0 +1,40 @@
+[run]
+source = .
+omit = 
+    */tests/*
+    */test_*
+    */__pycache__/*
+    */venv/*
+    */env/*
+    */migrations/*
+    */alembic/*
+    setup.py
+    conftest.py
+    run_*.py
+    scripts/*
+    docs/*
+    requirements*.txt
+
+[report]
+exclude_lines =
+    pragma: no cover
+    def __repr__
+    def __str__
+    if __name__ == .__main__.:
+    raise AssertionError
+    raise NotImplementedError
+    pass
+    except ImportError:
+    if TYPE_CHECKING:
+    @abstract
+
+show_missing = True
+precision = 2
+skip_covered = False
+skip_empty = False
+
+[html]
+directory = htmlcov
+
+[xml]
+output = coverage.xml
