@@ -17,7 +17,7 @@ sys.path.insert(0, os.path.join(project_root, 'core'))
 
 # Set test environment variables
 os.environ['TESTING'] = 'true'
-os.environ['DATABASE_URL'] = 'sqlite:///:memory:'
+os.environ['DATABASE_URL'] = 'sqlite+aiosqlite:///:memory:'
 os.environ['SECRET_KEY'] = 'test-secret-key-for-testing'
 os.environ['JWT_SECRET_KEY'] = 'test-jwt-secret'
 os.environ['ENVIRONMENT'] = 'testing'

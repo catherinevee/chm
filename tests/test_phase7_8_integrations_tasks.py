@@ -2,9 +2,12 @@
 Phase 7-8: Comprehensive tests for integrations and background tasks
 Target: Achieve high coverage for integration modules and task execution
 """
-import os
+# Fix imports FIRST
 import sys
+import os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+os.environ['TESTING'] = 'true'
+os.environ['DATABASE_URL'] = 'sqlite+aiosqlite:///:memory:'
 
 import pytest
 from unittest.mock import Mock, patch, AsyncMock, MagicMock

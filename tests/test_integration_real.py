@@ -3,7 +3,11 @@ Integration tests that execute real code paths
 This file ensures actual code execution, not just imports
 """
 # Fix imports first
-import test_setup  # This sets up all paths
+import sys
+import os
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+os.environ['TESTING'] = 'true'
+os.environ['DATABASE_URL'] = 'sqlite+aiosqlite:///:memory:'
 
 import pytest
 import os

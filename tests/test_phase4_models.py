@@ -2,9 +2,12 @@
 Phase 4: Comprehensive tests for all database models
 Target: Achieve 100% coverage for models directory
 """
-import os
+# Fix imports FIRST
 import sys
+import os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+os.environ['TESTING'] = 'true'
+os.environ['DATABASE_URL'] = 'sqlite+aiosqlite:///:memory:'
 
 import pytest
 from datetime import datetime, timedelta

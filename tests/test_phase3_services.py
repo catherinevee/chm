@@ -2,9 +2,12 @@
 Phase 3: Comprehensive tests for backend services
 Target: Achieve significant coverage for all service classes
 """
-import os
+# Fix imports FIRST
 import sys
+import os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+os.environ['TESTING'] = 'true'
+os.environ['DATABASE_URL'] = 'sqlite+aiosqlite:///:memory:'
 
 import pytest
 from unittest.mock import Mock, patch, MagicMock, AsyncMock

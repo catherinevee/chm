@@ -5,7 +5,8 @@
       "Bash(xargs:*)",
       "Bash(curl:*)",
       "Bash(cat:*)",
-      "Bash(docker pull:*)"
+      "Bash(docker pull:*)",
+      "Bash(git rm:*)"
     ],
     "deny": [],
     "ask": []

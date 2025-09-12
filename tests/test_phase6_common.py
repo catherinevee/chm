@@ -2,9 +2,12 @@
 Phase 6: Comprehensive tests for common utilities
 Target: Achieve 100% coverage for backend/common directory
 """
-import os
+# Fix imports FIRST
 import sys
+import os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+os.environ['TESTING'] = 'true'
+os.environ['DATABASE_URL'] = 'sqlite+aiosqlite:///:memory:'
 
 import pytest
 from datetime import datetime, timedelta

@@ -45,8 +45,12 @@ if is_postgresql:
     })
 elif is_sqlite:
     # SQLite-specific settings
+    # For testing, use aiosqlite URL format
+    if "sqlite:///" in database_url and "aiosqlite" not in database_url:
+        database_url = database_url.replace("sqlite:///", "sqlite+aiosqlite:///")
     engine_args.update({
-        "connect_args": {"check_same_thread": False}
+        "connect_args": {"check_same_thread": False},
+        "poolclass": NullPool  # No connection pooling for SQLite
     })
 
 engine = create_async_engine(database_url, **engine_args)

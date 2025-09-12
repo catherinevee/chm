@@ -2,9 +2,12 @@
 Phase 2: Comprehensive tests for core modules
 Target: Achieve significant coverage for core functionality
 """
-import os
+# Fix imports FIRST
 import sys
+import os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+os.environ['TESTING'] = 'true'
+os.environ['DATABASE_URL'] = 'sqlite+aiosqlite:///:memory:'
 
 import pytest
 from unittest.mock import Mock, patch, MagicMock
