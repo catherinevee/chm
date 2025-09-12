@@ -38,8 +38,13 @@ from fastapi.testclient import TestClient
 from httpx import AsyncClient
 import redis.asyncio as redis
 
-# Import Base here after environment setup but before fixtures
-from backend.database.base import Base
+# Import Base from core.database instead
+try:
+    from core.database import Base
+except ImportError:
+    # Fallback to creating Base if not found
+    from sqlalchemy.ext.declarative import declarative_base
+    Base = declarative_base()
 
 
 # ============================================================================
@@ -412,7 +417,8 @@ async def real_redis_client():
         await client.flushdb()
         await client.close()
     except Exception as e:
-
+        import logging
+        logger = logging.getLogger(__name__)
         logger.debug(f"Exception: {e}")
         # If Redis not available, provide mock
         from unittest.mock import AsyncMock
