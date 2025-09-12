@@ -80,7 +80,6 @@ jobs:
         with:
           images: |
             catherinevee/chm
-            ghcr.io/${{ github.repository }}
           tags: |
             type=ref,event=tag
             type=ref,event=branch
@@ -145,11 +144,9 @@ jobs:
           echo "**Images pushed to:**" >> $GITHUB_STEP_SUMMARY
           echo "- Docker Hub: \`catherinevee/chm:${{ steps.version.outputs.version }}\`" >> $GITHUB_STEP_SUMMARY
           echo "- Docker Hub: \`catherinevee/chm:latest\`" >> $GITHUB_STEP_SUMMARY
-          echo "- GHCR: \`ghcr.io/${{ github.repository }}:${{ steps.version.outputs.version }}\`" >> $GITHUB_STEP_SUMMARY
-          echo "- GHCR: \`ghcr.io/${{ github.repository }}:latest\`" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Pull commands:**" >> $GITHUB_STEP_SUMMARY
           echo "\`\`\`bash" >> $GITHUB_STEP_SUMMARY
           echo "docker pull catherinevee/chm:${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
-          echo "docker pull ghcr.io/${{ github.repository }}:${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "docker pull catherinevee/chm:latest" >> $GITHUB_STEP_SUMMARY
           echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
