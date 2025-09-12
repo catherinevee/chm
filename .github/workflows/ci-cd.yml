@@ -172,13 +172,20 @@ jobs:
 
     - name: Run security checks
       run: |
+        pip install pbr  # Required by bandit
         bandit -r . -f json -o bandit-report.json || true
         safety check --json > safety-report.json || true
         
-    - name: Run CodeQL Analysis
-      uses: github/codeql-action/analyze@v3
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v3
       with:
         languages: python
+        
+    - name: Autobuild
+      uses: github/codeql-action/autobuild@v3
+        
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v3
 
     - name: Upload security results
       uses: actions/upload-artifact@v4

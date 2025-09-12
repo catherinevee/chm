@@ -17,8 +17,7 @@ import tempfile
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
-# Apply UUID patching BEFORE any model imports
-import patch_uuid
+# UUID patching removed - not needed for current tests
 
 # Set test environment
 os.environ.update({
