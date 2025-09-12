@@ -13,7 +13,8 @@
       "Bash(/c/Users/cathe/AppData/Roaming/Python/Python312-32/Scripts/codecovcli.exe --help)",
       "Bash(/c/Users/cathe/AppData/Roaming/Python/Python312-32/Scripts/codecovcli.exe upload-coverage --help)",
       "WebFetch(domain:api.codecov.io)",
-      "Bash(taskkill:*)"
+      "Bash(taskkill:*)",
+      "Bash(/c/Users/cathe/AppData/Roaming/Python/Python312-32/Scripts/codecovcli.exe create-coverage-report --file=coverage.xml)"
     ],
     "deny": [],
     "ask": []

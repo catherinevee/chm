@@ -96,7 +96,7 @@ jobs:
     - name: Run tests
       run: |
         export PYTHONPATH="$(pwd):${PYTHONPATH}"
-        pytest tests/test_basic.py tests/test_integration.py tests/unit/ -v --tb=short --maxfail=5 --disable-warnings || true
+        pytest tests/test_basic.py tests/test_integration.py tests/unit/ tests/test_strategic_coverage.py tests/test_api_endpoints.py tests/test_auth_service_boost.py -v --tb=short --maxfail=5 --disable-warnings || true
 
   # Coverage and quality analysis (main branch only)
   analyze:
@@ -158,7 +158,7 @@ jobs:
         SECRET_KEY: test-secret-key
       run: |
         export PYTHONPATH="$(pwd):${PYTHONPATH}"
-        coverage run --source=. -m pytest tests/test_basic.py tests/test_integration.py tests/unit/ -v --tb=short --maxfail=5 --disable-warnings || true
+        coverage run --source=. -m pytest tests/test_basic.py tests/test_integration.py tests/unit/ tests/test_strategic_coverage.py tests/test_api_endpoints.py tests/test_auth_service_boost.py -v --tb=short --maxfail=5 --disable-warnings || true
         coverage report -m
         coverage xml
 
