@@ -1,0 +1,42 @@
+{
+  "overall_score": 36.75,
+  "grade": "F",
+  "metrics": {
+    "documentation": {
+      "score": 25.0,
+      "required_files_present": 1.0
+    },
+    "performance": {
+      "score": 80.0,
+      "benchmarks_available": false
+    },
+    "compliance": {
+      "score": 100.0,
+      "license_present": true,
+      "compliance_files_present": 0
+    }
+  },
+  "individual_scores": {
+    "backend_coverage": 0.0,
+    "frontend_coverage": 0.0,
+    "code_quality": 100.0,
+    "documentation": 25.0,
+    "performance": 80.0,
+    "compliance": 100.0
+  },
+  "weights": {
+    "test_coverage": 0.25,
+    "code_quality": 0.2,
+    "security": 0.2,
+    "documentation": 0.15,
+    "performance": 0.1,
+    "compliance": 0.1
+  },
+  "timestamp": "C:\\Users\\cathe\\OneDrive\\Desktop\\github\\chm2\\chm",
+  "recommendations": [
+    "Overall quality needs improvement",
+    "Increase backend test coverage to 90%+",
+    "Increase frontend test coverage to 85%+",
+    "Improve documentation completeness"
+  ]
+}

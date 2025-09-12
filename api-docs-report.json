@@ -1,0 +1,39 @@
+{
+  "overall_score": 37.17,
+  "api_endpoints_found": 108,
+  "openapi_schema": {
+    "error": "OpenAPI schema file not found"
+  },
+  "documentation_files": {
+    "required_files_present": 1,
+    "total_required_files": 4,
+    "optional_files_present": 1,
+    "total_optional_files": 3,
+    "present_files": [
+      "DEPLOYMENT.md",
+      "SECURITY.md"
+    ],
+    "missing_files": [
+      "README.md",
+      "API.md",
+      "CONTRIBUTING.md"
+    ]
+  },
+  "code_documentation": {
+    "total_files": 144,
+    "documented_files": 140,
+    "file_documentation_rate": 97.22222222222221,
+    "total_functions": 1184,
+    "documented_functions": 899,
+    "function_documentation_rate": 75.92905405405406,
+    "total_classes": 651,
+    "documented_classes": 561,
+    "class_documentation_rate": 86.17511520737328
+  },
+  "recommendations": [
+    "Overall documentation needs improvement",
+    "Create missing documentation files: README.md, API.md, CONTRIBUTING.md",
+    "Increase function documentation rate from 75.9% to 90%+",
+    "Increase class documentation rate from 86.2% to 90%+"
+  ]
+}
