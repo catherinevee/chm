@@ -580,6 +580,16 @@ class WebSocketException(CHMBaseException):
             ]
 
 
+# Generic AppException for HTTP-like errors
+class AppException(CHMBaseException):
+    """Generic application exception with HTTP-like status codes"""
+    
+    def __init__(self, message: str = None, status_code: int = 500, detail: str = None, **kwargs):
+        super().__init__(message or detail or "Application error", **kwargs)
+        self.status_code = status_code
+        self.detail = detail or message or "Application error"
+
+
 class EmailException(CHMBaseException):
     """Exception raised during email operations"""
     
