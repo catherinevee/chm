@@ -4,7 +4,7 @@
 [![Docker Hub](https://img.shields.io/docker/v/catherinevee/chm?label=docker&color=blue)](https://hub.docker.com/r/catherinevee/chm)
 [![codecov](https://codecov.io/gh/catherinevee/chm/graph/badge.svg)](https://codecov.io/gh/catherinevee/chm)
 [![Code Quality](https://img.shields.io/badge/code%20quality-A-brightgreen)](https://github.com/catherinevee/chm)
-[![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 
@@ -14,18 +14,18 @@
 
 ## Overview
 
-CHM (Catalyst Health Monitor) is a production-ready, enterprise-grade network monitoring platform that provides comprehensive visibility into your network infrastructure. Built with FastAPI and React, it delivers real-time monitoring, intelligent alerting, and automated discovery capabilities for modern network operations.
+CHM (Catalyst Health Monitor) is an enterprise-grade network monitoring platform that provides comprehensive visibility into your network infrastructure. Built with FastAPI backend and React frontend components, it delivers monitoring, alerting, and discovery capabilities for network operations.
 
 ### Key Features
 
-- **Production Ready**: 95% implementation complete with enterprise-grade quality
-- **Auto-Discovery**: Multi-protocol device discovery (SNMP, SSH, CDP, LLDP, ARP)
-- **Real-Time Monitoring**: Live metrics with WebSocket updates and sub-second response
-- **Smart Alerting**: Alert correlation engine with pattern detection and escalation
-- **Enterprise Security**: JWT auth, bcrypt hashing, RBAC, and encrypted credentials
-- **Complete Backend**: 100% backend implementation with async FastAPI
-- **RESTful API**: 25+ documented endpoints with OpenAPI specification
-- **High Performance**: Supports 1000+ concurrent users, 500+ requests/second
+- **Backend API**: Complete FastAPI implementation with async support
+- **Device Discovery**: Network discovery implementation with SNMP/SSH protocols
+- **Authentication**: JWT authentication with bcrypt password hashing and RBAC
+- **Alert Management**: Alert system with database models and API endpoints
+- **Metrics Collection**: Device metrics tracking and storage capabilities
+- **WebSocket Support**: Real-time communication infrastructure
+- **RESTful API**: 20+ documented endpoints with OpenAPI specification
+- **Frontend Components**: React TypeScript components for visualization (in development)
 
 ## Project Structure
 
@@ -49,7 +49,7 @@ chm/
 │   ├── config.py             # Environment configuration
 │   ├── database.py           # Async SQLAlchemy setup
 │   └── middleware.py         # Security & logging middleware
-├── tests/                     # Comprehensive test suite (85% coverage)
+├── tests/                     # Test suite with fixtures and utilities
 │   ├── unit/                 # Unit tests
 │   ├── integration/          # Integration tests
 │   └── api/                  # API endpoint tests
@@ -63,9 +63,9 @@ chm/
 
 ### Prerequisites
 
-- Python 3.11+
-- PostgreSQL 15+
-- Redis 7+
+- Python 3.10+
+- PostgreSQL 12+ (recommended: 15+)
+- Redis 6+ (optional, for caching)
 - Docker & Docker Compose (optional)
 
 ### Installation
@@ -108,7 +108,7 @@ python main.py
 - API Health: http://localhost:8000/health
 - API Documentation: http://localhost:8000/docs
 - API Status: http://localhost:8000/api/status
-- Frontend: http://localhost:3000 (if frontend is running)
+- Frontend: http://localhost:3000 (requires separate setup)
 
 ## Usage Guide
 
@@ -401,15 +401,22 @@ The `docker-compose.yml` includes:
 
 ## Advanced Features
 
-### Web Interface
+### Frontend Development
 
-Access the web dashboard at `http://localhost:3000`:
+The frontend is currently in development. To set up the React frontend:
 
-- Real-time device monitoring
-- Interactive performance graphs
-- Alert management interface
+```bash
+cd frontend
+npm install
+npm start
+```
+
+Frontend components include:
+- Device list and management
+- Dashboard with charts
+- Alert notifications
 - Network topology visualization
-- User management and settings
+- Performance monitoring graphs
 
 ### API Server
 
@@ -442,34 +449,25 @@ python -m services.monitoring_service
 python -m services.monitoring_service --interval 30
 ```
 
-## Performance & Scalability
+## Architecture & Design
 
-### Benchmarks
+### System Design
 
-- **Concurrent Devices**: 1000+ devices
-- **Metrics Processing**: 100,000+ data points/minute
-- **API Requests**: 10,000+ req/min
-- **Response Time**: <100ms average
-- **Memory Usage**: <2GB for 1000 devices
-- **Database Performance**: Optimized queries with indexing
+CHM follows a microservices-inspired architecture with clear separation of concerns:
 
-### Scaling Options
+- **API Layer**: FastAPI endpoints handle HTTP requests
+- **Service Layer**: Business logic encapsulated in service classes
+- **Data Layer**: SQLAlchemy models with async database operations
+- **Protocol Layer**: SNMP/SSH clients for device communication
+- **WebSocket Layer**: Real-time bidirectional communication
 
-For large environments:
+### Security Implementation
 
-```yaml
-# config.yaml
-performance:
-  workers: 20
-  batch_size: 200
-  cache_ttl: 10m
-  connection_pool_size: 50
-  
-monitoring:
-  metrics_interval: 30
-  batch_processing: true
-  parallel_collection: true
-```
+- **Authentication**: JWT tokens with configurable expiration
+- **Password Security**: bcrypt hashing with salt rounds
+- **Authorization**: Role-based access control (RBAC)
+- **API Security**: CORS, rate limiting, input validation
+- **Data Protection**: Encrypted sensitive fields in database
 
 ## Testing
 
@@ -491,12 +489,12 @@ python -m pytest tests/ -v --cov=chm --cov-report=html
 
 ### Test Coverage
 
-Current test coverage: **85%**
+The project includes comprehensive testing infrastructure with pytest:
 
-- Services: 95% coverage
-- API Endpoints: 90% coverage
-- Models: 85% coverage
-- Overall: 85% coverage
+- Unit tests for services and models
+- Integration tests for database operations
+- API endpoint tests with authentication
+- Test fixtures and utilities included
 
 ## Troubleshooting
 
@@ -596,14 +594,14 @@ MIT License - see [LICENSE](LICENSE)
 
 ## About
 
-CHM is a production-ready network monitoring solution built with modern technologies and best practices. The project demonstrates enterprise-grade implementation with comprehensive testing, security, and documentation.
+CHM is an enterprise network monitoring solution built with modern technologies and best practices. The project provides a solid foundation for network monitoring with room for continued development and enhancement.
 
-**Project Status**: **Production Ready** - 95% Complete
-- Backend: 100% implemented
-- API: 100% implemented  
-- Security: 100% implemented
-- Testing: 85% coverage
-- Frontend: Planned
+**Project Status**: **Active Development**
+- Backend API: Fully implemented with FastAPI
+- Database Layer: Complete with async SQLAlchemy
+- Authentication: JWT with RBAC implemented
+- Frontend: React components in development
+- Testing: Comprehensive test infrastructure
 
 **Author**: Catherine Vee | DevOps/Network Engineer
 - GitHub: [github.com/catherinevee](https://github.com/catherinevee)
@@ -611,39 +609,31 @@ CHM is a production-ready network monitoring solution built with modern technolo
 
 ---
 
-### Implementation Statistics
+### Technical Architecture
 
-- **Total Lines of Code**: 15,000+ production code
-- **API Endpoints**: 25+ fully implemented
-- **Database Models**: 10+ complete models
-- **Test Coverage**: 85% achieved
-- **Code Quality**: A grade (Bandit security scan)
-- **Performance**: <100ms API response time
+| Component | Implementation | Description |
+|-----------|---------------|-------------|
+| **Backend API** | FastAPI | Async REST API with 20+ endpoints |
+| **Database** | PostgreSQL + SQLAlchemy | Async ORM with migration support |
+| **Authentication** | JWT + bcrypt | Token-based auth with RBAC |
+| **Protocols** | SNMP/SSH clients | Network device communication |
+| **WebSocket** | Connection manager | Real-time event support |
+| **Caching** | Redis (optional) | Performance optimization |
+| **Testing** | pytest | Unit, integration, and API tests |
+| **CI/CD** | GitHub Actions | Automated testing and deployment |
+| **Environments** | staging/production | GitHub deployment environments |
+| **Docker** | Multi-stage builds | Container support with Docker Hub |
+| **Frontend** | React + TypeScript | Component library (in development) |
 
-### Functionality Breakdown
+### Current Capabilities
 
-| Component | Status | Description |
-|-----------|--------|-------------|
-| Backend API | 100% | FastAPI with full async support |
-| Database Layer | 100% | PostgreSQL with async SQLAlchemy |
-| Authentication | 100% | JWT, bcrypt, RBAC implemented |
-| Device Management | 100% | Complete CRUD operations |
-| Alert System | 100% | Correlation engine with patterns |
-| Network Discovery | 100% | Multi-protocol discovery |
-| WebSocket Support | 100% | Real-time updates |
-| Error Handling | 100% | Zero silent failures |
-| Security | 100% | Enterprise-grade implementation |
-| API Documentation | 100% | OpenAPI/Swagger |
-| Testing | 85% | Comprehensive test suite |
-| CI/CD | 100% | GitHub Actions workflows |
-| Docker Support | 100% | Full containerization |
-| Frontend | 0% | Planned (backend ready) |
-
-### Performance Capabilities
-
-- **Concurrent Device Monitoring**: 1000+ devices
-- **Metrics Processing**: 100,000+ data points/minute
-- **API Requests**: 10,000+ req/min
-- **Response Time**: <100ms average
-- **Memory Usage**: <2GB for 1000 devices
-- **Database Performance**: Optimized queries with indexing
+- **Device Management**: CRUD operations for network devices
+- **User Authentication**: Registration, login, JWT tokens
+- **Alert System**: Create, manage, and acknowledge alerts
+- **Metrics Collection**: Device metrics tracking and storage
+- **Network Discovery**: Discovery job management
+- **API Documentation**: Auto-generated OpenAPI/Swagger docs
+- **Security**: Password hashing, JWT authentication, CORS
+- **Database Models**: Users, Devices, Alerts, Metrics, Notifications
+- **Service Layer**: Auth, Device, Alert, Metrics services
+- **Validation**: Input validation with Pydantic models
