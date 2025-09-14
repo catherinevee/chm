@@ -34,7 +34,11 @@
       "Bash(python -m pytest tests/test_service_basics.py -v)",
       "Bash(git checkout:*)",
       "Bash(python scripts:*)",
-      "Bash(gh pr checks:*)"
+      "Bash(gh pr checks:*)",
+      "Bash(gh pr view:*)",
+      "Bash(gh api:*)",
+      "Bash(find:*)",
+      "Bash(grep:*)"
     ],
     "deny": [],
     "ask": []
