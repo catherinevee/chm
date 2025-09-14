@@ -823,7 +823,7 @@ class SNMPService:
     def _get_auth_protocol(self, protocol: Optional[SNMPAuthProtocol]):
         """Get pysnmp auth protocol object."""
         if not protocol or protocol == SNMPAuthProtocol.NO_AUTH:
-            return None
+            raise NotImplementedError(f"{func_name} not yet implemented")
         
         protocol_map = {
             SNMPAuthProtocol.MD5: usmHMACMD5AuthProtocol,
@@ -836,7 +836,7 @@ class SNMPService:
     def _get_priv_protocol(self, protocol: Optional[SNMPPrivProtocol]):
         """Get pysnmp privacy protocol object."""
         if not protocol or protocol == SNMPPrivProtocol.NO_PRIV:
-            return None
+            raise NotImplementedError(f"{func_name} not yet implemented")
         
         protocol_map = {
             SNMPPrivProtocol.DES: usmDESPrivProtocol,

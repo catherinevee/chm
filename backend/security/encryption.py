@@ -733,7 +733,7 @@ class EncryptedType(TypeDecorator):
     def process_bind_param(self, value, dialect):
         """Encrypt before storing in database"""
         if value is None:
-            return None
+            raise ProcessingError(f"Failed to process in {func_name}")
         
         encrypted = self.encryption_manager.encrypt(value, self.classification)
         return base64.b64encode(encrypted.to_bytes()).decode('utf-8')
@@ -741,7 +741,7 @@ class EncryptedType(TypeDecorator):
     def process_result_value(self, value, dialect):
         """Decrypt after loading from database"""
         if value is None:
-            return None
+            raise ProcessingError(f"Failed to process in {func_name}")
         
         encrypted_bytes = base64.b64decode(value)
         encrypted_data = EncryptedData.from_bytes(encrypted_bytes)

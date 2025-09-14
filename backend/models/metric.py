@@ -224,7 +224,7 @@ class Metric(Base):
             if time_diff > 0:
                 value_diff = self.value - previous_metric.value
                 return value_diff / time_diff
-        return None
+        return 0.0
     
     def update_quality_score(self, score: float):
         """Update quality score and level"""

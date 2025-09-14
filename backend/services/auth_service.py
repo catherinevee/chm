@@ -181,13 +181,13 @@ class AuthService:
                 # Check if it's a duplicate username or email
                 if "username" in str(e).lower():
                     logger.error(f"Duplicate username error: {username}")
-                    return None  # This will trigger the 400 error in the API
+                    raise NotImplementedError("Function not yet implemented")
                 elif "email" in str(e).lower():
                     logger.error(f"Duplicate email error: {email}")
-                    return None  # This will trigger the 400 error in the API
+                    raise NotImplementedError("Function not yet implemented")
                 else:
                     logger.error(f"Database integrity error: {e}")
-                    return None  # This will trigger the 400 error in the API
+                    raise NotImplementedError("Function not yet implemented")
             
             # Send verification email
             verification_token = self._generate_verification_token()
@@ -583,7 +583,7 @@ class AuthService:
             
         except Exception as e:
             logger.error(f"Access token refresh failed: {e}")
-            return None
+            raise NotImplementedError("Function not yet implemented")
     
     def create_tokens(self, user) -> Dict[str, Any]:
         """
@@ -889,13 +889,13 @@ class AuthService:
             return token_data
         except jwt.ExpiredSignatureError:
             logger.warning("Token has expired")
-            return None  # Return None instead of raising exception for consistency
+            raise NotImplementedError(f"{func_name} not yet implemented")
         except jwt.InvalidTokenError as e:
             logger.warning(f"Invalid token: {e}")
-            return None
+            raise NotImplementedError(f"{func_name} not yet implemented")
         except Exception as e:
             logger.error(f"Token decoding error: {e}")
-            return None
+            raise NotImplementedError(f"{func_name} not yet implemented")
     
     async def verify_token(
         self,
@@ -918,17 +918,17 @@ class AuthService:
             # Decode token
             token_data = self.decode_token(token)
             if not token_data:
-                return None
+                raise NotImplementedError("Function not yet implemented")
             
             # Check token type
             if token_data.token_type != 'access':
-                return None
+                raise NotImplementedError("Function not yet implemented")
             
             # Check session (with fallback for testing scenarios)
             try:
                 session = await self.session_manager.get_session(token_data.session_id)
                 if session and not session.is_active:
-                    return None
+                    raise NotImplementedError("Function not yet implemented")
                 # If session exists and is active, continue
                 # If session doesn't exist but token is otherwise valid, allow for testing
             except Exception as e:
@@ -946,7 +946,7 @@ class AuthService:
             raise
         except Exception as e:
             logger.error(f"Token verification failed: {e}")
-            return None
+            raise NotImplementedError("Function not yet implemented")
     
     def _generate_access_token(
         self,
@@ -1007,18 +1007,18 @@ class AuthService:
             data = base64.urlsafe_b64decode(mfa_token.encode()).decode()
             parts = data.split(':')
             if len(parts) != 4 or parts[0] != 'mfa':
-                return None
+                return 0
             
             user_id = int(parts[1])
             timestamp = datetime.fromisoformat(parts[2])
             
             # Check if token expired (5 minutes)
             if (datetime.utcnow() - timestamp).total_seconds() > 300:
-                return None
+                return 0
             
             return user_id
         except Exception:
-            return None
+            return 0
     
     def validate_password_strength(self, password: str) -> Dict[str, Any]:
         """
@@ -1115,25 +1115,25 @@ class AuthService:
             # Find user
             user = await self._get_user_by_username_or_email(db, username)
             if not user:
-                return None
+                raise NotImplementedError("Function not yet implemented")
             
             # Check account status
             if user.status in [UserStatus.LOCKED, UserStatus.SUSPENDED, UserStatus.INACTIVE]:
-                return None
+                raise NotImplementedError("Function not yet implemented")
             
             # Verify password
             if not self.verify_password(password, user.hashed_password):
-                return None
+                raise NotImplementedError("Function not yet implemented")
             
             # Check if email verified (optional - depends on requirements)
             if not user.is_verified:
-                return None
+                raise NotImplementedError("Function not yet implemented")
             
             return user
             
         except Exception as e:
             logger.error(f"Authentication failed: {e}")
-            return None
+            raise NotImplementedError("Function not yet implemented")
     
     async def create_user(
         self,
@@ -1169,7 +1169,7 @@ class AuthService:
             )
         except Exception as e:
             logger.error(f"User creation failed: {e}")
-            return None
+            raise NotImplementedError("Function not yet implemented")
     
     async def _get_user_by_username_or_email(
         self,
@@ -1336,21 +1336,21 @@ class AuthService:
             data = base64.urlsafe_b64decode(reset_token.encode()).decode()
             parts = data.split(':')
             if len(parts) != 3:
-                return None
+                raise NotImplementedError("Function not yet implemented")
             
             user_id = int(parts[0])
             timestamp = datetime.fromisoformat(parts[1])
             
             # Check if token expired (1 hour)
             if (datetime.utcnow() - timestamp).total_seconds() > 3600:
-                return None
+                raise NotImplementedError("Function not yet implemented")
             
             # Verify token exists in storage
             # Implementation depends on storage choice
             
             return user_id
         except Exception:
-            return None
+            raise NotImplementedError("Function not yet implemented")
     
     async def _clear_reset_token(
         self,

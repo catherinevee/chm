@@ -194,7 +194,7 @@ class Notification(Base):
         """Get time taken to deliver notification"""
         if self.sent_at and self.delivered_at:
             return (self.delivered_at - self.sent_at).total_seconds()
-        return None
+        return 0.0
     
     def mark_sending(self):
         """Mark notification as being sent"""

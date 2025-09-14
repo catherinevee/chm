@@ -490,7 +490,7 @@ class SSHService:
         
         if not show_run_cmd:
             logger.warning(f"No show run command for vendor {credentials.vendor}")
-            return None
+            raise NotImplementedError("Function not yet implemented")
         
         result = await self.execute_command(credentials, show_run_cmd)
         
@@ -498,7 +498,7 @@ class SSHService:
             return result.output
         else:
             logger.error(f"Failed to get configuration: {result.error}")
-            return None
+            raise NotImplementedError("Function not yet implemented")
     
     async def save_configuration(
         self,
