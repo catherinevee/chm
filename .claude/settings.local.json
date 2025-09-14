@@ -33,7 +33,8 @@
       "Bash(python -m pytest tests/ --co -q)",
       "Bash(python -m pytest tests/test_service_basics.py -v)",
       "Bash(git checkout:*)",
-      "Bash(python scripts:*)"
+      "Bash(python scripts:*)",
+      "Bash(gh pr checks:*)"
     ],
     "deny": [],
     "ask": []
