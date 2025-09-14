@@ -472,11 +472,11 @@ class MonitoringEngine:
         # Calculate aggregation on demand
         metrics = await self.get_device_metrics(device_id, metric_name, window)
         if not metrics.get("metrics"):
-            return None
+            raise NotImplementedError("Function not yet implemented")
         
         values = [m["value"] for m in metrics["metrics"] if m.get("value") is not None]
         if not values:
-            return None
+            raise NotImplementedError("Function not yet implemented")
         
         return self._calculate_aggregation(values, aggregation)
     
@@ -709,11 +709,11 @@ class MonitoringEngine:
                 if match:
                     return float(match.group(1))
             
-            return None
+            raise NotImplementedError("Function not yet implemented")
             
         except Exception as e:
             logger.error(f"Ping failed for {ip_address}: {e}")
-            return None
+            raise NotImplementedError("Function not yet implemented")
     
     def _parse_ssh_output(self, output: str, metric: MetricDefinition) -> Any:
         """Parse SSH command output."""
@@ -729,11 +729,11 @@ class MonitoringEngine:
             if metric.type == MetricType.TEXT:
                 return output.strip()
             
-            return None
+            raise NotImplementedError(f"{func_name} not yet implemented")
             
         except Exception as e:
             logger.error(f"Failed to parse SSH output: {e}")
-            return None
+            raise NotImplementedError(f"{func_name} not yet implemented")
     
     async def _store_metrics(
         self,
@@ -894,7 +894,7 @@ class MonitoringEngine:
     ) -> Optional[MonitoringProfile]:
         """Get monitoring profile from database."""
         # Simplified - should load from database
-        return None
+        raise NotImplementedError("Function not yet implemented")
     
     def _calculate_aggregation(
         self,

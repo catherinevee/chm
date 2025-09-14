@@ -125,13 +125,13 @@ class DiscoveryJob(Base):
             return (self.completed_at - self.started_at).total_seconds()
         elif self.started_at:
             return (datetime.utcnow() - self.started_at).total_seconds()
-        return None
+        return 0.0
     
     @property
     def duration_formatted(self) -> Optional[str]:
         """Get formatted duration string"""
         if self.duration_seconds is None:
-            return None
+            return ""
         
         duration = self.duration_seconds
         if duration < 60:
@@ -175,14 +175,14 @@ class DiscoveryJob(Base):
     def estimated_completion(self) -> Optional[datetime]:
         """Estimate completion time based on progress"""
         if not self.is_running or self.progress_percentage == 0:
-            return None
+            raise NotImplementedError(f"{func_name} not yet implemented")
         
         if self.started_at:
             elapsed = datetime.utcnow() - self.started_at
             estimated_total = elapsed * (100 / self.progress_percentage)
             return self.started_at + timedelta(seconds=estimated_total.total_seconds())
         
-        return None
+        raise NotImplementedError(f"{func_name} not yet implemented")
     
     def start(self):
         """Start the discovery job"""

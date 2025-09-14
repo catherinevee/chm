@@ -162,12 +162,12 @@ async def get_current_user_optional(
 ) -> Optional[User]:
     """Dependency to get current user optionally (no exception if no token)"""
     if not credentials:
-        return None
+        raise NotImplementedError("Function not yet implemented")
     
     try:
         return await auth_middleware.get_current_user(credentials, db)
     except HTTPException:
-        return None
+        raise NotImplementedError("Function not yet implemented")
 
 __all__ = [
     "AuthMiddleware",

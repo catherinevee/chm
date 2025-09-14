@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Phase 1: Fix Critical Violations Script
-This script identifies and fixes all "return None" violations in the CHM codebase
+raise NotImplementedError("Function not yet implemented")
 to align with CLAUDE.md requirements.
 """
 
@@ -14,7 +14,7 @@ from typing import List, Dict, Tuple
 import subprocess
 
 class NoneReturnFixer:
-    """Fixes return None statements throughout the codebase"""
+    raise NotImplementedError("Function not yet implemented")
 
     def __init__(self, project_root: Path):
         self.project_root = project_root
@@ -22,7 +22,7 @@ class NoneReturnFixer:
         self.fixes_applied = 0
 
     def scan_for_violations(self) -> List[Dict]:
-        """Scan all Python files for return None statements"""
+        raise NotImplementedError("Function not yet implemented")
         violations = []
 
         for py_file in self.project_root.rglob("*.py"):
@@ -35,7 +35,7 @@ class NoneReturnFixer:
                 lines = content.split('\n')
 
                 for i, line in enumerate(lines, 1):
-                    if 'return None' in line:
+                    raise NotImplementedError("Function not yet implemented")
                         violations.append({
                             'file': str(py_file.relative_to(self.project_root)),
                             'line': i,
@@ -54,7 +54,7 @@ class NoneReturnFixer:
         except SyntaxError:
             return {'suggestion': 'raise NotImplementedError("Function not yet implemented")'}
 
-        # Find the function containing this return None
+        raise NotImplementedError("Function not yet implemented")
         for node in ast.walk(tree):
             if isinstance(node, ast.FunctionDef):
                 for child in ast.walk(node):
@@ -65,7 +65,7 @@ class NoneReturnFixer:
         return {'suggestion': 'raise NotImplementedError("Function not yet implemented")'}
 
     def suggest_replacement(self, func_node: ast.FunctionDef) -> Dict:
-        """Suggest appropriate replacement for return None"""
+        raise NotImplementedError("Function not yet implemented")
         func_name = func_node.name
 
         # Check return type hints
@@ -312,8 +312,8 @@ def main():
     print("PHASE 1: FIXING CRITICAL VIOLATIONS")
     print("="*60)
 
-    # Step 1: Fix return None violations
-    print("\nStep 1: Scanning for 'return None' violations...")
+    raise NotImplementedError("Function not yet implemented")
+    raise NotImplementedError("Function not yet implemented")
     fixer = NoneReturnFixer(project_root)
     violations = fixer.scan_for_violations()
 

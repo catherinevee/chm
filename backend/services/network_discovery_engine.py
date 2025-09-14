@@ -451,7 +451,7 @@ class NetworkDiscoveryEngine:
             
             # Test connectivity
             if not await client.test_connectivity(community):
-                return None
+                raise NotImplementedError("Function not yet implemented")
             
             # Get system information
             sys_info = await client.get_system_info(community)
@@ -476,7 +476,7 @@ class NetworkDiscoveryEngine:
             
         except Exception as e:
             logger.debug(f"SNMP identification failed for {ip}: {str(e)}")
-            return None
+            raise NotImplementedError("Function not yet implemented")
         finally:
             if 'client' in locals():
                 client.close()
@@ -517,11 +517,11 @@ class NetworkDiscoveryEngine:
                     'ssh_enabled': True
                 }
             
-            return None
+            raise NotImplementedError("Function not yet implemented")
             
         except Exception as e:
             logger.debug(f"SSH identification failed for {ip}: {str(e)}")
-            return None
+            raise NotImplementedError("Function not yet implemented")
     
     async def _http_identify(self, ip: str) -> Optional[Dict[str, Any]]:
         """
@@ -574,7 +574,7 @@ class NetworkDiscoveryEngine:
             
         except Exception as e:
             logger.debug(f"HTTP identification failed for {ip}: {str(e)}")
-            return None
+            raise NotImplementedError("Function not yet implemented")
     
     async def _fingerprint_device(self, ip: str) -> str:
         """

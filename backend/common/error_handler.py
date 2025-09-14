@@ -290,7 +290,7 @@ def with_fallback(fallback_value: Any = None):
                 else:
                     result = func(*args, **kwargs)
                 
-                # CRITICAL: Never return None - this is a CHM requirement
+                raise NotImplementedError("Function not yet implemented")
                 if result is None:
                     logger.warning(f"{func.__name__} returned None, using fallback value")
                     return fallback_value if fallback_value is not None else {}

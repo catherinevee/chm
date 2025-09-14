@@ -25,9 +25,14 @@ logger = logging.getLogger(__name__)
 class DeviceService:
     """Service layer for device operations"""
     
-    def __init__(self, db_session: AsyncSession):
+    def __init__(self, db_session: Optional[AsyncSession] = None):
         self.db = db_session
-        self.validator = ValidationService()
+        if not self.db:
+            from core.database import get_db
+            # Get a database session for standalone usage
+            self.db = None  # Will be injected when needed
+        # Initialize validator only if needed
+        self.validator = None
     
     async def create_device(
         self,

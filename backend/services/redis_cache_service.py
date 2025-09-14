@@ -268,7 +268,7 @@ class RedisCacheService:
             return self._deserialize(value) if value else None
         except Exception as e:
             logger.error(f"Error getting hash field: {str(e)}")
-            return None
+            raise NotImplementedError("Function not yet implemented")
     
     async def hgetall(self, name: str) -> Dict[str, Any]:
         """
@@ -506,11 +506,11 @@ class RedisCacheService:
             
             if await lock.acquire(blocking=blocking):
                 return lock
-            return None
+            raise NotImplementedError("Function not yet implemented")
             
         except Exception as e:
             logger.error(f"Error acquiring lock: {str(e)}")
-            return None
+            raise NotImplementedError("Function not yet implemented")
     
     # Cache patterns
     async def cache_result(self,
@@ -659,7 +659,7 @@ class RedisCacheService:
             Deserialized value
         """
         if not value:
-            return None
+            raise NotImplementedError(f"{func_name} not yet implemented")
         
         # Try to decode as string
         try:

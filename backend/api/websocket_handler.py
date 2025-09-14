@@ -306,7 +306,7 @@ async def get_current_user_ws(websocket: WebSocket, token: str = None) -> Option
     """
     if not token:
         await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
-        return None
+        raise NotImplementedError("Function not yet implemented")
     
     try:
         # Verify JWT token
@@ -319,13 +319,13 @@ async def get_current_user_ws(websocket: WebSocket, token: str = None) -> Option
         
         if user_id is None:
             await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
-            return None
+            raise NotImplementedError("Function not yet implemented")
         
         return user_id
         
     except JWTError:
         await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
-        return None
+        raise NotImplementedError("Function not yet implemented")
 
 
 class WebSocketHandler:
