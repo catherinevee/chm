@@ -12,9 +12,13 @@
 
 
 
+## Purpose
+
+CHM (Catalyst Health Monitor) is designed to automatically discover, monitor, and manage Cisco Catalyst network infrastructure. It provides network engineers with real-time visibility into device health, performance metrics, and configuration status across their entire Catalyst deployment. By combining SNMP polling, SSH access, and intelligent alerting, CHM helps prevent network outages, optimize performance, and streamline network operations.
+
 ## Overview
 
-CHM (Catalyst Health Monitor) is an enterprise-grade network monitoring platform that provides comprehensive visibility into your network infrastructure. Built with FastAPI backend and React frontend components, it delivers monitoring, alerting, and discovery capabilities for network operations.
+CHM is an enterprise-grade network monitoring platform that provides comprehensive visibility into your network infrastructure. Built with FastAPI backend and React frontend components, it delivers monitoring, alerting, and discovery capabilities for network operations.
 
 ### Key Features
 
