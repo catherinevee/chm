@@ -45,7 +45,9 @@
       "Bash(gh workflow list:*)",
       "Bash(npm install)",
       "Bash(npm install:*)",
-      "Bash(npm update:*)"
+      "Bash(npm update:*)",
+      "Bash(npm ls:*)",
+      "Bash(npm audit fix:*)"
     ],
     "deny": [],
     "ask": []

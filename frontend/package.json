@@ -59,6 +59,9 @@
       "last 1 safari version"
     ]
   },
+  "overrides": {
+    "nth-check": "^2.0.1"
+  },
   "devDependencies": {
     "autoprefixer": "^10.4.21",
     "daisyui": "^5.0.50",
