@@ -6,6 +6,8 @@
 [![codecov](https://codecov.io/gh/catherinevee/chm/graph/badge.svg)](https://codecov.io/gh/catherinevee/chm)
 [![Libraries.io dependency status](https://img.shields.io/librariesio/github/catherinevee/chm)](https://libraries.io/github/catherinevee/chm)
 [![Code Quality](https://img.shields.io/badge/code%20quality-A-brightgreen)](https://github.com/catherinevee/chm)
+[![Repo Size](https://img.shields.io/github/repo-size/catherinevee/chm)](https://github.com/catherinevee/chm)
+[![Last Commit](https://img.shields.io/github/last-commit/catherinevee/chm)](https://github.com/catherinevee/chm/commits/main)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
