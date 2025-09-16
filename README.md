@@ -1,20 +1,15 @@
 # Catalyst Health Monitor (CHM)
 
-## 🏗️ Build & Deployment
-[![CI/CD Status](https://github.com/catherinevee/chm/actions/workflows/ci-cd.yml/badge.svg?branch=main)](https://github.com/catherinevee/chm/actions/workflows/ci-cd.yml)
-[![Docker Release](https://img.shields.io/docker/v/catherinevee/chm?label=docker%20release&color=blue)](https://hub.docker.com/r/catherinevee/chm)
-[![Python Required](https://img.shields.io/badge/python%20required-3.10+-blue.svg)](https://www.python.org/downloads/)
-
-## 🔒 Security & Quality
-[![Security Vulnerabilities](https://github.com/catherinevee/chm/actions/workflows/trivy-simple.yml/badge.svg?branch=main)](https://github.com/catherinevee/chm/actions/workflows/trivy-simple.yml)
-[![Test Coverage](https://codecov.io/gh/catherinevee/chm/graph/badge.svg)](https://codecov.io/gh/catherinevee/chm)
-[![Code Grade](https://img.shields.io/badge/code%20grade-A-brightgreen)](https://github.com/catherinevee/chm)
-[![Dependency Health](https://img.shields.io/librariesio/github/catherinevee/chm?label=dependency%20health)](https://libraries.io/github/catherinevee/chm)
-
-## 📊 Project Metrics
-[![Project Size](https://img.shields.io/github/repo-size/catherinevee/chm?label=project%20size)](https://github.com/catherinevee/chm)
-[![Last Updated](https://img.shields.io/github/last-commit/catherinevee/chm?label=last%20updated)](https://github.com/catherinevee/chm/commits/main)
-[![MIT License](https://img.shields.io/badge/license-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![CI/CD Pipeline](https://github.com/catherinevee/chm/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/catherinevee/chm/actions/workflows/ci-cd.yml)
+[![Trivy](https://github.com/catherinevee/chm/actions/workflows/trivy-simple.yml/badge.svg)](https://github.com/catherinevee/chm/actions/workflows/trivy-simple.yml)
+[![Docker Hub](https://img.shields.io/docker/v/catherinevee/chm?label=docker&color=blue)](https://hub.docker.com/r/catherinevee/chm)
+[![codecov](https://codecov.io/gh/catherinevee/chm/graph/badge.svg)](https://codecov.io/gh/catherinevee/chm)
+[![Libraries.io dependency status](https://img.shields.io/librariesio/github/catherinevee/chm)](https://libraries.io/github/catherinevee/chm)
+[![Code Quality](https://img.shields.io/badge/code%20quality-A-brightgreen)](https://github.com/catherinevee/chm)
+[![Repo Size](https://img.shields.io/github/repo-size/catherinevee/chm)](https://github.com/catherinevee/chm)
+[![Last Commit](https://img.shields.io/github/last-commit/catherinevee/chm)](https://github.com/catherinevee/chm/commits/main)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 
 
