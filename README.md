@@ -4,6 +4,7 @@
 [![Trivy](https://github.com/catherinevee/chm/actions/workflows/trivy-simple.yml/badge.svg)](https://github.com/catherinevee/chm/actions/workflows/trivy-simple.yml)
 [![Docker Hub](https://img.shields.io/docker/v/catherinevee/chm?label=docker&color=blue)](https://hub.docker.com/r/catherinevee/chm)
 [![codecov](https://codecov.io/gh/catherinevee/chm/graph/badge.svg)](https://codecov.io/gh/catherinevee/chm)
+[![Libraries.io dependency status](https://img.shields.io/librariesio/github/catherinevee/chm)](https://libraries.io/github/catherinevee/chm)
 [![Code Quality](https://img.shields.io/badge/code%20quality-A-brightgreen)](https://github.com/catherinevee/chm)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
