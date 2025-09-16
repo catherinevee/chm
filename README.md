@@ -1,7 +1,7 @@
 # Catalyst Health Monitor (CHM)
 
 [![CI/CD Pipeline](https://github.com/catherinevee/chm/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/catherinevee/chm/actions/workflows/ci-cd.yml)
-[![Trivy](https://github.com/catherinevee/chm/actions/workflows/trivy-security.yml/badge.svg)](https://github.com/catherinevee/chm/actions/workflows/trivy-security.yml)
+[![Trivy](https://github.com/catherinevee/chm/actions/workflows/trivy-simple.yml/badge.svg)](https://github.com/catherinevee/chm/actions/workflows/trivy-simple.yml)
 [![Docker Hub](https://img.shields.io/docker/v/catherinevee/chm?label=docker&color=blue)](https://hub.docker.com/r/catherinevee/chm)
 [![codecov](https://codecov.io/gh/catherinevee/chm/graph/badge.svg)](https://codecov.io/gh/catherinevee/chm)
 [![Code Quality](https://img.shields.io/badge/code%20quality-A-brightgreen)](https://github.com/catherinevee/chm)

@@ -41,7 +41,11 @@
       "Bash(grep:*)",
       "Bash(git branch:*)",
       "Bash(git fetch:*)",
-      "Bash(git pull:*)"
+      "Bash(git pull:*)",
+      "Bash(gh workflow list:*)",
+      "Bash(npm install)",
+      "Bash(npm install:*)",
+      "Bash(npm update:*)"
     ],
     "deny": [],
     "ask": []
